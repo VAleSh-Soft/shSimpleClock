@@ -409,7 +409,7 @@ public:
 #ifdef USE_RU_LANGUAGE
     setChar(0, 0xDF, 5); // Я
     setChar(6, 0xF0, 5); // р
-    uint8_t x = 0xEA;       // к
+    uint8_t x = 0xEA;    // к
     if (toSensor)
     {
       x = (toMin) ? 0 + 0x30 : 1 + 0x30;
@@ -431,6 +431,11 @@ public:
       setChar(20, br / 10 + 0x30, 5);
       setChar(26, br % 10 + 0x30, 5);
     }
+  }
+
+  void setColorOfNumber(CRGB _color)
+  {
+    color = _color;
   }
 };
 
@@ -531,7 +536,7 @@ void setLedsData(CRGB *data, uint16_t leds_count)
 
 void setFastLEDData(CRGB *data, uint16_t leds_count)
 {
-  #if __ESPICHIPSET__
+#if __ESPICHIPSET__
   setESpiLedsData(data, leds_count);
 #else
   setLedsData(data, leds_count);

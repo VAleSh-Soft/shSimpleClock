@@ -31,6 +31,8 @@ void setup()
 {
   Serial.begin(9600);
 
+  // устанавливаем синий цвет для цифр
+  clock.setColorNumber(CRGB::Blue);
   // инициализируем часы
   clock.init();
 }

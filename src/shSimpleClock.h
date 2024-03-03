@@ -188,11 +188,11 @@ clkHandle light_sensor_guard; // отслеживание показаний д�
 clkHandle set_brightness_mode; // режим настройки яркости экрана
 #endif
 
-
+// -----------------------------------------
 bool blink_flag = false; // флаг блинка, используется всем, что должно мигать
 DateTime curTime;
 
-// ---- экраны --------------------------------
+// ---- экраны -----------------------------
 #if defined(TM1637_DISPLAY)
 DisplayTM1637 disp(DISPLAY_CLK_PIN, DISPLAY_DAT_PIN);
 #elif defined(MAX72XX_7SEGMENT_DISPLAY)
@@ -204,16 +204,16 @@ CRGB leds[256];
 DisplayWS2812Matrix disp(leds, COLOR_OF_NUMBER, MX_TYPE);
 #endif
 
-// ---- модуль sscRTC ----------------------------
+// ---- модуль sscRTC ----------------------
 DS3231 sscClock;
 RTClib sscRTC;
 
-// ---- будильник -----------------------------
+// ---- будильник --------------------------
 #ifdef USE_ALARM
 Alarm alarm(ALARM_LED_PIN, ALARM_EEPROM_INDEX);
 #endif
 
-// ---- датчики температуры -------------------
+// ---- датчики температуры ----------------
 #ifdef USE_TEMP_DATA
 #if defined(USE_DS18B20)
 DS1820 temp_sensor(DS18B20_PIN);
@@ -333,8 +333,16 @@ class shSimpleClock
 {
 private:
 public:
+  /**
+   * @brief конструктор объекта часов
+   *
+   */
   shSimpleClock() {}
 
+  /**
+   * @brief инициализация часов
+   *
+   */
   void init()
   {
     // ==== RTC ========================================
@@ -351,20 +359,13 @@ public:
     if (BTN_UP_PIN >= 0)
     {
       btnUp = (clkButton){BTN_UP_PIN};
+      btnUp.setLongClickMode(LCM_CLICKSERIES);
+      btnUp.setIntervalOfSerial(100);
     }
 
     if (BTN_DOWN_PIN >= 0)
     {
       btnDown = (clkButton){BTN_DOWN_PIN};
-    }
-
-    if (&btnUp != NULL)
-    {
-      btnUp.setLongClickMode(LCM_CLICKSERIES);
-      btnUp.setIntervalOfSerial(100);
-    }
-    if (&btnDown != NULL)
-    {
       btnDown.setLongClickMode(LCM_CLICKSERIES);
       btnDown.setIntervalOfSerial(100);
     }
@@ -472,6 +473,10 @@ public:
 #endif
   }
 
+  /**
+   * @brief обработка событий часов
+   *
+   */
   void tick()
   {
     checkButton();
@@ -479,6 +484,11 @@ public:
     setDisplay();
   }
 
+  /**
+   * @brief получить текущий статус или событие кнопки Set
+   *
+   * @return uint8_t
+   */
   uint8_t getBtnSetState()
   {
     uint8_t result = 0;
@@ -489,6 +499,11 @@ public:
     return result;
   }
 
+  /**
+   * @brief получить текущий статус или событие кнопки Up
+   *
+   * @return uint8_t
+   */
   uint8_t getBtnUpState()
   {
     uint8_t result = 0;
@@ -499,6 +514,11 @@ public:
     return result;
   }
 
+  /**
+   * @brief получить текущий статус или событие кнопки Down
+   *
+   * @return uint8_t
+   */
   uint8_t getBtnDownState()
   {
     uint8_t result = 0;
@@ -510,14 +530,36 @@ public:
   }
 
 #ifdef MAX72XX_MATRIX_DISPLAY
+  /**
+   * @brief установить угол поворота изображения
+   *
+   * @param _dir угол поворота изображения, 0..3
+   */
   void setMatrixDirection(uint8_t _dir)
   {
     disp.setDirection(_dir);
   }
 
+  /**
+   * @brief включить отражение изображения по горизонтали (по строкам)
+   *
+   * @param _mode true - включить отражение, false - отключить отражение
+   */
   void setMatrixFlipMode(bool _mode)
   {
     disp.setFlip(_mode);
+  }
+#endif
+
+#ifdef WS2812_MATRIX_DISPLAY
+  /**
+   * @brief установить цвет для вывода информации на матрице из адресных светодиодов
+   *
+   * @param _color цвет, например, для красного CRGB::Red
+   */
+  void setColorNumber(CRGB _color)
+  {
+    disp.setColorOfNumber(_color);
   }
 #endif
 };
@@ -859,6 +901,11 @@ void setDisp()
 
 void checkSetButton()
 {
+  if (&btnSet == NULL)
+  {
+    return;
+  }
+
   switch (btnSet.getButtonState())
   {
   case BTN_ONECLICK:
@@ -963,27 +1010,33 @@ void checkUDbtn(clkButton &btn)
 
 void checkUpDownButton()
 {
-  btnUp.getButtonState();
-  btnDown.getButtonState();
+  if (&btnUp != NULL)
+  {
+    btnUp.getButtonState();
+  }
+  if (&btnDown != NULL)
+  {
+    btnDown.getButtonState();
+  }
 
   switch (displayMode)
   {
   case DISPLAY_MODE_SHOW_TIME:
 #ifdef USE_TEMP_DATA
-    if (btnUp.getLastState() == BTN_ONECLICK)
+    if (&btnUp != NULL && btnUp.getLastState() == BTN_ONECLICK)
     {
       displayMode = DISPLAY_MODE_SHOW_TEMP;
     }
 #endif
 #ifdef USE_CALENDAR
-    if (btnDown.getLastState() == BTN_ONECLICK)
+    if (&btnDown != NULL && btnDown.getLastState() == BTN_ONECLICK)
     {
       displayMode = DISPLAY_MODE_SHOW_CALENDAR;
     }
 #endif
 #ifdef USE_SET_BRIGHTNESS_MODE
-    if (btnUp.isSecondButtonPressed(btnDown, BTN_LONGCLICK) ||
-        btnDown.isSecondButtonPressed(btnUp, BTN_LONGCLICK))
+    if (&btnUp != NULL && btnUp.isSecondButtonPressed(btnDown, BTN_LONGCLICK) ||
+        &btnDown != NULL && btnDown.isSecondButtonPressed(btnUp, BTN_LONGCLICK))
     {
 #ifdef USE_LIGHT_SENSOR
       displayMode = DISPLAY_MODE_SET_BRIGHTNESS_MIN;
@@ -1011,18 +1064,18 @@ void checkUpDownButton()
 #endif
   case DISPLAY_MODE_SET_BRIGHTNESS_MAX:
 #endif
-    if (!btnDown.isButtonClosed())
+    if (&btnUp != NULL && (&btnDown != NULL && !btnDown.isButtonClosed()))
     {
       checkUDbtn(btnUp);
     }
-    if (!btnUp.isButtonClosed())
+    if (&btnDown != NULL && (&btnUp != NULL && !btnUp.isButtonClosed()))
     {
       checkUDbtn(btnDown);
     }
     break;
 #ifdef USE_TEMP_DATA
   case DISPLAY_MODE_SHOW_TEMP:
-    if (btnUp.getLastState() == BTN_ONECLICK)
+    if (&btnUp != NULL && btnUp.getLastState() == BTN_ONECLICK)
     {
       returnToDefMode();
     }
@@ -1030,7 +1083,7 @@ void checkUpDownButton()
 #endif
 #ifdef USE_CALENDAR
   case DISPLAY_MODE_SHOW_CALENDAR:
-    if (btnDown.getLastState() == BTN_ONECLICK)
+    if (&btnDown != NULL && btnDown.getLastState() == BTN_ONECLICK)
     {
       returnToDefMode();
     }
@@ -1217,7 +1270,6 @@ void showAlarmState(uint8_t _state)
   }
 }
 #endif
-
 
 #ifdef USE_LIGHT_SENSOR
 void setBrightness()
