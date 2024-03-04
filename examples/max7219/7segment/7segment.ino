@@ -2,7 +2,7 @@
  * @file 7segment.ino
  * @author Vladimir Shatalov (valesh-soft@yandex.ru)
  * 
- * @brief Пример создания часов с использованием библиотеки shSimpleClock
+ * @brief Пример создания часов с помощью библиотеки shSimpleClock
  *        с использованием часового модуля DS3231 и семисегментного индикатора,
  *        построенного на драйверах MAX7219 или MAX7221; настройки часов 
  *        указываются в файле clockSetting.h, который следует разместить в 
@@ -22,8 +22,8 @@
  */
 
 #include "clockSetting.h"
-#include <shSimpleClock.h>
-#include <shButton.h>
+#include <shSimpleClock.h> // https://github.com/VAleSh-Soft/shSimpleClock
+#include <shButton.h>      // https://github.com/VAleSh-Soft/shButton
 
 // объявляем экземпляр часов
 shSimpleClock clock;

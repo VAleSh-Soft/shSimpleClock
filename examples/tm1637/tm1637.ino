@@ -2,7 +2,7 @@
  * @file TM1637.ino
  * @author Vladimir Shatalov (valesh-soft@yandex.ru)
  * 
- * @brief Пример создания часов с использованием библиотеки shSimpleClock
+ * @brief Пример создания часов с помощью библиотеки shSimpleClock
  *        с использованием часового модуля DS3231 и семисегментного экрана
  *        на драйвере TM1637; настройки часов указываются в файле 
  *        clockSetting.h, который следует разместить в папке со скетчем;
@@ -21,8 +21,8 @@
  */
 
 #include "clockSetting.h"
-#include <shSimpleClock.h>
-#include <shButton.h>
+#include <shSimpleClock.h> // https://github.com/VAleSh-Soft/shSimpleClock
+#include <shButton.h>      // https://github.com/VAleSh-Soft/shButton
 
 // объявляем экземпляр часов
 shSimpleClock clock;

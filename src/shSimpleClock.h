@@ -9,31 +9,31 @@
 
 // ===================================================
 
-void rtcNow();
-void blink();
-void returnToDefMode();
-void showTimeSetting();
-void setDisp();
-void checkButton();
-void setDisplay();
+void sscRtcNow();
+void sscBlink();
+void sscReturnToDefMode();
+void sscShowTimeSetting();
+void sscSetDisp();
+void sscCheckButton();
+void sscSetDisplay();
 #ifdef USE_CALENDAR
-void showCalendar();
+void sscShowCalendar();
 #endif
 #ifdef USE_ALARM
-void checkAlarm();
-void runAlarmBuzzer();
-void showAlarmState(uint8_t _state);
+void sscCheckAlarm();
+void sscRunAlarmBuzzer();
+void sscShowAlarmState(uint8_t _state);
 #endif
 #ifdef USE_LIGHT_SENSOR
-void setBrightness();
+void sscSetBrightness();
 #endif
 #ifdef USE_SET_BRIGHTNESS_MODE
-void showBrightnessSetting();
+void sscShowBrightnessSetting();
 #endif
 #ifdef USE_TEMP_DATA
-void showTemp();
+void sscShowTemp();
 #ifdef USE_DS18B20
-void checkDS18b20();
+void sscCheckDS18b20();
 #endif
 #endif
 
@@ -62,7 +62,7 @@ void checkDS18b20();
 
 typedef void (*clkCallback)(void); // тип - указатель для Callback-функции
 typedef int16_t clkHandle;         // тип - идентификатор задачи
-static const clkHandle INVALID_HANDLE = -1;
+static const clkHandle CLK_INVALID_HANDLE = -1;
 
 struct clkTask // структура, описывающая задачу
 {
@@ -108,7 +108,7 @@ public:
 
   clkHandle addTask(uint32_t _interval, clkCallback _callback, bool isActive = true)
   {
-    int16_t result = INVALID_HANDLE;
+    int16_t result = CLK_INVALID_HANDLE;
     for (uint8_t i = 0; i < TASKCOUNT; i++)
     {
       if (taskList[i].callback == NULL)
@@ -161,47 +161,47 @@ public:
 
 // ==== end clkTaskManager ===========================
 
-clkTaskManager tasks;
+clkTaskManager sscTasks;
 
-clkHandle rtc_guard;              // опрос микросхемы sscRTC по таймеру, чтобы не дергать ее откуда попало
-clkHandle blink_timer;            // блинк
-clkHandle return_to_default_mode; // таймер автовозврата в режим показа времени из любого режима настройки
-clkHandle set_time_mode;          // режим настройки времени
-clkHandle display_guard;          // вывод данных на экран
+clkHandle ssc_rtc_guard;              // опрос микросхемы RTC по таймеру, чтобы не дергать ее откуда попало
+clkHandle ssc_blink_timer;            // блинк
+clkHandle ssc_return_to_default_mode; // таймер автовозврата в режим показа времени из любого режима настройки
+clkHandle ssc_set_time_mode;          // режим настройки времени
+clkHandle ssc_display_guard;          // вывод данных на экран
 #ifdef USE_ALARM
-clkHandle alarm_guard;  // отслеживание будильника
-clkHandle alarm_buzzer; // пищалка будильника
+clkHandle ssc_alarm_guard;  // отслеживание будильника
+clkHandle ssc_alarm_buzzer; // пищалка будильника
 #endif
 #ifdef USE_CALENDAR
-clkHandle show_calendar_mode; // режим вывода даты
+clkHandle ssc_show_calendar_mode; // режим вывода даты
 #endif
 #ifdef USE_TEMP_DATA
-clkHandle show_temp_mode; // режим показа температуры
+clkHandle ssc_show_temp_mode; // режим показа температуры
 #if defined(USE_DS18B20)
-clkHandle ds18b20_guard; // опрос датчика DS18b20
+clkHandle ssc_ds18b20_guard; // опрос датчика DS18b20
 #endif
 #endif
 #ifdef USE_LIGHT_SENSOR
-clkHandle light_sensor_guard; // отслеживание показаний датчика света
+clkHandle ssc_light_sensor_guard; // отслеживание показаний датчика света
 #endif
 #ifdef USE_SET_BRIGHTNESS_MODE
-clkHandle set_brightness_mode; // режим настройки яркости экрана
+clkHandle ssc_set_brightness_mode; // режим настройки яркости экрана
 #endif
 
 // -----------------------------------------
-bool blink_flag = false; // флаг блинка, используется всем, что должно мигать
-DateTime curTime;
+bool sscBlinkFlag = false; // флаг блинка, используется всем, что должно мигать
+DateTime sscCurTime;
 
 // ---- экраны -----------------------------
 #if defined(TM1637_DISPLAY)
-DisplayTM1637 disp(DISPLAY_CLK_PIN, DISPLAY_DAT_PIN);
+DisplayTM1637 sscDisp(DISPLAY_CLK_PIN, DISPLAY_DAT_PIN);
 #elif defined(MAX72XX_7SEGMENT_DISPLAY)
-DisplayMAX72xx7segment<DISPLAY_CS_PIN> disp;
+DisplayMAX72xx7segment<DISPLAY_CS_PIN> sscDisp;
 #elif defined(MAX72XX_MATRIX_DISPLAY)
-DisplayMAX72xxMatrix<DISPLAY_CS_PIN> disp;
+DisplayMAX72xxMatrix<DISPLAY_CS_PIN> sscDisp;
 #elif defined(WS2812_MATRIX_DISPLAY)
-CRGB leds[256];
-DisplayWS2812Matrix disp(leds, COLOR_OF_NUMBER, MX_TYPE);
+CRGB ssc_leds[256];
+DisplayWS2812Matrix sscDisp(ssc_leds, COLOR_OF_NUMBER, MX_TYPE);
 #endif
 
 // ---- модуль sscRTC ----------------------
@@ -210,20 +210,20 @@ RTClib sscRTC;
 
 // ---- будильник --------------------------
 #ifdef USE_ALARM
-Alarm alarm(ALARM_LED_PIN, ALARM_EEPROM_INDEX);
+Alarm sscAlarm(ALARM_LED_PIN, ALARM_EEPROM_INDEX);
 #endif
 
 // ---- датчики температуры ----------------
 #ifdef USE_TEMP_DATA
 #if defined(USE_DS18B20)
-DS1820 temp_sensor(DS18B20_PIN);
+DS1820 sscTempSensor(DS18B20_PIN);
 #elif defined(USE_NTC)
-NTCSensor temp_sensor(NTC_PIN, _resistor_std, _balance_resistor, _beta);
+NTCSensor sscTempSensor(NTC_PIN, _resistor_std, _balance_resistor, _beta);
 #endif
 #endif
 
 // ==== clkButton ====================================
-enum ButtonFlag : uint8_t
+enum clkButtonFlag : uint8_t
 {
   BTN_FLAG_NONE, // флаг кнопки - ничего не делать
   BTN_FLAG_NEXT, // флаг кнопки - изменить значение
@@ -233,7 +233,7 @@ enum ButtonFlag : uint8_t
 class clkButton : public shButton
 {
 private:
-  ButtonFlag _flag = BTN_FLAG_NONE;
+  clkButtonFlag _flag = BTN_FLAG_NONE;
 
 public:
   clkButton(uint8_t button_pin) : shButton(button_pin)
@@ -243,12 +243,12 @@ public:
     shButton::setVirtualClickOn(true);
   }
 
-  ButtonFlag getBtnFlag()
+  clkButtonFlag getBtnFlag()
   {
     return (_flag);
   }
 
-  void setBtnFlag(ButtonFlag flag)
+  void setBtnFlag(clkButtonFlag flag)
   {
     _flag = flag;
   }
@@ -262,15 +262,15 @@ public:
     case BTN_DBLCLICK:
     case BTN_LONGCLICK:
       // в любом режиме, кроме стандартного, каждый клик любой кнопки перезапускает таймер автовыхода в стандартный режим
-      if (tasks.getTaskState(return_to_default_mode))
+      if (sscTasks.getTaskState(ssc_return_to_default_mode))
       {
-        tasks.startTask(return_to_default_mode);
+        sscTasks.startTask(ssc_return_to_default_mode);
       }
 #ifdef USE_ALARM
       // если сработал будильник, отключить его
-      if (alarm.getAlarmState() == ALARM_YES)
+      if (sscAlarm.getAlarmState() == ALARM_YES)
       {
-        alarm.setAlarmState(ALARM_ON);
+        sscAlarm.setAlarmState(ALARM_ON);
         shButton::resetButtonState();
       }
 #endif
@@ -282,7 +282,7 @@ public:
 
 // ==== end clkButton=================================
 
-enum DisplayMode : uint8_t
+enum clkDisplayMode : uint8_t
 {
   DISPLAY_MODE_SHOW_TIME, // основной режим - вывод времени на индикатор
   DISPLAY_MODE_SET_HOUR,  // режим настройки часов
@@ -321,11 +321,11 @@ enum DisplayMode : uint8_t
 #endif
 };
 
-DisplayMode displayMode = DISPLAY_MODE_SHOW_TIME;
+clkDisplayMode ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
 
-clkButton btnSet = NULL;
-clkButton btnUp = NULL;
-clkButton btnDown = NULL;
+clkButton sscBtnSet = NULL;
+clkButton sscBtnUp = NULL;
+clkButton sscBtnDown = NULL;
 
 // ==== shSimpleClock ================================
 
@@ -348,31 +348,31 @@ public:
     // ==== RTC ========================================
     Wire.begin();
     sscClock.setClockMode(false); // 24-часовой режим
-    rtcNow();
+    sscRtcNow();
 
     // ==== кнопки Up/Down =============================
     if (BTN_SET_PIN >= 0)
     {
-      btnSet = (clkButton){BTN_SET_PIN};
+      sscBtnSet = (clkButton){BTN_SET_PIN};
     }
 
     if (BTN_UP_PIN >= 0)
     {
-      btnUp = (clkButton){BTN_UP_PIN};
-      btnUp.setLongClickMode(LCM_CLICKSERIES);
-      btnUp.setIntervalOfSerial(100);
+      sscBtnUp = (clkButton){BTN_UP_PIN};
+      sscBtnUp.setLongClickMode(LCM_CLICKSERIES);
+      sscBtnUp.setIntervalOfSerial(100);
     }
 
     if (BTN_DOWN_PIN >= 0)
     {
-      btnDown = (clkButton){BTN_DOWN_PIN};
-      btnDown.setLongClickMode(LCM_CLICKSERIES);
-      btnDown.setIntervalOfSerial(100);
+      sscBtnDown = (clkButton){BTN_DOWN_PIN};
+      sscBtnDown.setLongClickMode(LCM_CLICKSERIES);
+      sscBtnDown.setIntervalOfSerial(100);
     }
 
 // ==== датчики ======================================
 #if defined(USE_NTC)
-    temp_sensor.setADCbitDepth(_bit_depth); // установить разрядность АЦП вашего МК, для AVR обычно равна 10 бит
+    sscTempSensor.setADCbitDepth(_bit_depth); // установить разрядность АЦП вашего МК, для AVR обычно равна 10 бит
 #endif
     // проверить корректность заданных уровней яркости
     uint8_t x = EEPROM.read(MAX_BRIGHTNESS_VALUE_EEPROM_INDEX);
@@ -394,16 +394,18 @@ public:
     x = ((x > 7) || (x == 0)) ? 1 : x;
 #endif
     EEPROM.update(MIN_BRIGHTNESS_VALUE_EEPROM_INDEX, x);
+#else
+    sscDisp.setBrightness(EEPROM.read(MAX_BRIGHTNESS_VALUE_EEPROM_INDEX));
 #endif
 
 // ==== экраны =======================================
 #if defined(WS2812_MATRIX_DISPLAY)
-    setFastLEDData(leds, 256);
+    setFastLEDData(ssc_leds, 256);
 #elif defined(MAX72XX_MATRIX_DISPLAY) || defined(MAX72XX_7SEGMENT_DISPLAY)
-    disp.shutdownAllDevices(false);
+    sscDisp.shutdownAllDevices(false);
 #ifdef MAX72XX_MATRIX_DISPLAY
-    disp.setDirection(2);
-    disp.setFlip(false);
+    sscDisp.setDirection(2);
+    sscDisp.setFlip(false);
 #endif
 #endif
 
@@ -411,9 +413,9 @@ public:
 #if defined(WS2812_MATRIX_DISPLAY)
     FastLED.setBrightness(0);
 #elif defined(MAX72XX_MATRIX_DISPLAY) || defined(MAX72XX_7SEGMENT_DISPLAY)
-    disp.setBrightness(0);
+    sscDisp.setBrightness(0);
 #else
-    disp.setBrightness(1);
+    sscDisp.setBrightness(1);
 #endif
 
     // ==== задачи =====================================
@@ -436,16 +438,16 @@ public:
 #ifdef USE_SET_BRIGHTNESS_MODE
     task_count++;
 #endif
-    tasks.init(task_count);
+    sscTasks.init(task_count);
 
-    rtc_guard = tasks.addTask(50ul, rtcNow);
-    blink_timer = tasks.addTask(50ul, blink);
-    return_to_default_mode = tasks.addTask(AUTO_EXIT_TIMEOUT * 1000ul, returnToDefMode, false);
-    set_time_mode = tasks.addTask(100ul, showTimeSetting, false);
+    ssc_rtc_guard = sscTasks.addTask(50ul, sscRtcNow);
+    ssc_blink_timer = sscTasks.addTask(50ul, sscBlink);
+    ssc_return_to_default_mode = sscTasks.addTask(AUTO_EXIT_TIMEOUT * 1000ul, sscReturnToDefMode, false);
+    ssc_set_time_mode = sscTasks.addTask(100ul, sscShowTimeSetting, false);
 #ifdef USE_TEMP_DATA
-    show_temp_mode = tasks.addTask(500ul, showTemp, false);
+    ssc_show_temp_mode = sscTasks.addTask(500ul, sscShowTemp, false);
 #if defined(USE_DS18B20)
-    ds18b20_guard = tasks.addTask(3000ul, checkDS18b20);
+    ssc_ds18b20_guard = sscTasks.addTask(3000ul, sscCheckDS18b20);
 #endif
 #endif
 #ifdef USE_CALENDAR
@@ -454,22 +456,22 @@ public:
 #else
     uint32_t t = 1000ul;
 #endif
-    show_calendar_mode = tasks.addTask(t, showCalendar, false);
+    ssc_show_calendar_mode = sscTasks.addTask(t, sscShowCalendar, false);
 #endif
 #ifdef USE_ALARM
-    alarm_guard = tasks.addTask(200ul, checkAlarm);
-    alarm_buzzer = tasks.addTask(50ul, runAlarmBuzzer, false);
+    ssc_alarm_guard = sscTasks.addTask(200ul, sscCheckAlarm);
+    ssc_alarm_buzzer = sscTasks.addTask(50ul, sscRunAlarmBuzzer, false);
 #endif
-    display_guard = tasks.addTask(50ul, setDisp);
+    ssc_display_guard = sscTasks.addTask(50ul, sscSetDisp);
 #if defined(USE_LIGHT_SENSOR)
-    light_sensor_guard = tasks.addTask(100ul, setBrightness);
+    ssc_light_sensor_guard = sscTasks.addTask(100ul, sscSetBrightness);
 #elif defined(WS2812_MATRIX_DISPLAY)
     FastLED.setBrightness(EEPROM.read(MAX_BRIGHTNESS_VALUE_EEPROM_INDEX) * 10);
 #else
-    disp.setBrightness(EEPROM.read(MAX_BRIGHTNESS_VALUE_EEPROM_INDEX));
+    sscDisp.setBrightness(EEPROM.read(MAX_BRIGHTNESS_VALUE_EEPROM_INDEX));
 #endif
 #ifdef USE_SET_BRIGHTNESS_MODE
-    set_brightness_mode = tasks.addTask(100ul, showBrightnessSetting, false);
+    ssc_set_brightness_mode = sscTasks.addTask(100ul, sscShowBrightnessSetting, false);
 #endif
   }
 
@@ -479,9 +481,9 @@ public:
    */
   void tick()
   {
-    checkButton();
-    tasks.tick();
-    setDisplay();
+    sscCheckButton();
+    sscTasks.tick();
+    sscSetDisplay();
   }
 
   /**
@@ -492,9 +494,9 @@ public:
   uint8_t getBtnSetState()
   {
     uint8_t result = 0;
-    if (&btnSet != NULL)
+    if (&sscBtnSet != NULL)
     {
-      result = btnSet.getLastState();
+      result = sscBtnSet.getLastState();
     }
     return result;
   }
@@ -507,9 +509,9 @@ public:
   uint8_t getBtnUpState()
   {
     uint8_t result = 0;
-    if (&btnUp != NULL)
+    if (&sscBtnUp != NULL)
     {
-      result = btnUp.getLastState();
+      result = sscBtnUp.getLastState();
     }
     return result;
   }
@@ -522,9 +524,9 @@ public:
   uint8_t getBtnDownState()
   {
     uint8_t result = 0;
-    if (&btnDown != NULL)
+    if (&sscBtnDown != NULL)
     {
-      result = btnDown.getLastState();
+      result = sscBtnDown.getLastState();
     }
     return result;
   }
@@ -537,7 +539,7 @@ public:
    */
   void setMatrixDirection(uint8_t _dir)
   {
-    disp.setDirection(_dir);
+    sscDisp.setDirection(_dir);
   }
 
   /**
@@ -547,7 +549,7 @@ public:
    */
   void setMatrixFlipMode(bool _mode)
   {
-    disp.setFlip(_mode);
+    sscDisp.setFlip(_mode);
   }
 #endif
 
@@ -557,47 +559,47 @@ public:
    *
    * @param _color цвет, например, для красного CRGB::Red
    */
-  void setColorNumber(CRGB _color)
+  void setColorOfNumber(CRGB _color)
   {
-    disp.setColorOfNumber(_color);
+    sscDisp.setColorOfNumber(_color);
   }
 #endif
 };
 
 // ==== end shSimpleClock ============================
 
-void rtcNow()
+void sscRtcNow()
 {
-  curTime = sscRTC.now();
-  if (displayMode == DISPLAY_MODE_SHOW_TIME)
+  sscCurTime = sscRTC.now();
+  if (ssc_display_mode == DISPLAY_MODE_SHOW_TIME)
   {
 #if defined(MAX72XX_MATRIX_DISPLAY) || defined(WS2812_MATRIX_DISPLAY)
-    disp.showTime(curTime.hour(), curTime.minute(), curTime.second(), blink_flag);
+    sscDisp.showTime(sscCurTime.hour(), sscCurTime.minute(), sscCurTime.second(), sscBlinkFlag);
 #else
-    disp.showTime(curTime.hour(), curTime.minute(), blink_flag);
+    sscDisp.showTime(sscCurTime.hour(), sscCurTime.minute(), sscBlinkFlag);
 #endif
   }
 }
 
-void blink()
+void sscBlink()
 {
-  static uint8_t cur_sec = curTime.second();
+  static uint8_t cur_sec = sscCurTime.second();
   static uint32_t tmr = 0;
-  if (cur_sec != curTime.second())
+  if (cur_sec != sscCurTime.second())
   {
-    cur_sec = curTime.second();
-    blink_flag = true;
+    cur_sec = sscCurTime.second();
+    sscBlinkFlag = true;
     tmr = millis();
   }
-  else if (blink_flag && millis() - tmr >= 500)
+  else if (sscBlinkFlag && millis() - tmr >= 500)
   {
-    blink_flag = false;
+    sscBlinkFlag = false;
   }
 }
 
-void returnToDefMode()
+void sscReturnToDefMode()
 {
-  switch (displayMode)
+  switch (ssc_display_mode)
   {
   case DISPLAY_MODE_SET_HOUR:
   case DISPLAY_MODE_SET_MINUTE:
@@ -617,32 +619,32 @@ void returnToDefMode()
 #endif
   case DISPLAY_MODE_SET_BRIGHTNESS_MAX:
 #endif
-    btnSet.setBtnFlag(BTN_FLAG_EXIT);
+    sscBtnSet.setBtnFlag(BTN_FLAG_EXIT);
     break;
 #ifdef USE_TEMP_DATA
   case DISPLAY_MODE_SHOW_TEMP:
-    displayMode = DISPLAY_MODE_SHOW_TIME;
-    tasks.stopTask(show_temp_mode);
+    ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
+    sscTasks.stopTask(ssc_show_temp_mode);
     break;
 #endif
 #ifdef USE_CALENDAR
   case DISPLAY_MODE_SHOW_CALENDAR:
-    displayMode = DISPLAY_MODE_SHOW_TIME;
-    tasks.stopTask(show_calendar_mode);
+    ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
+    sscTasks.stopTask(ssc_show_calendar_mode);
     break;
 #endif
   default:
     break;
   }
-  tasks.stopTask(return_to_default_mode);
+  sscTasks.stopTask(ssc_return_to_default_mode);
 }
 
-void showTimeData(uint8_t hour, uint8_t minute)
+void sscShowTimeData(uint8_t hour, uint8_t minute)
 {
   // если наступило время блинка и кнопки Up/Down не нажаты, то стереть соответствующие разряды; при нажатых кнопках Up/Down во время изменения данных ничего не мигает
-  if (!blink_flag && !btnUp.isButtonClosed() && !btnDown.isButtonClosed())
+  if (!sscBlinkFlag && !sscBtnUp.isButtonClosed() && !sscBtnDown.isButtonClosed())
   {
-    switch (displayMode)
+    switch (ssc_display_mode)
     {
     case DISPLAY_MODE_SET_HOUR:
 #ifdef USE_CALENDAR
@@ -671,17 +673,17 @@ void showTimeData(uint8_t hour, uint8_t minute)
   bool toDate = false;
   bool toColon = false;
 #if defined(USE_CALENDAR)
-  toDate = (displayMode >= DISPLAY_MODE_SET_DAY && displayMode <= DISPLAY_MODE_SET_YEAR);
-  toColon = displayMode != DISPLAY_MODE_SET_YEAR;
+  toDate = (ssc_display_mode >= DISPLAY_MODE_SET_DAY && ssc_display_mode <= DISPLAY_MODE_SET_YEAR);
+  toColon = ssc_display_mode != DISPLAY_MODE_SET_YEAR;
 #endif
 #if defined(MAX72XX_MATRIX_DISPLAY) || defined(WS2812_MATRIX_DISPLAY)
-  disp.showTime(hour, minute, 0, toColon, toDate);
+  sscDisp.showTime(hour, minute, 0, toColon, toDate);
 #else
-  disp.showTime(hour, minute, toColon);
+  sscDisp.showTime(hour, minute, toColon);
 #endif
 }
 
-void checkData(uint8_t &dt, uint8_t max, bool toUp, uint8_t min = 0, bool toLoop = true)
+void sscCheckData(uint8_t &dt, uint8_t max, bool toUp, uint8_t min = 0, bool toLoop = true)
 {
   (toUp) ? dt++ : dt--;
   if ((dt > max) || (min > 0 && dt < min))
@@ -697,13 +699,13 @@ void checkData(uint8_t &dt, uint8_t max, bool toUp, uint8_t min = 0, bool toLoop
   }
 }
 
-void stopSetting(clkHandle task)
+void sscStopSetting(clkHandle task)
 {
-  tasks.stopTask(task);
-  tasks.stopTask(return_to_default_mode);
+  sscTasks.stopTask(task);
+  sscTasks.stopTask(ssc_return_to_default_mode);
 }
 
-void showTimeSetting()
+void sscShowTimeSetting()
 {
   static bool time_checked = false;
   static uint8_t curHour = 0;
@@ -712,20 +714,20 @@ void showTimeSetting()
   static const uint8_t PROGMEM days_of_month[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 #endif
 
-  if (!tasks.getTaskState(set_time_mode))
+  if (!sscTasks.getTaskState(ssc_set_time_mode))
   {
-    tasks.startTask(set_time_mode);
-    tasks.startTask(return_to_default_mode);
-    switch (displayMode)
+    sscTasks.startTask(ssc_set_time_mode);
+    sscTasks.startTask(ssc_return_to_default_mode);
+    switch (ssc_display_mode)
     {
 #ifdef USE_ALARM
     case DISPLAY_MODE_SET_ALARM_HOUR:
     case DISPLAY_MODE_SET_ALARM_MINUTE:
-      curHour = alarm.getAlarmPoint() / 60;
-      curMinute = alarm.getAlarmPoint() % 60;
+      curHour = sscAlarm.getAlarmPoint() / 60;
+      curMinute = sscAlarm.getAlarmPoint() % 60;
       break;
     case DISPLAY_MODE_ALARM_ON_OFF:
-      curHour = (uint8_t)alarm.getOnOffAlarm();
+      curHour = (uint8_t)sscAlarm.getOnOffAlarm();
       break;
 #endif
     default:
@@ -736,22 +738,22 @@ void showTimeSetting()
 
   if (!time_checked)
   {
-    switch (displayMode)
+    switch (ssc_display_mode)
     {
     case DISPLAY_MODE_SET_HOUR:
     case DISPLAY_MODE_SET_MINUTE:
-      curHour = curTime.hour();
-      curMinute = curTime.minute();
+      curHour = sscCurTime.hour();
+      curMinute = sscCurTime.minute();
       break;
 #ifdef USE_CALENDAR
     case DISPLAY_MODE_SET_DAY:
     case DISPLAY_MODE_SET_MONTH:
-      curHour = curTime.day();
-      curMinute = curTime.month();
+      curHour = sscCurTime.day();
+      curMinute = sscCurTime.month();
       break;
     case DISPLAY_MODE_SET_YEAR:
       curHour = 20;
-      curMinute = curTime.year() % 100;
+      curMinute = sscCurTime.year() % 100;
       break;
 #endif
     default:
@@ -760,11 +762,11 @@ void showTimeSetting()
   }
 
   // опрос кнопок =====================
-  if (btnSet.getBtnFlag() > BTN_FLAG_NONE)
+  if (sscBtnSet.getBtnFlag() > BTN_FLAG_NONE)
   {
     if (time_checked)
     {
-      switch (displayMode)
+      switch (ssc_display_mode)
       {
       case DISPLAY_MODE_SET_HOUR:
       case DISPLAY_MODE_SET_MINUTE:
@@ -777,7 +779,7 @@ void showTimeSetting()
       case DISPLAY_MODE_SET_MONTH:
         sscClock.setDate(curHour);
         sscClock.setMonth(curMinute);
-        rtcNow();
+        sscRtcNow();
         break;
       case DISPLAY_MODE_SET_YEAR:
         sscClock.setYear(curMinute);
@@ -786,10 +788,10 @@ void showTimeSetting()
 #ifdef USE_ALARM
       case DISPLAY_MODE_SET_ALARM_HOUR:
       case DISPLAY_MODE_SET_ALARM_MINUTE:
-        alarm.setAlarmPoint(curHour * 60 + curMinute);
+        sscAlarm.setAlarmPoint(curHour * 60 + curMinute);
         break;
       case DISPLAY_MODE_ALARM_ON_OFF:
-        alarm.setOnOffAlarm((bool)curHour);
+        sscAlarm.setOnOffAlarm((bool)curHour);
         break;
 #endif
       default:
@@ -797,9 +799,9 @@ void showTimeSetting()
       }
       time_checked = false;
     }
-    if (btnSet.getBtnFlag() == BTN_FLAG_NEXT)
+    if (sscBtnSet.getBtnFlag() == BTN_FLAG_NEXT)
     {
-      switch (displayMode)
+      switch (ssc_display_mode)
       {
       case DISPLAY_MODE_SET_HOUR:
 #ifdef USE_CALENDAR
@@ -810,106 +812,106 @@ void showTimeSetting()
 #ifdef USE_ALARM
       case DISPLAY_MODE_SET_ALARM_HOUR:
 #endif
-        displayMode = DisplayMode(uint8_t(displayMode + 1));
-        stopSetting(set_time_mode);
+        ssc_display_mode = clkDisplayMode(uint8_t(ssc_display_mode + 1));
+        sscStopSetting(ssc_set_time_mode);
         break;
 #ifdef USE_ALARM
       case DISPLAY_MODE_ALARM_ON_OFF:
-        displayMode = (curHour) ? DISPLAY_MODE_SET_ALARM_HOUR : DISPLAY_MODE_SHOW_TIME;
-        stopSetting(set_time_mode);
+        ssc_display_mode = (curHour) ? DISPLAY_MODE_SET_ALARM_HOUR : DISPLAY_MODE_SHOW_TIME;
+        sscStopSetting(ssc_set_time_mode);
         break;
 #endif
       default:
-        displayMode = DISPLAY_MODE_SHOW_TIME;
-        stopSetting(set_time_mode);
+        ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
+        sscStopSetting(ssc_set_time_mode);
         break;
       }
     }
     else
     {
-      displayMode = DISPLAY_MODE_SHOW_TIME;
-      stopSetting(set_time_mode);
+      ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
+      sscStopSetting(ssc_set_time_mode);
     }
-    btnSet.setBtnFlag(BTN_FLAG_NONE);
+    sscBtnSet.setBtnFlag(BTN_FLAG_NONE);
   }
 
-  if ((btnUp.getBtnFlag() == BTN_FLAG_NEXT) || (btnDown.getBtnFlag() == BTN_FLAG_NEXT))
+  if ((sscBtnUp.getBtnFlag() == BTN_FLAG_NEXT) || (sscBtnDown.getBtnFlag() == BTN_FLAG_NEXT))
   {
-    bool dir = btnUp.getBtnFlag() == BTN_FLAG_NEXT;
-    switch (displayMode)
+    bool dir = sscBtnUp.getBtnFlag() == BTN_FLAG_NEXT;
+    switch (ssc_display_mode)
     {
     case DISPLAY_MODE_SET_HOUR:
 #ifdef USE_ALARM
     case DISPLAY_MODE_SET_ALARM_HOUR:
 #endif
-      checkData(curHour, 23, dir);
+      sscCheckData(curHour, 23, dir);
       break;
     case DISPLAY_MODE_SET_MINUTE:
 #ifdef USE_ALARM
     case DISPLAY_MODE_SET_ALARM_MINUTE:
 #endif
-      checkData(curMinute, 59, dir);
+      sscCheckData(curMinute, 59, dir);
       break;
 #ifdef USE_ALARM
     case DISPLAY_MODE_ALARM_ON_OFF:
-      checkData(curHour, 1, true);
+      sscCheckData(curHour, 1, true);
       break;
 #endif
 #ifdef USE_CALENDAR
     case DISPLAY_MODE_SET_DAY:
       uint8_t i;
       i = pgm_read_byte(&days_of_month[curMinute - 1]);
-      if (curMinute == 2 && (curTime.year() % 4 == 0))
+      if (curMinute == 2 && (sscCurTime.year() % 4 == 0))
       {
         i++;
       }
-      checkData(curHour, i, dir, 1);
+      sscCheckData(curHour, i, dir, 1);
       break;
     case DISPLAY_MODE_SET_MONTH:
-      checkData(curMinute, 12, dir, 1);
+      sscCheckData(curMinute, 12, dir, 1);
       break;
     case DISPLAY_MODE_SET_YEAR:
-      checkData(curMinute, 99, dir);
+      sscCheckData(curMinute, 99, dir);
       break;
 #endif
     default:
       break;
     }
     time_checked = true;
-    btnUp.setBtnFlag(BTN_FLAG_NONE);
-    btnDown.setBtnFlag(BTN_FLAG_NONE);
+    sscBtnUp.setBtnFlag(BTN_FLAG_NONE);
+    sscBtnDown.setBtnFlag(BTN_FLAG_NONE);
   }
 
   // вывод данных на экран ============
-  switch (displayMode)
+  switch (ssc_display_mode)
   {
 #ifdef USE_ALARM
   case DISPLAY_MODE_ALARM_ON_OFF:
-    showAlarmState(curHour);
+    sscShowAlarmState(curHour);
     break;
 #endif
   default:
-    showTimeData(curHour, curMinute);
+    sscShowTimeData(curHour, curMinute);
     break;
   }
 }
 
-void setDisp()
+void sscSetDisp()
 {
-  disp.show();
+  sscDisp.show();
 }
 
-void checkSetButton()
+void sscCheckSetButton()
 {
-  if (&btnSet == NULL)
+  if (&sscBtnSet == NULL)
   {
     return;
   }
 
-  switch (btnSet.getButtonState())
+  switch (sscBtnSet.getButtonState())
   {
   case BTN_ONECLICK:
-    switch (displayMode)
+    switch (ssc_display_mode)
     {
     case DISPLAY_MODE_SET_HOUR:
     case DISPLAY_MODE_SET_MINUTE:
@@ -929,12 +931,12 @@ void checkSetButton()
 #endif
     case DISPLAY_MODE_SET_BRIGHTNESS_MAX:
 #endif
-      btnSet.setBtnFlag(BTN_FLAG_NEXT);
+      sscBtnSet.setBtnFlag(BTN_FLAG_NEXT);
       break;
     case DISPLAY_MODE_SHOW_TIME:
 #ifdef USE_ALARM
 #ifdef USE_ONECLICK_TO_SET_ALARM
-      displayMode = DISPLAY_MODE_ALARM_ON_OFF;
+      ssc_display_mode = DISPLAY_MODE_ALARM_ON_OFF;
 #endif
 #endif
       break;
@@ -943,12 +945,12 @@ void checkSetButton()
     }
     break;
   case BTN_DBLCLICK:
-    switch (displayMode)
+    switch (ssc_display_mode)
     {
     case DISPLAY_MODE_SHOW_TIME:
 #ifdef USE_ALARM
 #ifndef USE_ONECLICK_TO_SET_ALARM
-      displayMode = DISPLAY_MODE_ALARM_ON_OFF;
+      ssc_display_mode = DISPLAY_MODE_ALARM_ON_OFF;
 #endif
 #endif
       break;
@@ -957,15 +959,15 @@ void checkSetButton()
     }
     break;
   case BTN_LONGCLICK:
-    switch (displayMode)
+    switch (ssc_display_mode)
     {
     case DISPLAY_MODE_SHOW_TIME:
-      displayMode = DISPLAY_MODE_SET_HOUR;
+      ssc_display_mode = DISPLAY_MODE_SET_HOUR;
       break;
 #ifdef USE_CALENDAR
     case DISPLAY_MODE_SHOW_CALENDAR:
-      tasks.stopTask(show_calendar_mode);
-      displayMode = DISPLAY_MODE_SET_DAY;
+      sscTasks.stopTask(ssc_show_calendar_mode);
+      ssc_display_mode = DISPLAY_MODE_SET_DAY;
       break;
 #endif
     case DISPLAY_MODE_SET_HOUR:
@@ -980,7 +982,7 @@ void checkSetButton()
     case DISPLAY_MODE_SET_ALARM_MINUTE:
     case DISPLAY_MODE_ALARM_ON_OFF:
 #endif
-      btnSet.setBtnFlag(BTN_FLAG_EXIT);
+      sscBtnSet.setBtnFlag(BTN_FLAG_EXIT);
       break;
     default:
       break;
@@ -989,7 +991,7 @@ void checkSetButton()
   }
 }
 
-void checkUDbtn(clkButton &btn)
+void sscCheckUDbtn(clkButton &btn)
 {
   switch (btn.getLastState())
   {
@@ -999,7 +1001,7 @@ void checkUDbtn(clkButton &btn)
     break;
   case BTN_LONGCLICK:
 #ifdef USE_ALARM
-    if (displayMode != DISPLAY_MODE_ALARM_ON_OFF)
+    if (ssc_display_mode != DISPLAY_MODE_ALARM_ON_OFF)
 #endif
     {
       btn.setBtnFlag(BTN_FLAG_NEXT);
@@ -1008,40 +1010,40 @@ void checkUDbtn(clkButton &btn)
   }
 }
 
-void checkUpDownButton()
+void sscCheckUpDownButton()
 {
-  if (&btnUp != NULL)
+  if (&sscBtnUp != NULL)
   {
-    btnUp.getButtonState();
+    sscBtnUp.getButtonState();
   }
-  if (&btnDown != NULL)
+  if (&sscBtnDown != NULL)
   {
-    btnDown.getButtonState();
+    sscBtnDown.getButtonState();
   }
 
-  switch (displayMode)
+  switch (ssc_display_mode)
   {
   case DISPLAY_MODE_SHOW_TIME:
 #ifdef USE_TEMP_DATA
-    if (&btnUp != NULL && btnUp.getLastState() == BTN_ONECLICK)
+    if (&sscBtnUp != NULL && sscBtnUp.getLastState() == BTN_ONECLICK)
     {
-      displayMode = DISPLAY_MODE_SHOW_TEMP;
+      ssc_display_mode = DISPLAY_MODE_SHOW_TEMP;
     }
 #endif
 #ifdef USE_CALENDAR
-    if (&btnDown != NULL && btnDown.getLastState() == BTN_ONECLICK)
+    if (&sscBtnDown != NULL && sscBtnDown.getLastState() == BTN_ONECLICK)
     {
-      displayMode = DISPLAY_MODE_SHOW_CALENDAR;
+      ssc_display_mode = DISPLAY_MODE_SHOW_CALENDAR;
     }
 #endif
 #ifdef USE_SET_BRIGHTNESS_MODE
-    if (&btnUp != NULL && btnUp.isSecondButtonPressed(btnDown, BTN_LONGCLICK) ||
-        &btnDown != NULL && btnDown.isSecondButtonPressed(btnUp, BTN_LONGCLICK))
+    if (&sscBtnUp != NULL && sscBtnUp.isSecondButtonPressed(sscBtnDown, BTN_LONGCLICK) ||
+        &sscBtnDown != NULL && sscBtnDown.isSecondButtonPressed(sscBtnUp, BTN_LONGCLICK))
     {
 #ifdef USE_LIGHT_SENSOR
-      displayMode = DISPLAY_MODE_SET_BRIGHTNESS_MIN;
+      ssc_display_mode = DISPLAY_MODE_SET_BRIGHTNESS_MIN;
 #else
-      displayMode = DISPLAY_MODE_SET_BRIGHTNESS_MAX;
+      ssc_display_mode = DISPLAY_MODE_SET_BRIGHTNESS_MAX;
 #endif
     }
 #endif
@@ -1064,28 +1066,28 @@ void checkUpDownButton()
 #endif
   case DISPLAY_MODE_SET_BRIGHTNESS_MAX:
 #endif
-    if (&btnUp != NULL && (&btnDown != NULL && !btnDown.isButtonClosed()))
+    if (&sscBtnUp != NULL && (&sscBtnDown != NULL && !sscBtnDown.isButtonClosed()))
     {
-      checkUDbtn(btnUp);
+      sscCheckUDbtn(sscBtnUp);
     }
-    if (&btnDown != NULL && (&btnUp != NULL && !btnUp.isButtonClosed()))
+    if (&sscBtnDown != NULL && (&sscBtnUp != NULL && !sscBtnUp.isButtonClosed()))
     {
-      checkUDbtn(btnDown);
+      sscCheckUDbtn(sscBtnDown);
     }
     break;
 #ifdef USE_TEMP_DATA
   case DISPLAY_MODE_SHOW_TEMP:
-    if (&btnUp != NULL && btnUp.getLastState() == BTN_ONECLICK)
+    if (&sscBtnUp != NULL && sscBtnUp.getLastState() == BTN_ONECLICK)
     {
-      returnToDefMode();
+      sscReturnToDefMode();
     }
     break;
 #endif
 #ifdef USE_CALENDAR
   case DISPLAY_MODE_SHOW_CALENDAR:
-    if (&btnDown != NULL && btnDown.getLastState() == BTN_ONECLICK)
+    if (&sscBtnDown != NULL && sscBtnDown.getLastState() == BTN_ONECLICK)
     {
-      returnToDefMode();
+      sscReturnToDefMode();
     }
     break;
 #endif
@@ -1094,15 +1096,15 @@ void checkUpDownButton()
   }
 }
 
-void checkButton()
+void sscCheckButton()
 {
-  checkSetButton();
-  checkUpDownButton();
+  sscCheckSetButton();
+  sscCheckUpDownButton();
 }
 
-void setDisplay()
+void sscSetDisplay()
 {
-  switch (displayMode)
+  switch (ssc_display_mode)
   {
   case DISPLAY_MODE_SET_HOUR:
   case DISPLAY_MODE_SET_MINUTE:
@@ -1116,24 +1118,24 @@ void setDisplay()
   case DISPLAY_MODE_SET_ALARM_MINUTE:
   case DISPLAY_MODE_ALARM_ON_OFF:
 #endif
-    if (!tasks.getTaskState(set_time_mode))
+    if (!sscTasks.getTaskState(ssc_set_time_mode))
     {
-      showTimeSetting();
+      sscShowTimeSetting();
     }
     break;
 #ifdef USE_TEMP_DATA
   case DISPLAY_MODE_SHOW_TEMP:
-    if (!tasks.getTaskState(show_temp_mode))
+    if (!sscTasks.getTaskState(ssc_show_temp_mode))
     {
-      showTemp();
+      sscShowTemp();
     }
     break;
 #endif
 #ifdef USE_CALENDAR
   case DISPLAY_MODE_SHOW_CALENDAR:
-    if (!tasks.getTaskState(show_calendar_mode))
+    if (!sscTasks.getTaskState(ssc_show_calendar_mode))
     {
-      showCalendar();
+      sscShowCalendar();
     }
     break;
 #endif
@@ -1142,9 +1144,9 @@ void setDisplay()
   case DISPLAY_MODE_SET_BRIGHTNESS_MIN:
 #endif
   case DISPLAY_MODE_SET_BRIGHTNESS_MAX:
-    if (!tasks.getTaskState(set_brightness_mode))
+    if (!sscTasks.getTaskState(ssc_set_brightness_mode))
     {
-      showBrightnessSetting();
+      sscShowBrightnessSetting();
     }
     break;
 #endif
@@ -1154,32 +1156,32 @@ void setDisplay()
 }
 
 #ifdef USE_CALENDAR
-void showCalendar()
+void sscShowCalendar()
 {
-  if (!tasks.getTaskState(show_calendar_mode))
+  if (!sscTasks.getTaskState(ssc_show_calendar_mode))
   {
-    tasks.startTask(show_calendar_mode);
-    disp.showDate(curTime, true);
+    sscTasks.startTask(ssc_show_calendar_mode);
+    sscDisp.showDate(sscCurTime, true);
   }
 
-  if (disp.showDate(curTime))
+  if (sscDisp.showDate(sscCurTime))
   {
-    returnToDefMode();
+    sscReturnToDefMode();
   }
 }
 #endif
 
 #ifdef USE_ALARM
-void checkAlarm()
+void sscCheckAlarm()
 {
-  alarm.tick(curTime);
-  if (alarm.getAlarmState() == ALARM_YES && !tasks.getTaskState(alarm_buzzer))
+  sscAlarm.tick(sscCurTime);
+  if (sscAlarm.getAlarmState() == ALARM_YES && !sscTasks.getTaskState(ssc_alarm_buzzer))
   {
-    runAlarmBuzzer();
+    sscRunAlarmBuzzer();
   }
 }
 
-void runAlarmBuzzer()
+void sscRunAlarmBuzzer()
 {
   static uint8_t n = 0;
   static uint8_t k = 0;
@@ -1189,21 +1191,21 @@ void runAlarmBuzzer()
       {2000, 0, 2000, 0, 2000, 0, 2000, 0},
       {70, 70, 70, 70, 70, 70, 70, 510}};
 
-  if (!tasks.getTaskState(alarm_buzzer))
+  if (!sscTasks.getTaskState(ssc_alarm_buzzer))
   {
-    tasks.startTask(alarm_buzzer);
+    sscTasks.startTask(ssc_alarm_buzzer);
     n = 0;
     k = 0;
     m = 0;
   }
-  else if (alarm.getAlarmState() == ALARM_ON)
+  else if (sscAlarm.getAlarmState() == ALARM_ON)
   { // остановка пищалки, если будильник отключен
-    tasks.stopTask(alarm_buzzer);
+    sscTasks.stopTask(ssc_alarm_buzzer);
     return;
   }
 
   tone(BUZZER_PIN, pgm_read_dword(&pick[0][n]), pgm_read_dword(&pick[1][n]));
-  tasks.setTaskInterval(alarm_buzzer, pgm_read_dword(&pick[1][n]), true);
+  sscTasks.setTaskInterval(ssc_alarm_buzzer, pgm_read_dword(&pick[1][n]), true);
   if (++n >= 8)
   {
     n = 0;
@@ -1212,70 +1214,70 @@ void runAlarmBuzzer()
       k = 0;
       if (++m >= ALARM_REPETITION_COUNT)
       { // отключение пищалки после заданного количества срабатываний
-        tasks.stopTask(alarm_buzzer);
-        tasks.setTaskInterval(alarm_buzzer, 50, false);
-        alarm.setAlarmState(ALARM_ON);
+        sscTasks.stopTask(ssc_alarm_buzzer);
+        sscTasks.setTaskInterval(ssc_alarm_buzzer, 50, false);
+        sscAlarm.setAlarmState(ALARM_ON);
       }
       else
       {
-        tasks.setTaskInterval(alarm_buzzer, ALARM_SNOOZE_DELAY * 1000ul, true);
+        sscTasks.setTaskInterval(ssc_alarm_buzzer, ALARM_SNOOZE_DELAY * 1000ul, true);
       }
     }
   }
 }
 
-void showAlarmState(uint8_t _state)
+void sscShowAlarmState(uint8_t _state)
 {
 #if defined(TM1637_DISPLAY)
-  disp.setDispData(0, 0b01110111); // "A"
-  disp.setDispData(1, 0b10111000); // "L:"
-  disp.setDispData(2, 0x00);
+  sscDisp.setDispData(0, 0b01110111); // "A"
+  sscDisp.setDispData(1, 0b10111000); // "L:"
+  sscDisp.setDispData(2, 0x00);
 #elif defined(MAX72XX_7SEGMENT_DISPLAY)
-  disp.setDispData(0, 0b01110111); // "A"
-  disp.setDispData(1, 0b10001110); // "L:"
-  disp.setDispData(2, 0x00);
+  sscDisp.setDispData(0, 0b01110111); // "A"
+  sscDisp.setDispData(1, 0b10001110); // "L:"
+  sscDisp.setDispData(2, 0x00);
 #elif defined(MAX72XX_MATRIX_DISPLAY) || defined(WS2812_MATRIX_DISPLAY)
-  disp.clear();
+  sscDisp.clear();
 #ifdef USE_RU_LANGUAGE
-  disp.setDispData(1, 0xC1, 5);  // "Б"
-  disp.setDispData(7, 0xE4, 5);  // "д"
-  disp.setDispData(13, 0xEA, 5); // "к"
+  sscDisp.setDispData(1, 0xC1, 5);  // "Б"
+  sscDisp.setDispData(7, 0xE4, 5);  // "д"
+  sscDisp.setDispData(13, 0xEA, 5); // "к"
 #else
-  disp.setDispData(1, 0x41, 5);  // "A"
-  disp.setDispData(7, 0x6C, 5);  // "l"
-  disp.setDispData(13, 0x6D, 5); // "r"
+  sscDisp.setDispData(1, 0x41, 5);  // "A"
+  sscDisp.setDispData(7, 0x6C, 5);  // "l"
+  sscDisp.setDispData(13, 0x6D, 5); // "r"
 #endif
 #ifdef MAX72XX_MATRIX_DISPLAY
-  disp.setColumn(2, 5, 0b00100100);
+  sscDisp.setColumn(2, 5, 0b00100100);
 #else
-  disp.setColumn(21, 0b00100100);
+  sscDisp.setColumn(21, 0b00100100);
 #endif
 #endif
 
-  if (!blink_flag && !btnUp.isButtonClosed() && !btnDown.isButtonClosed())
+  if (!sscBlinkFlag && !sscBtnUp.isButtonClosed() && !sscBtnDown.isButtonClosed())
   {
 #if defined(TM1637_DISPLAY) || defined(MAX72XX_7SEGMENT_DISPLAY)
-    disp.setDispData(3, 0x00);
+    sscDisp.setDispData(3, 0x00);
 #endif
   }
   else
   {
 #if defined(TM1637_DISPLAY)
-    disp.setDispData(3, (_state) ? 0b01011100 : 0b00001000);
+    sscDisp.setDispData(3, (_state) ? 0b01011100 : 0b00001000);
 #elif defined(MAX72XX_7SEGMENT_DISPLAY)
-    disp.setDispData(3, (_state) ? 0b00011101 : 0b00001000);
+    sscDisp.setDispData(3, (_state) ? 0b00011101 : 0b00001000);
 #elif defined(MAX72XX_MATRIX_DISPLAY) || defined(WS2812_MATRIX_DISPLAY)
-    disp.setDispData(25, (_state) ? 0x0C : 0x0B);
+    sscDisp.setDispData(25, (_state) ? 0x0C : 0x0B);
 #endif
   }
 }
 #endif
 
 #ifdef USE_LIGHT_SENSOR
-void setBrightness()
+void sscSetBrightness()
 {
 #ifdef USE_SET_BRIGHTNESS_MODE
-  if (tasks.getTaskState(set_brightness_mode))
+  if (sscTasks.getTaskState(ssc_set_brightness_mode))
   {
     return; // в режиме настройки яркости ничего не регулировать
   }
@@ -1294,22 +1296,22 @@ void setBrightness()
   {
     x = EEPROM.read(MAX_BRIGHTNESS_VALUE_EEPROM_INDEX);
   }
-  disp.setBrightness(x);
+  sscDisp.setBrightness(x);
 }
 #endif
 
 #ifdef USE_SET_BRIGHTNESS_MODE
-void showBrightnessSetting()
+void sscShowBrightnessSetting()
 {
   static uint8_t x = 0;
 
-  if (!tasks.getTaskState(set_brightness_mode))
+  if (!sscTasks.getTaskState(ssc_set_brightness_mode))
   {
-    tasks.startTask(set_brightness_mode);
-    tasks.startTask(return_to_default_mode);
+    sscTasks.startTask(ssc_set_brightness_mode);
+    sscTasks.startTask(ssc_return_to_default_mode);
     x = EEPROM.read(MAX_BRIGHTNESS_VALUE_EEPROM_INDEX);
 #ifdef USE_LIGHT_SENSOR
-    if (displayMode == DISPLAY_MODE_SET_BRIGHTNESS_MIN)
+    if (ssc_display_mode == DISPLAY_MODE_SET_BRIGHTNESS_MIN)
     {
       x = EEPROM.read(MIN_BRIGHTNESS_VALUE_EEPROM_INDEX);
     }
@@ -1317,83 +1319,83 @@ void showBrightnessSetting()
   }
 
   // ==== опрос кнопок ===============================
-  if (btnSet.getBtnFlag() > BTN_FLAG_NONE)
+  if (sscBtnSet.getBtnFlag() > BTN_FLAG_NONE)
   {
-    switch (displayMode)
+    switch (ssc_display_mode)
     {
     case DISPLAY_MODE_SET_BRIGHTNESS_MAX:
       EEPROM.update(MAX_BRIGHTNESS_VALUE_EEPROM_INDEX, x);
-      displayMode = DISPLAY_MODE_SHOW_TIME;
-      stopSetting(set_brightness_mode);
+      ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
+      sscStopSetting(ssc_set_brightness_mode);
       break;
 #ifdef USE_LIGHT_SENSOR
     case DISPLAY_MODE_SET_BRIGHTNESS_MIN:
       EEPROM.update(MIN_BRIGHTNESS_VALUE_EEPROM_INDEX, x);
-      if (btnSet.getBtnFlag() == BTN_FLAG_NEXT)
+      if (sscBtnSet.getBtnFlag() == BTN_FLAG_NEXT)
       {
-        displayMode = DISPLAY_MODE_SET_BRIGHTNESS_MAX;
+        ssc_display_mode = DISPLAY_MODE_SET_BRIGHTNESS_MAX;
       }
       else
-        displayMode = DISPLAY_MODE_SHOW_TIME;
-      stopSetting(set_brightness_mode);
+        ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
+      sscStopSetting(ssc_set_brightness_mode);
       break;
 #endif
     default:
       break;
     }
-    btnSet.setBtnFlag(BTN_FLAG_NONE);
+    sscBtnSet.setBtnFlag(BTN_FLAG_NONE);
   }
 
-  if ((btnUp.getBtnFlag() == BTN_FLAG_NEXT) || (btnDown.getBtnFlag() == BTN_FLAG_NEXT))
+  if ((sscBtnUp.getBtnFlag() == BTN_FLAG_NEXT) || (sscBtnDown.getBtnFlag() == BTN_FLAG_NEXT))
   {
-    bool dir = btnUp.getBtnFlag() == BTN_FLAG_NEXT;
+    bool dir = sscBtnUp.getBtnFlag() == BTN_FLAG_NEXT;
 #if defined(MAX72XX_7SEGMENT_DISPLAY) || defined(MAX72XX_MATRIX_DISPLAY)
-    checkData(x, 15, dir, 0, false);
+    sscCheckData(x, 15, dir, 0, false);
 #elif defined(WS2812_MATRIX_DISPLAY)
-    checkData(x, 25, dir, 1, false);
+    sscCheckData(x, 25, dir, 1, false);
 #else
-    checkData(x, 7, dir, 1, false);
+    sscCheckData(x, 7, dir, 1, false);
 #endif
 
-    btnUp.setBtnFlag(BTN_FLAG_NONE);
-    btnDown.setBtnFlag(BTN_FLAG_NONE);
+    sscBtnUp.setBtnFlag(BTN_FLAG_NONE);
+    sscBtnDown.setBtnFlag(BTN_FLAG_NONE);
   }
 
   // ==== вывод данных на экран ======================
 #if defined(WS2812_MATRIX_DISPLAY)
   FastLED.setBrightness(x * 10);
 #else
-  disp.setBrightness(x);
+  sscDisp.setBrightness(x);
 #endif
-  bool blink = !blink_flag && !btnUp.isButtonClosed() && !btnDown.isButtonClosed();
+  bool sscBlink = !sscBlinkFlag && !sscBtnUp.isButtonClosed() && !sscBtnDown.isButtonClosed();
   bool snr = false;
 #ifdef USE_LIGHT_SENSOR
   snr = true;
 #endif
-  disp.showBrightnessData(x, blink, snr,
-                          displayMode != DISPLAY_MODE_SET_BRIGHTNESS_MAX);
+  sscDisp.showBrightnessData(x, sscBlink, snr,
+                             ssc_display_mode != DISPLAY_MODE_SET_BRIGHTNESS_MAX);
 }
 #endif
 
 #ifdef USE_TEMP_DATA
 #ifdef USE_DS18B20
-void checkDS18b20()
+void sscCheckDS18b20()
 {
-  temp_sensor.readData();
+  sscTempSensor.readData();
 }
 #endif
-void showTemp()
+void sscShowTemp()
 {
-  if (!tasks.getTaskState(show_temp_mode))
+  if (!sscTasks.getTaskState(ssc_show_temp_mode))
   {
-    tasks.startTask(return_to_default_mode);
-    tasks.startTask(show_temp_mode);
+    sscTasks.startTask(ssc_return_to_default_mode);
+    sscTasks.startTask(ssc_show_temp_mode);
   }
 
 #if defined(USE_DS18B20) || defined(USE_NTC)
-  disp.showTemp(temp_sensor.getTemp());
+  sscDisp.showTemp(sscTempSensor.getTemp());
 #else
-  disp.showTemp((int)round(sscClock.getTemperature()));
+  sscDisp.showTemp((int)round(sscClock.getTemperature()));
 #endif
 }
 #endif

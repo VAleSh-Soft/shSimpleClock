@@ -2,7 +2,7 @@
  * @file ws2812b.ino
  * @author Vladimir Shatalov (valesh-soft@yandex.ru)
  * 
- * @brief Пример создания часов с использованием библиотеки shSimpleClock
+ * @brief Пример создания часов с помощью библиотеки shSimpleClock
  *        с использованием часового модуля DS3231 и матрицы 8x32, построенной
  *        на адресных светодиодах WS2812B; настройки часов указываются в файле 
  *        clockSetting.h, который следует разместить в папке со скетчем;
@@ -21,8 +21,8 @@
  */
 
 #include "clockSetting.h"
-#include <shSimpleClock.h>
-#include <shButton.h>
+#include <shSimpleClock.h> // https://github.com/VAleSh-Soft/shSimpleClock
+#include <shButton.h>      // https://github.com/VAleSh-Soft/shButton
 
 // объявляем экземпляр часов
 shSimpleClock clock;
@@ -32,7 +32,7 @@ void setup()
   Serial.begin(9600);
 
   // устанавливаем синий цвет для цифр
-  clock.setColorNumber(CRGB::Blue);
+  clock.setColorOfNumber(CRGB::Blue);
   // инициализируем часы
   clock.init();
 }
