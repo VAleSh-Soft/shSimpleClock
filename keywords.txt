@@ -21,6 +21,10 @@ getBtnDownState	KEYWORD2
 setMatrixDirection	KEYWORD2
 setMatrixFlipMode	KEYWORD2
 setColorOfNumber	KEYWORD2
+getCurrentDateTime	KEYWORD2
+setCurrentTime	KEYWORD2
+setCurrentDate	KEYWORD2
+setCurrentYear	KEYWORD2
 
 #######################################
 # Constants (LITERAL1)

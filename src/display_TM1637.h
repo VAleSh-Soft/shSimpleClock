@@ -1,6 +1,6 @@
 #pragma once
 #include <Arduino.h>
-#include <DS3231.h>        // https://github.com/NorthernWidget/DS3231
+#include "shSimpleRTC.h"        // https://github.com/NorthernWidget/DS3231
 #include <TM1637Display.h> // https://github.com/avishorp/TM1637
 
 // ==== класс для вывода данных на экран =============

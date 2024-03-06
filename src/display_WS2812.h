@@ -3,7 +3,7 @@
 #include <Arduino.h>
 #include <avr/pgmspace.h>
 #include <FastLED.h> // https://github.com/FastLED/FastLED
-#include <DS3231.h>  // https://github.com/NorthernWidget/DS3231
+#include "shSimpleRTC.h"
 
 // ===================================================
 

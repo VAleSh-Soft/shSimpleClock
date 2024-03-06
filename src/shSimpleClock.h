@@ -4,8 +4,8 @@
 #include <Wire.h>
 #include <EEPROM.h>
 #include <avr/pgmspace.h>
-#include <DS3231.h> // https://github.com/NorthernWidget/DS3231
-#include <shButton.h>
+#include <shButton.h> // https://github.com/VAleSh-Soft/shButton
+#include "shSimpleRTC.h"
 
 // ===================================================
 
@@ -190,7 +190,6 @@ clkHandle ssc_set_brightness_mode; // режим настройки яркост
 
 // -----------------------------------------
 bool sscBlinkFlag = false; // флаг блинка, используется всем, что должно мигать
-DateTime sscCurTime;
 
 // ---- экраны -----------------------------
 #if defined(TM1637_DISPLAY)
@@ -204,9 +203,8 @@ CRGB ssc_leds[256];
 DisplayWS2812Matrix sscDisp(ssc_leds, COLOR_OF_NUMBER, MX_TYPE);
 #endif
 
-// ---- модуль sscRTC ----------------------
-DS3231 sscClock;
-RTClib sscRTC;
+// ---- модуль RTC -------------------------
+shSimpleRTC sscClock;
 
 // ---- будильник --------------------------
 #ifdef USE_ALARM
@@ -236,11 +234,16 @@ private:
   clkButtonFlag _flag = BTN_FLAG_NONE;
 
 public:
+#ifdef BTN_PULL_UP
   clkButton(uint8_t button_pin) : shButton(button_pin)
+#else
+  clkButton(uint8_t button_pin) : shButton(button_pin, PULL_DOWN)
+#endif
   {
-    shButton::setTimeoutOfLongClick(1000);
+    shButton::setTimeoutOfLongClick(TIMEOUT_OF_LONGCLICK);
     shButton::setLongClickMode(LCM_ONLYONCE);
     shButton::setVirtualClickOn(true);
+    shButton::setTimeoutOfDebounce(TIMEOUT_OF_DEBOUNCE);
   }
 
   clkButtonFlag getBtnFlag()
@@ -345,12 +348,11 @@ public:
    */
   void init()
   {
-    // ==== RTC ========================================
+    // ==== RTC ======================================
     Wire.begin();
-    sscClock.setClockMode(false); // 24-часовой режим
     sscRtcNow();
 
-    // ==== кнопки Up/Down =============================
+    // ==== кнопки ===================================
     if (BTN_SET_PIN >= 0)
     {
       sscBtnSet = (clkButton){BTN_SET_PIN};
@@ -360,7 +362,7 @@ public:
     {
       sscBtnUp = (clkButton){BTN_UP_PIN};
       sscBtnUp.setLongClickMode(LCM_CLICKSERIES);
-      sscBtnUp.setIntervalOfSerial(100);
+      sscBtnUp.setIntervalOfSerial(INTERVAL_OF_SERIAL);
     }
 
     if (BTN_DOWN_PIN >= 0)
@@ -370,7 +372,7 @@ public:
       sscBtnDown.setIntervalOfSerial(100);
     }
 
-// ==== датчики ======================================
+// ==== датчики ====================================
 #if defined(USE_NTC)
     sscTempSensor.setADCbitDepth(_bit_depth); // установить разрядность АЦП вашего МК, для AVR обычно равна 10 бит
 #endif
@@ -418,7 +420,7 @@ public:
     sscDisp.setBrightness(1);
 #endif
 
-    // ==== задачи =====================================
+    // ==== задачи ===================================
     uint8_t task_count = 5; // базовое количество задач
 #ifdef USE_LIGHT_SENSOR
     task_count++;
@@ -564,30 +566,75 @@ public:
     sscDisp.setColorOfNumber(_color);
   }
 #endif
+
+  /**
+   * @brief получение текущих даты и времени
+   *
+   * @return DateTime
+   */
+  DateTime getCurrentDateTime()
+  {
+    return (sscClock.getCurTime());
+  }
+
+  /**
+   * @brief установка текущего времени
+   *
+   * @param _hour часы для установки
+   * @param _minute минуты для установки
+   * @param _second секунды для установки
+   */
+  void setCurrentTime(uint8_t _hour, uint8_t _minute, uint8_t _second)
+  {
+    sscClock.setCurTime(_hour, _minute, _second);
+  }
+
+#ifdef USE_CALENDAR
+  /**
+   * @brief установка текущей даты
+   *
+   * @param _date число месяца для установки
+   * @param _month номер месяца для установки (1..2)
+   */
+  void setCurrentDate(uint8_t _date, uint8_t _month)
+  {
+    sscClock.setCurDate(_date, _month);
+  }
+
+  /**
+   * @brief установка текущего года
+   *
+   * @param _year год для установки (0..99 )
+   */
+  void setCurrentYear(uint8_t _year)
+  {
+    sscClock.setCurYear(_year);
+  }
+#endif
 };
 
 // ==== end shSimpleClock ============================
 
 void sscRtcNow()
 {
-  sscCurTime = sscRTC.now();
+  sscClock.now();
   if (ssc_display_mode == DISPLAY_MODE_SHOW_TIME)
   {
 #if defined(MAX72XX_MATRIX_DISPLAY) || defined(WS2812_MATRIX_DISPLAY)
-    sscDisp.showTime(sscCurTime.hour(), sscCurTime.minute(), sscCurTime.second(), sscBlinkFlag);
+    sscDisp.showTime(sscClock.getCurTime().hour(), sscClock.getCurTime().minute(), sscClock.getCurTime().second(), sscBlinkFlag);
 #else
-    sscDisp.showTime(sscCurTime.hour(), sscCurTime.minute(), sscBlinkFlag);
+    sscDisp.showTime(sscClock.getCurTime().hour(), sscClock.getCurTime().minute(), sscBlinkFlag);
 #endif
   }
 }
 
 void sscBlink()
 {
-  static uint8_t cur_sec = sscCurTime.second();
+  static uint8_t cur_sec = sscClock.getCurTime().second();
   static uint32_t tmr = 0;
-  if (cur_sec != sscCurTime.second())
+  if (cur_sec != sscClock.getCurTime().second())
   {
-    cur_sec = sscCurTime.second();
+    cur_sec = sscClock.getCurTime().second();
     sscBlinkFlag = true;
     tmr = millis();
   }
@@ -742,18 +789,18 @@ void sscShowTimeSetting()
     {
     case DISPLAY_MODE_SET_HOUR:
     case DISPLAY_MODE_SET_MINUTE:
-      curHour = sscCurTime.hour();
-      curMinute = sscCurTime.minute();
+      curHour = sscClock.getCurTime().hour();
+      curMinute = sscClock.getCurTime().minute();
       break;
 #ifdef USE_CALENDAR
     case DISPLAY_MODE_SET_DAY:
     case DISPLAY_MODE_SET_MONTH:
-      curHour = sscCurTime.day();
-      curMinute = sscCurTime.month();
+      curHour = sscClock.getCurTime().day();
+      curMinute = sscClock.getCurTime().month();
       break;
     case DISPLAY_MODE_SET_YEAR:
       curHour = 20;
-      curMinute = sscCurTime.year() % 100;
+      curMinute = sscClock.getCurTime().year() % 100;
       break;
 #endif
     default:
@@ -770,19 +817,18 @@ void sscShowTimeSetting()
       {
       case DISPLAY_MODE_SET_HOUR:
       case DISPLAY_MODE_SET_MINUTE:
-        sscClock.setHour(curHour);
-        sscClock.setMinute(curMinute);
-        sscClock.setSecond(0);
+        sscClock.setCurTime(curHour, curMinute, 0);
+        sscRtcNow();
         break;
 #ifdef USE_CALENDAR
       case DISPLAY_MODE_SET_DAY:
       case DISPLAY_MODE_SET_MONTH:
-        sscClock.setDate(curHour);
-        sscClock.setMonth(curMinute);
+        sscClock.setCurDate(curHour, curMinute);
         sscRtcNow();
         break;
       case DISPLAY_MODE_SET_YEAR:
-        sscClock.setYear(curMinute);
+        sscClock.setCurYear(curMinute);
+        sscRtcNow();
         break;
 #endif
 #ifdef USE_ALARM
@@ -861,7 +907,7 @@ void sscShowTimeSetting()
     case DISPLAY_MODE_SET_DAY:
       uint8_t i;
       i = pgm_read_byte(&days_of_month[curMinute - 1]);
-      if (curMinute == 2 && (sscCurTime.year() % 4 == 0))
+      if (curMinute == 2 && (sscClock.getCurTime().year() % 4 == 0))
       {
         i++;
       }
@@ -1161,10 +1207,10 @@ void sscShowCalendar()
   if (!sscTasks.getTaskState(ssc_show_calendar_mode))
   {
     sscTasks.startTask(ssc_show_calendar_mode);
-    sscDisp.showDate(sscCurTime, true);
+    sscDisp.showDate(sscClock.getCurTime(), true);
   }
 
-  if (sscDisp.showDate(sscCurTime))
+  if (sscDisp.showDate(sscClock.getCurTime()))
   {
     sscReturnToDefMode();
   }
@@ -1174,7 +1220,7 @@ void sscShowCalendar()
 #ifdef USE_ALARM
 void sscCheckAlarm()
 {
-  sscAlarm.tick(sscCurTime);
+  sscAlarm.tick(sscClock.getCurTime());
   if (sscAlarm.getAlarmState() == ALARM_YES && !sscTasks.getTaskState(ssc_alarm_buzzer))
   {
     sscRunAlarmBuzzer();
@@ -1394,7 +1440,7 @@ void sscShowTemp()
 
 #if defined(USE_DS18B20) || defined(USE_NTC)
   sscDisp.showTemp(sscTempSensor.getTemp());
-#else
+#elif defined(RTC_DS3231)
   sscDisp.showTemp((int)round(sscClock.getTemperature()));
 #endif
 }

@@ -2,7 +2,7 @@
 #include "matrix_data.h"
 #include <Arduino.h>
 #include <avr/pgmspace.h>
-#include <DS3231.h>        // https://github.com/NorthernWidget/DS3231
+#include "shSimpleRTC.h"      
 #include <shMAX72xxMini.h> // https://github.com/VAleSh-Soft/shMAX72xxMini
 
 // ==== класс для 7-сегментного индикатора MAX72xx ===
