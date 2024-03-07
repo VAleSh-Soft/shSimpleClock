@@ -466,7 +466,7 @@ public:
         col_sec &= ~(1 << 7);
       }
     }
-    setColumn(31, col_sec);
+    setColumn(3, 7, col_sec);
 #endif
   }
 

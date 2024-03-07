@@ -169,7 +169,7 @@ public:
    * @brief установка текущей даты
    *
    * @param _date число месяца для установки
-   * @param _month номер месяца для установки (1..2)
+   * @param _month номер месяца для установки (1..12)
    */
   void setCurDate(uint8_t _date, uint8_t _month)
   {

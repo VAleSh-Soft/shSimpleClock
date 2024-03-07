@@ -22,6 +22,105 @@
 #define WS2812_MATRIX_DISPLAY 
 
 
+// ---- настройки экранов -----------------------
+
+
+// ---- TM1637 -----------------------------
+#if defined(TM1637_DISPLAY)
+
+// ---- пины для подключения индикатора ----
+#define DISPLAY_CLK_PIN 11 // пин для подключения экрана - CLK
+#define DISPLAY_DAT_PIN 10 // пин для подключения экрана - DAT
+
+
+// ---- MAX72XX ----------------------------
+#elif defined(MAX72XX_7SEGMENT_DISPLAY) || defined(MAX72XX_MATRIX_DISPLAY)
+
+// ---- пины для подключения драйвера ------
+#define DISPLAY_CLK_PIN 13 // пин для подключения экрана - CLK (для Atmega168/328 не менять!!!)
+#define DISPLAY_DIN_PIN 11 // пин для подключения экрана - DAT (для Atmega168/328 не менять!!!)
+#define DISPLAY_CS_PIN 10  // пин для подключения экрана - CS
+
+#endif
+
+
+// ---- опции для матричных экранов -------------
+
+#if defined(MAX72XX_MATRIX_DISPLAY) || defined(WS2812_MATRIX_DISPLAY)
+
+
+// ---- матрица из адресных светодиодов ----
+
+#if defined(WS2812_MATRIX_DISPLAY)
+
+/*
+ * здесь укажите используемый вами тип светодиодов;
+ * возможные варианты:
+ *   CHIPSET_LPD6803; CHIPSET_LPD8806; CHIPSET_WS2801; CHIPSET_WS2803;
+ *   CHIPSET_SM16716; CHIPSET_P9813; CHIPSET_APA102; CHIPSET_SK9822;
+ *   CHIPSET_DOTSTAR; CHIPSET_NEOPIXEL; CHIPSET_SM16703; CHIPSET_TM1829;
+ *   CHIPSET_TM1812; CHIPSET_TM1809; CHIPSET_TM1804; CHIPSET_TM1803;
+ *   CHIPSET_UCS1903; CHIPSET_UCS1903B; CHIPSET_UCS1904; CHIPSET_UCS2903;
+ *   CHIPSET_WS2812; CHIPSET_WS2852; CHIPSET_WS2812B; CHIPSET_GS1903;
+ *   CHIPSET_SK6812; CHIPSET_SK6822; CHIPSET_APA106; CHIPSET_PL9823;
+ *   CHIPSET_WS2811; CHIPSET_WS2813; CHIPSET_APA104; CHIPSET_WS2811_400;
+ *   CHIPSET_GE8822; CHIPSET_GW6205; CHIPSET_GW6205_400; CHIPSET_LPD1886;
+ *   CHIPSET_LPD1886_8BIT
+ */
+#define CHIPSET_WS2812B
+
+/*
+ * укажите порядок следования цветов в используемых вами светододах;
+ * наиболее часто используются варианты:
+ *   RGB (красный, зеленый, синий)
+ *   GRB (зеленый, красный, синий)
+ */
+#define EORDER GRB
+
+// ---- аппаратный SPI ---------------------
+// #define USE_HARDWARE_SPI // использовать аппаратный SPI для управления светодиодами для чипов с четырехпроводным управлением
+
+/*
+ * укажите порядок построения матрицы (стартовая точка - верхний левый угол);
+ * возможные варианты:
+ *   BY_COLUMNS - по столбцам
+ *   BY_LINE - по строкам
+ */
+#define MX_TYPE BY_COLUMNS
+
+// ---- цвет цифр --------------------------
+#define COLOR_OF_NUMBER CRGB::Red
+
+// ---- цвет фона --------------------------
+#define COLOR_OF_BACKGROUND CRGB::Black
+
+// ---- пины для подключения матрицы -------
+#define DISPLAY_DIN_PIN 10 // пин для подключения экрана - DIN
+#define DISPLAY_CLK_PIN -1 // пин для подключения экрана - CLK (для четырехпроводных схем)
+
+#endif
+
+
+// ---- Language ---------------------------
+#define USE_RU_LANGUAGE // использовать русский язык и символы кириллицы при выводе данных
+
+// ---- анимация ---------------------------
+#define USE_TICKER_FOR_DATE // использовать вывод даты в виде бегущей строки
+
+#ifdef USE_TICKER_FOR_DATE
+
+// ---- скорость анимации, fps -------------
+#define TICKER_SPEED 50 // скорость бегущей строки в кадрах в секунду; 
+
+#endif
+
+// ---- секундный стобик -------------------
+// #define SHOW_SECOND_COLUMN // показывать на правом краю экрана световой столбец, отображающий количество текущих секунд в минуте
+
+#endif
+
+
+
 // ==== дополнительные опции ========================
 
 
@@ -36,7 +135,8 @@
 
 #ifdef USE_ALARM
 
-// #define USE_ONECLICK_TO_SET_ALARM // использовать одинарный клик кнопкой Set для входа в настройки будильника, иначе вход по двойному клику
+// ---- одиночный клик вместо двойного ----------
+// #define USE_ONECLICK_TO_SET_ALARM // использовать одиночный клик кнопкой Set для входа в настройки будильника, иначе вход по двойному клику
 
 // ---- будильник - пины ------------------------
 #define BUZZER_PIN 5    // пин для подключения пищалки
@@ -102,75 +202,6 @@ uint8_t constexpr _bit_depth = 10;           // разрядность АЦП и
 
 
 
-// ===== экраны ======================================
-
-
-// ---- матрица из адресных светодиодов ----
-
-#if defined(WS2812_MATRIX_DISPLAY)
-
-/*
- * здесь укажите используемый вами тип светодиодов;
- * возможные варианты:
- *   CHIPSET_LPD6803; CHIPSET_LPD8806; CHIPSET_WS2801; CHIPSET_WS2803;
- *   CHIPSET_SM16716; CHIPSET_P9813; CHIPSET_APA102; CHIPSET_SK9822;
- *   CHIPSET_DOTSTAR; CHIPSET_NEOPIXEL; CHIPSET_SM16703; CHIPSET_TM1829;
- *   CHIPSET_TM1812; CHIPSET_TM1809; CHIPSET_TM1804; CHIPSET_TM1803;
- *   CHIPSET_UCS1903; CHIPSET_UCS1903B; CHIPSET_UCS1904; CHIPSET_UCS2903;
- *   CHIPSET_WS2812; CHIPSET_WS2852; CHIPSET_WS2812B; CHIPSET_GS1903;
- *   CHIPSET_SK6812; CHIPSET_SK6822; CHIPSET_APA106; CHIPSET_PL9823;
- *   CHIPSET_WS2811; CHIPSET_WS2813; CHIPSET_APA104; CHIPSET_WS2811_400;
- *   CHIPSET_GE8822; CHIPSET_GW6205; CHIPSET_GW6205_400; CHIPSET_LPD1886;
- *   CHIPSET_LPD1886_8BIT
- */
-#define CHIPSET_WS2812B
-
-/*
- * укажите порядок следования цветов в используемых вами светододах;
- * наиболее часто используются варианты:
- * RGB (красный, зеленый, синий)
- * GRB (зеленый, красный, синий)
- */
-#define EORDER GRB
-
-// использовать аппаратный SPI для управления светодиодами для чипов с четырехпроводным управлением
-// #define USE_HARDWARE_SPI
-
-/*
- * укажите порядок построения матрицы (стартовая точка - верхний левый угол):
- * BY_COLUMNS - по столбцам
- * BY_LINE - по строкам
- */
-#define MX_TYPE BY_COLUMNS
-
-// цвет цифр
-#define COLOR_OF_NUMBER CRGB::Red
-
-// ---- пины для подключения матрицы -------
-#define DISPLAY_DIN_PIN 10 // пин для подключения экрана - DIN
-#define DISPLAY_CLK_PIN -1 // пин для подключения экрана - CLK (для четырехпроводных схем)
-
-
-// ---- TM1637 -----------------------------
-#elif defined(TM1637_DISPLAY)
-
-// ---- пины для подключения индикатора ----
-#define DISPLAY_CLK_PIN 11 // пин для подключения экрана - CLK
-#define DISPLAY_DAT_PIN 10 // пин для подключения экрана - DAT
-
-
-// ---- MAX72XX ----------------------------
-#elif defined(MAX72XX_7SEGMENT_DISPLAY) || defined(MAX72XX_MATRIX_DISPLAY)
-
-// ---- пины для подключения драйвера ------
-#define DISPLAY_CLK_PIN 13 // пин для подключения экрана - CLK (для Atmega168/328 не менять!!!)
-#define DISPLAY_DIN_PIN 11 // пин для подключения экрана - DAT (для Atmega168/328 не менять!!!)
-#define DISPLAY_CS_PIN 10  // пин для подключения экрана - CS
-
-#endif
-
-
-
 // ==== прочие настройки =============================
 
 #define AUTO_EXIT_TIMEOUT 6 // время автоматического возврата в режим показа текущего времени из любых других режимов при отсутствии активности пользователя, секунд
@@ -217,7 +248,9 @@ uint16_t constexpr INTERVAL_OF_SERIAL = 100;    // интервал выдачи
 uint16_t constexpr TIMEOUT_OF_DEBOUNCE = 50;    // интервал антидребезга
 
 // ---- пины для подключения кнопок -------------
-// если кнопка не используется, нужно указать -1, в этом случае ее объект не будет создаваться в памяти;
+
+// если кнопка не будет использоваться, нужно указать -1;
+// в этом случае ее объект не будет создаваться в памяти;
 #define BTN_SET_PIN 4  // пин для подключения кнопки Set
 #define BTN_DOWN_PIN 6 // пин для подключения кнопки Down
 #define BTN_UP_PIN 9   // пин для подключения кнопки Up

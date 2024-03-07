@@ -32,6 +32,8 @@ setAlarmPoint	KEYWORD2
 getOnOffAlarm	KEYWORD2
 setOnOffAlarm	KEYWORD2
 getAlarmState	KEYWORD2
+setColorOfNumber	KEYWORD2
+setColorOfBackground	KEYWORD2
 
 #######################################
 # Constants (LITERAL1)

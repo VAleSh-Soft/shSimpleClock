@@ -471,8 +471,6 @@ public:
     ssc_display_guard = sscTasks.addTask(50ul, sscSetDisp);
 #if defined(USE_LIGHT_SENSOR)
     ssc_light_sensor_guard = sscTasks.addTask(100ul, sscSetBrightness);
-#elif defined(WS2812_MATRIX_DISPLAY)
-    FastLED.setBrightness(EEPROM.read(MAX_BRIGHTNESS_VALUE_EEPROM_INDEX) * 10);
 #else
     sscDisp.setBrightness(EEPROM.read(MAX_BRIGHTNESS_VALUE_EEPROM_INDEX));
 #endif
@@ -568,6 +566,16 @@ public:
   void setColorOfNumber(CRGB _color)
   {
     sscDisp.setColorOfNumber(_color);
+  }
+
+  /**
+   * @brief установить цвет фона на матрице из адресных светодиодов
+   *
+   * @param _color цвет, например, для синего CRGB::Blue
+   */
+  void setColorOfBackground(CRGB _color)
+  {
+    sscDisp.setColorOfBackground(_color);
   }
 #endif
 

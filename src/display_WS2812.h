@@ -41,6 +41,7 @@ private:
   uint8_t row_count = 8;
   uint8_t col_count = 32;
   CRGB color = CRGB::Red;
+  CRGB bg_color = COLOR_OF_BACKGROUND;
 
   uint8_t getLedIndexOfStrip(uint8_t row, uint8_t col)
   {
@@ -218,7 +219,7 @@ public:
       for (uint8_t i = 0; i < 8; i++)
       {
         leds[getLedIndexOfStrip(i, col)] =
-            (((_data) >> (7 - i)) & 0x01) ? color : CRGB::Black;
+            (((_data) >> (7 - i)) & 0x01) ? color : bg_color;
       }
     }
   }
@@ -272,6 +273,17 @@ public:
   void show()
   {
     FastLED.show();
+  }
+
+  /**
+   * @brief установка яркости экрана
+   *
+   * @param brightness значение яркости (0..25)
+   */
+  void setBrightness(uint8_t brightness)
+  {
+    brightness = (brightness <= 25) ? brightness : 25;
+    FastLED.setBrightness(brightness * 10);
   }
 
   /**
@@ -433,9 +445,24 @@ public:
     }
   }
 
+  /**
+   * @brief установка цвета символов
+   * 
+   * @param _color новый цвет 
+   */
   void setColorOfNumber(CRGB _color)
   {
     color = _color;
+  }
+
+  /**
+   * @brief установка цвета фона
+   * 
+   * @param _color новый цвет
+   */
+  void setColorOfBackground(CRGB _color)
+  {
+   bg_color = _color;
   }
 };
 

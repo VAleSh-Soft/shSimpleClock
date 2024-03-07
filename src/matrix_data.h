@@ -2,16 +2,6 @@
 
 #include <avr/pgmspace.h>
 
-#define USE_RU_LANGUAGE // использовать русский язык и символы кириллицы при выводе данных на матричный экран
-
-#define USE_TICKER_FOR_DATE // использовать вывод даты в виде бегущей строки
-
-#ifdef USE_TICKER_FOR_DATE
-#define TICKER_SPEED 50 // fps, скорость бегущей строки в кадрах в секунду; 
-#endif
-
-// #define SHOW_SECOND_COLUMN // на матричных экранах показывать на правом краю экрана световой столбец, отображающий количество текущих секунд в минуте
-
 
 // цифры 6x8
 static const uint8_t PROGMEM font_digit[] = {
