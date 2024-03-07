@@ -8,6 +8,7 @@
 
 shSimpleClock	KEYWORD1
 clkDisplayMode	KEYWORD1
+shSimpleRTC	KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2) 
@@ -25,6 +26,7 @@ getCurrentDateTime	KEYWORD2
 setCurrentTime	KEYWORD2
 setCurrentDate	KEYWORD2
 setCurrentYear	KEYWORD2
+getTemperature	KEYWORD2
 
 #######################################
 # Constants (LITERAL1)

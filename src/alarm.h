@@ -1,6 +1,6 @@
 #pragma once
 #include <Arduino.h>
-#include <DS3231.h>
+#include "shSimpleRTC.h"
 #include <EEPROM.h>
 
 #define MAX_DATA 1439 // максимальное количество минут для установки будильника (23 ч, 59 мин)

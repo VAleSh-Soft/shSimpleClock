@@ -390,7 +390,7 @@ public:
     uint8_t y = EEPROM.read(LIGHT_THRESHOLD_EEPROM_INDEX);
     y = ((y > 9) || (y == 0)) ? 3 : y;
     EEPROM.update(LIGHT_THRESHOLD_EEPROM_INDEX, y);
-    
+
     x = EEPROM.read(MIN_BRIGHTNESS_VALUE_EEPROM_INDEX);
 #if defined(MAX72XX_7SEGMENT_DISPLAY) || defined(MAX72XX_MATRIX_DISPLAY)
     x = (x > 15) ? 0 : x;
@@ -613,6 +613,25 @@ public:
   void setCurrentYear(uint8_t _year)
   {
     sscClock.setCurYear(_year);
+  }
+#endif
+
+#ifdef USE_TEMP_DATA
+  /**
+   * @brief получить текущую температуру, если определен используемый датчик
+   * 
+   * @return int8_t 
+   */
+  int8_t getTemperature()
+  {
+    int8_t result = -127;
+#if defined(USE_DS18B20) || defined(USE_NTC)
+    result = sscTempSensor.getTemp();
+#elif defined(RTC_DS3231)
+    result = sscClock.getTemperature();
+#endif
+
+    return result;
   }
 #endif
 };
@@ -1445,7 +1464,7 @@ void sscShowTemp()
 #if defined(USE_DS18B20) || defined(USE_NTC)
   sscDisp.showTemp(sscTempSensor.getTemp());
 #elif defined(RTC_DS3231)
-  sscDisp.showTemp((int)round(sscClock.getTemperature()));
+  sscDisp.showTemp(sscClock.getTemperature());
 #endif
 }
 #endif

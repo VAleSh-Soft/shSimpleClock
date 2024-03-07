@@ -47,9 +47,7 @@ public:
   DateTime(uint16_t year, uint8_t month, uint8_t day,
            uint8_t hour = 0, uint8_t min = 0, uint8_t sec = 0)
   {
-    if (year >= 2000)
-      year -= 2000;
-    yOff = year;
+    yOff = year % 100;
     m = month;
     d = day;
     hh = hour;
@@ -195,12 +193,14 @@ public:
     Wire.endTransmission();
   }
 
+  /**
+   * @brief возвращает температуру внутреннего датчика DS3231; работает только с DS3231
+   * 
+   * @return uint8_t 
+   */
   uint8_t getTemperature()
   {
 #if defined(RTC_DS3231)
-    // Checks the internal thermometer on the DS3231 and returns the
-    // temperature as a floating-point value.
-
     // Updated / modified a tiny bit from "Coding Badly" and "Tri-Again"
     // http://forum.arduino.cc/index.php/topic,22301.0.html
 
@@ -223,13 +223,13 @@ public:
     }
     else
     {
-      temp3231 = -9999; // Some obvious error value
+      temp3231 = -127; 
     }
 
-    return temp3231;
+    return ((int)round(temp3231));
 #else
     // для не DS3231 вывод температуры без датчиков невозможен
-    return -127.0;
+    return -127;
 #endif
   }
 };

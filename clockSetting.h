@@ -4,13 +4,22 @@
 
 
 
-// ==== экран часов (использовать только один экран) =
+// ==== экран часов ==================================
 
-#define TM1637_DISPLAY // использовать семисегментный экран на драйвере TM1637
-// #define MAX72XX_7SEGMENT_DISPLAY // использовать семисегментный экран на драйвере MAX7219 или MAX7221, четыре цифры
-// #define MAX72XX_MATRIX_DISPLAY   // использовать матричный экран на драйвере MAX7219 или MAX7221 и четырех матрицах 8х8 светодиодов
-// #define WS2812_MATRIX_DISPLAY    // использовать матричный экран 8х32 на базе адресных светодиодов
+/**
+ * здесь укажите, какой экран или индикатор используется для вывода информации;
+ * возможные варианты:
+ *   TM1637_DISPLAY           - семисегментный индикатор на драйвере TM1637
+ *   MAX72XX_7SEGMENT_DISPLAY - семисегментный экран на драйверах MAX7219 или 
+ *                              MAX7221, четыре цифры
+ *   MAX72XX_MATRIX_DISPLAY   - матричный светодиодный экран на драйверах 
+ *                              MAX7219 или MAX7221, составленный из четырех 
+ *                              матриц 8х8
+ *   WS2812_MATRIX_DISPLAY    - матричный светодиодный экран 8х32 на базе 
+ *                              адресных светодиодов
+ */
 
+#define TM1637_DISPLAY 
 
 
 // ==== дополнительные опции ========================
@@ -103,16 +112,16 @@ uint8_t constexpr _bit_depth = 10;           // разрядность АЦП и
 /*
  * здесь укажите используемый вами тип светодиодов;
  * возможные варианты:
- * CHIPSET_LPD6803; CHIPSET_LPD8806; CHIPSET_WS2801; CHIPSET_WS2803;
- * CHIPSET_SM16716; CHIPSET_P9813; CHIPSET_APA102; CHIPSET_SK9822;
- * CHIPSET_DOTSTAR; CHIPSET_NEOPIXEL; CHIPSET_SM16703; CHIPSET_TM1829;
- * CHIPSET_TM1812; CHIPSET_TM1809; CHIPSET_TM1804; CHIPSET_TM1803;
- * CHIPSET_UCS1903; CHIPSET_UCS1903B; CHIPSET_UCS1904; CHIPSET_UCS2903;
- * CHIPSET_WS2812; CHIPSET_WS2852; CHIPSET_WS2812B; CHIPSET_GS1903;
- * CHIPSET_SK6812; CHIPSET_SK6822; CHIPSET_APA106; CHIPSET_PL9823;
- * CHIPSET_WS2811; CHIPSET_WS2813; CHIPSET_APA104; CHIPSET_WS2811_400;
- * CHIPSET_GE8822; CHIPSET_GW6205; CHIPSET_GW6205_400; CHIPSET_LPD1886;
- * CHIPSET_LPD1886_8BIT
+ *   CHIPSET_LPD6803; CHIPSET_LPD8806; CHIPSET_WS2801; CHIPSET_WS2803;
+ *   CHIPSET_SM16716; CHIPSET_P9813; CHIPSET_APA102; CHIPSET_SK9822;
+ *   CHIPSET_DOTSTAR; CHIPSET_NEOPIXEL; CHIPSET_SM16703; CHIPSET_TM1829;
+ *   CHIPSET_TM1812; CHIPSET_TM1809; CHIPSET_TM1804; CHIPSET_TM1803;
+ *   CHIPSET_UCS1903; CHIPSET_UCS1903B; CHIPSET_UCS1904; CHIPSET_UCS2903;
+ *   CHIPSET_WS2812; CHIPSET_WS2852; CHIPSET_WS2812B; CHIPSET_GS1903;
+ *   CHIPSET_SK6812; CHIPSET_SK6822; CHIPSET_APA106; CHIPSET_PL9823;
+ *   CHIPSET_WS2811; CHIPSET_WS2813; CHIPSET_APA104; CHIPSET_WS2811_400;
+ *   CHIPSET_GE8822; CHIPSET_GW6205; CHIPSET_GW6205_400; CHIPSET_LPD1886;
+ *   CHIPSET_LPD1886_8BIT
  */
 #define CHIPSET_WS2812B
 
@@ -154,8 +163,8 @@ uint8_t constexpr _bit_depth = 10;           // разрядность АЦП и
 #elif defined(MAX72XX_7SEGMENT_DISPLAY) || defined(MAX72XX_MATRIX_DISPLAY)
 
 // ---- пины для подключения драйвера ------
-#define DISPLAY_CLK_PIN 13 // пин для подключения экрана - CLK (не менять!!!)
-#define DISPLAY_DIN_PIN 11 // пин для подключения экрана - DAT (не менять!!!)
+#define DISPLAY_CLK_PIN 13 // пин для подключения экрана - CLK (для Atmega168/328 не менять!!!)
+#define DISPLAY_DIN_PIN 11 // пин для подключения экрана - DAT (для Atmega168/328 не менять!!!)
 #define DISPLAY_CS_PIN 10  // пин для подключения экрана - CS
 
 #endif
@@ -178,24 +187,26 @@ uint8_t constexpr _bit_depth = 10;           // разрядность АЦП и
 
 // ==== настройки EEPROM =============================
 
+#ifdef USE_LIGHT_SENSOR
+#define LIGHT_THRESHOLD_EEPROM_INDEX 97      // индекс в EEPROM для сохранения порога переключения яркости (uint8_t)
+#define MIN_BRIGHTNESS_VALUE_EEPROM_INDEX 98 // индекс в EEPROM для сохранения  минимального значения яркости экрана (uint8_t)
+#endif
+#define MAX_BRIGHTNESS_VALUE_EEPROM_INDEX 99 // индекс в EEPROM для сохранения  максимального значение яркости экрана (uint8_t)
 #ifdef USE_ALARM
 #define ALARM_EEPROM_INDEX 100 // индекс в EEPROM для сохранения настроек будильника (uint8_t + uint16_t)
 #endif
-#ifdef USE_LIGHT_SENSOR
-#define MIN_BRIGHTNESS_VALUE_EEPROM_INDEX 98 // индекс в EEPROM для сохранения  минимального значения яркости экрана (uint8_t)
-#define LIGHT_THRESHOLD_EEPROM_INDEX 97      // индекс в EEPROM для сохранения порога переключения яркости (uint8_t)
-#endif
-#define MAX_BRIGHTNESS_VALUE_EEPROM_INDEX 99 // индекс в EEPROM для сохранения  максимального значение яркости экрана (uint8_t)
 
 
 
 // ==== кнопки =======================================
 
 /**
- * здесь укажите тип подключения используемых кнопокж
+ * здесь укажите тип подключения используемых кнопок;
  * возможные варианты:
- * BTN_PULL_UP - с подтяжкой к VCC, при нажатии на кнопку на пин приходит логический 0
- * BTN_PULL_DOWN - с подтяжкой к GND, при нажатии на кнопку на пин приходит логическая 1
+ *   BTN_PULL_UP   - с подтяжкой к VCC, при нажатии на кнопку на пин 
+ *                   приходит логический 0
+ *   BTN_PULL_DOWN - с подтяжкой к GND, при нажатии на кнопку на пин
+ *                   приходит логическая 1
  */
 #define BTN_PULL_UP
 
@@ -206,7 +217,7 @@ uint16_t constexpr INTERVAL_OF_SERIAL = 100;    // интервал выдачи
 uint16_t constexpr TIMEOUT_OF_DEBOUNCE = 50;    // интервал антидребезга
 
 // ---- пины для подключения кнопок -------------
-// если кнопка не используется, нужно указать -1, в этом случае в памяти не будет создаваться ее объект;
+// если кнопка не используется, нужно указать -1, в этом случае ее объект не будет создаваться в памяти;
 #define BTN_SET_PIN 4  // пин для подключения кнопки Set
 #define BTN_DOWN_PIN 6 // пин для подключения кнопки Down
 #define BTN_UP_PIN 9   // пин для подключения кнопки Up
@@ -223,7 +234,7 @@ uint16_t constexpr TIMEOUT_OF_DEBOUNCE = 50;    // интервал антидр
 #define RTC_DS3231
 
 // ---- модуль RTC - пины -----------------------
-#define RTC_SDA_PIN A4 // пин для подключения вывода SDA модуля DS3231 (не менять!!!)
-#define RTC_SCL_PIN A5 // пин для подключения вывода SCL модуля DS3231 (не менять!!!)
+#define RTC_SDA_PIN A4 // пин для подключения вывода SDA RTC модуля (для Atmega168/328 не менять!!!)
+#define RTC_SCL_PIN A5 // пин для подключения вывода SCL RTC модуля (для Atmega168/328 не менять!!!)
 
 // ==== конец настроек часов =========================
