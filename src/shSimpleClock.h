@@ -387,6 +387,10 @@ public:
 #endif
     EEPROM.update(MAX_BRIGHTNESS_VALUE_EEPROM_INDEX, x);
 #ifdef USE_LIGHT_SENSOR
+    uint8_t y = EEPROM.read(LIGHT_THRESHOLD_EEPROM_INDEX);
+    y = ((y > 9) || (y == 0)) ? 3 : y;
+    EEPROM.update(LIGHT_THRESHOLD_EEPROM_INDEX, y);
+    
     x = EEPROM.read(MIN_BRIGHTNESS_VALUE_EEPROM_INDEX);
 #if defined(MAX72XX_7SEGMENT_DISPLAY) || defined(MAX72XX_MATRIX_DISPLAY)
     x = (x > 15) ? 0 : x;
