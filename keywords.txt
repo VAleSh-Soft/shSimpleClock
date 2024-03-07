@@ -27,6 +27,11 @@ setCurrentTime	KEYWORD2
 setCurrentDate	KEYWORD2
 setCurrentYear	KEYWORD2
 getTemperature	KEYWORD2
+getAlarmPoint	KEYWORD2
+setAlarmPoint	KEYWORD2
+getOnOffAlarm	KEYWORD2
+setOnOffAlarm	KEYWORD2
+getAlarmState	KEYWORD2
 
 #######################################
 # Constants (LITERAL1)

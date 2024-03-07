@@ -619,8 +619,8 @@ public:
 #ifdef USE_TEMP_DATA
   /**
    * @brief получить текущую температуру, если определен используемый датчик
-   * 
-   * @return int8_t 
+   *
+   * @return int8_t
    */
   int8_t getTemperature()
   {
@@ -633,6 +633,52 @@ public:
 
     return result;
   }
+#endif
+
+#ifdef USE_ALARM
+    /**
+     * @brief получение времени срабатывания будильника
+     * 
+     * @return uint16_t количество минут с полуночи
+     */
+  uint16_t getAlarmPoint() { return (sscAlarm.getAlarmPoint()); }
+
+  /**
+   * @brief установка времени срабатывания будильника
+   * 
+   * @param _point количество минут с полуночи
+   */
+  void setAlarmPoint(uint16_t _point) { sscAlarm.setAlarmPoint(_point); }
+
+  /**
+   * @brief установка времени срабатывания будильника
+   * 
+   * @param _hour час
+   * @param _minute минута
+   */
+  void setAlarmPoint(uint8_t _hour, uint8_t _minute) { sscAlarm.setAlarmPoint(_hour * 60 + _minute); }
+
+  /**
+   * @brief получение состояния будильника - включен или выключен
+   * 
+   * @return true - включен;
+   * @return false - выключен
+   */
+  bool getOnOffAlarm() { return (sscAlarm.getOnOffAlarm()); }
+
+  /**
+   * @brief установка состояния будильника - включить или выключить
+   * 
+   * @param _state true - включен, false - выключен
+   */
+  void setOnOffAlarm(bool _state) { sscAlarm.setOnOffAlarm(_state); }
+
+  /**
+   * @brief получение статуса будильника, позволяет отслеживать срабатывание будильника
+   * 
+   * @return AlarmState 0 - будильник выключен, 1 - будильник включен, 2 - будильник сработал
+   */
+  AlarmState getAlarmState() { return (sscAlarm.getAlarmState()); }
 #endif
 };
 
