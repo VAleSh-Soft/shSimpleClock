@@ -44,11 +44,6 @@
 #endif
 
 
-// ---- опции для матричных экранов -------------
-
-#if defined(MAX72XX_MATRIX_DISPLAY) || defined(WS2812_MATRIX_DISPLAY)
-
-
 // ---- матрица из адресных светодиодов ----
 
 #if defined(WS2812_MATRIX_DISPLAY)
@@ -101,6 +96,10 @@
 #endif
 
 
+// ---- опции для матричных экранов -------------
+
+#if defined(MAX72XX_MATRIX_DISPLAY) || defined(WS2812_MATRIX_DISPLAY)
+
 // ---- Language ---------------------------
 #define USE_RU_LANGUAGE // использовать русский язык и символы кириллицы при выводе данных
 
@@ -135,10 +134,19 @@
 
 #ifdef USE_ALARM
 
-// ---- одиночный клик вместо двойного ----------
+// ---- продолжительность сигнала, секунд --
+uint8_t constexpr ALARM_DURATION = 60;
+
+// ---- задержка повтора сигнала, секунд ---
+uint8_t constexpr ALARM_SNOOZE_DELAY = 120;
+
+// ---- количество повторов сигнала --------
+uint8_t constexpr ALARM_REPETITION_COUNT = 3;
+
+// ---- одиночный клик вместо двойного -----
 // #define USE_ONECLICK_TO_SET_ALARM // использовать одиночный клик кнопкой Set для входа в настройки будильника, иначе вход по двойному клику
 
-// ---- будильник - пины ------------------------
+// ---- будильник - пины -------------------
 #define BUZZER_PIN 5    // пин для подключения пищалки
 #define ALARM_LED_PIN 7 // пин для подключения светодиода - индикатора будильника
 
@@ -206,14 +214,6 @@ uint8_t constexpr _bit_depth = 10;           // разрядность АЦП и
 
 #define AUTO_EXIT_TIMEOUT 6 // время автоматического возврата в режим показа текущего времени из любых других режимов при отсутствии активности пользователя, секунд
 
-#ifdef USE_ALARM
-
-#define ALARM_DURATION 60        // продолжительность сигнала будильника, секунд
-#define ALARM_SNOOZE_DELAY 120   // задержка повтора сигнала будильника, секунд
-#define ALARM_REPETITION_COUNT 3 // количество повторов сигнала будильника
-
-#endif
-
 
 
 // ==== настройки EEPROM =============================
@@ -243,9 +243,9 @@ uint8_t constexpr _bit_depth = 10;           // разрядность АЦП и
 
 // ---- настройка параметров кнопок -------------
 
-uint16_t constexpr TIMEOUT_OF_LONGCLICK = 1000; // интервал удержания кнопки нажатой
-uint16_t constexpr INTERVAL_OF_SERIAL = 100;    // интервал выдачи событий BTN_LONGCLICK при удержании кнопки нажатой
-uint16_t constexpr TIMEOUT_OF_DEBOUNCE = 50;    // интервал антидребезга
+uint16_t constexpr TIMEOUT_OF_LONGCLICK = 1000; // интервал удержания кнопки нажатой, мс
+uint16_t constexpr INTERVAL_OF_SERIAL = 100;    // интервал выдачи событий BTN_LONGCLICK при удержании кнопки нажатой, мс
+uint16_t constexpr TIMEOUT_OF_DEBOUNCE = 50;    // интервал антидребезга, мс
 
 // ---- пины для подключения кнопок -------------
 

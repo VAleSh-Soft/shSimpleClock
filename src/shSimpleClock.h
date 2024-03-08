@@ -491,6 +491,20 @@ public:
   }
 
   /**
+   * @brief получить текущий режим экрана часов
+   * 
+   * @return clkDisplayMode 
+   */
+  clkDisplayMode getDisplayMode() { return ssc_display_mode; }
+
+  /**
+   * @brief установить режим экрана часов
+   * 
+   * @param _mode режим для установки
+   */
+  void setDisplayMode(clkDisplayMode _mode) { ssc_display_mode = _mode; }
+
+  /**
    * @brief получить текущий статус или событие кнопки Set
    *
    * @return uint8_t
@@ -644,23 +658,23 @@ public:
 #endif
 
 #ifdef USE_ALARM
-    /**
-     * @brief получение времени срабатывания будильника
-     * 
-     * @return uint16_t количество минут с полуночи
-     */
+  /**
+   * @brief получение времени срабатывания будильника
+   *
+   * @return uint16_t количество минут с полуночи
+   */
   uint16_t getAlarmPoint() { return (sscAlarm.getAlarmPoint()); }
 
   /**
    * @brief установка времени срабатывания будильника
-   * 
+   *
    * @param _point количество минут с полуночи
    */
   void setAlarmPoint(uint16_t _point) { sscAlarm.setAlarmPoint(_point); }
 
   /**
    * @brief установка времени срабатывания будильника
-   * 
+   *
    * @param _hour час
    * @param _minute минута
    */
@@ -668,7 +682,7 @@ public:
 
   /**
    * @brief получение состояния будильника - включен или выключен
-   * 
+   *
    * @return true - включен;
    * @return false - выключен
    */
@@ -676,14 +690,14 @@ public:
 
   /**
    * @brief установка состояния будильника - включить или выключить
-   * 
+   *
    * @param _state true - включен, false - выключен
    */
   void setOnOffAlarm(bool _state) { sscAlarm.setOnOffAlarm(_state); }
 
   /**
    * @brief получение статуса будильника, позволяет отслеживать срабатывание будильника
-   * 
+   *
    * @return AlarmState 0 - будильник выключен, 1 - будильник включен, 2 - будильник сработал
    */
   AlarmState getAlarmState() { return (sscAlarm.getAlarmState()); }
