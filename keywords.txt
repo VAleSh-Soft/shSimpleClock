@@ -35,6 +35,11 @@ setOnOffAlarm	KEYWORD2
 getAlarmState	KEYWORD2
 setColorOfNumber	KEYWORD2
 setColorOfBackground	KEYWORD2
+setMaxPSP	KEYWORD2
+getBrightnessMax	KEYWORD2
+setBrightnessMax	KEYWORD2
+getBrightnessMin	KEYWORD2
+setBrightnessMin	KEYWORD2
 
 #######################################
 # Constants (LITERAL1)

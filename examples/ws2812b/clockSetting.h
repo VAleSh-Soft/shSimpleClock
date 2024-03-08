@@ -89,6 +89,12 @@
 // ---- цвет фона --------------------------
 #define COLOR_OF_BACKGROUND CRGB::Black
 
+// ---- напряжение блока питания, В --------
+#define POWER_SUPPLY_VOLTAGE 5
+
+// ---- максимальный ток блока питания, мА --
+#define POWER_SUPPLY_CURRENT 2000
+
 // ---- пины для подключения матрицы -------
 #define DISPLAY_DIN_PIN 10 // пин для подключения экрана - DIN
 #define DISPLAY_CLK_PIN -1 // пин для подключения экрана - CLK (для четырехпроводных схем)

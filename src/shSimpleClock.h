@@ -492,14 +492,14 @@ public:
 
   /**
    * @brief получить текущий режим экрана часов
-   * 
-   * @return clkDisplayMode 
+   *
+   * @return clkDisplayMode
    */
   clkDisplayMode getDisplayMode() { return ssc_display_mode; }
 
   /**
    * @brief установить режим экрана часов
-   * 
+   *
    * @param _mode режим для установки
    */
   void setDisplayMode(clkDisplayMode _mode) { ssc_display_mode = _mode; }
@@ -591,6 +591,14 @@ public:
   {
     sscDisp.setColorOfBackground(_color);
   }
+
+  /**
+   * @brief установка максимальной мощности блока питания матрицы
+   *
+   * @param volts напряжение, Вольт
+   * @param milliamps максимальный ток, милиампер
+   */
+  void setMaxPSP(uint8_t volts, uint32_t milliamps) { sscDisp.setMaxPSP(volts, milliamps); }
 #endif
 
   /**
@@ -701,6 +709,52 @@ public:
    * @return AlarmState 0 - будильник выключен, 1 - будильник включен, 2 - будильник сработал
    */
   AlarmState getAlarmState() { return (sscAlarm.getAlarmState()); }
+#endif
+
+#ifdef USE_SET_BRIGHTNESS_MODE
+  /**
+   * @brief получение значения максимальной яркости экрана
+   *
+   * @return uint8_t
+   */
+  uint8_t getBrightnessMax() { return (EEPROM.read(MAX_BRIGHTNESS_VALUE_EEPROM_INDEX)); }
+
+  /**
+   * @brief установка максимальной яркости экрана
+   *
+   * @param _br новое значение
+   */
+  void setBrightnessMax(uint8_t _br)
+  {
+    EEPROM.update(MAX_BRIGHTNESS_VALUE_EEPROM_INDEX, _br)
+#if defined(CHIPSET_WS2812B)
+        _br *= 10;
+#endif
+    sscDisp.setBrightness(_br);
+  }
+
+#if defined(USE_LIGHT_SENSOR)
+  /**
+   * @brief получение значения минимальной яркости экрана
+   *
+   * @return uint8_t
+   */
+  uint8_t getBrightnessMin() { return (EEPROM.read(MIN_BRIGHTNESS_VALUE_EEPROM_INDEX)); }
+
+  /**
+   * @brief установка минимальной яркости экрана
+   *
+   * @param _br
+   */
+  void setBrightnessMin(uint8_t _br)
+  {
+    EEPROM.update(MIN_BRIGHTNESS_VALUE_EEPROM_INDEX, _br)
+#if defined(CHIPSET_WS2812B)
+        _br *= 10;
+#endif
+    sscDisp.setBrightness(_br);
+  }
+#endif
 #endif
 };
 

@@ -204,6 +204,7 @@ public:
     color = _color;
     matrix_type = _type;
     clear(true);
+    setMaxPSP(POWER_SUPPLY_VOLTAGE, POWER_SUPPLY_CURRENT);
   }
 
   /**
@@ -447,8 +448,8 @@ public:
 
   /**
    * @brief установка цвета символов
-   * 
-   * @param _color новый цвет 
+   *
+   * @param _color новый цвет
    */
   void setColorOfNumber(CRGB _color)
   {
@@ -457,12 +458,23 @@ public:
 
   /**
    * @brief установка цвета фона
-   * 
+   *
    * @param _color новый цвет
    */
   void setColorOfBackground(CRGB _color)
   {
-   bg_color = _color;
+    bg_color = _color;
+  }
+
+  /**
+   * @brief установка максимальной мощности блока питания матрицы
+   *
+   * @param volts напряжение, Вольт
+   * @param milliamps максимальный ток, милиампер
+   */
+  void setMaxPSP(uint8_t volts, uint32_t milliamps)
+  {
+    FastLED.setMaxPowerInVoltsAndMilliamps(volts, milliamps);
   }
 };
 
