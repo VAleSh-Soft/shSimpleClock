@@ -234,11 +234,7 @@ private:
   clkButtonFlag _flag = BTN_FLAG_NONE;
 
 public:
-#ifdef BTN_PULL_UP
-  clkButton(uint8_t button_pin) : shButton(button_pin)
-#else
-  clkButton(uint8_t button_pin) : shButton(button_pin, PULL_DOWN)
-#endif
+  clkButton(uint8_t button_pin) : shButton(button_pin, BTN_INPUT_TYPE, BTN_TYPE)
   {
     shButton::setTimeoutOfLongClick(TIMEOUT_OF_LONGCLICK);
     shButton::setLongClickMode(LCM_ONLYONCE);
