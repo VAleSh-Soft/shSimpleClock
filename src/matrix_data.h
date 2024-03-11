@@ -352,3 +352,102 @@ uint8_t reverseByte(uint8_t b)
   b = (b & 0xAA) >> 1 | (b & 0x55) << 1;
   return (b);
 }
+
+
+/**
+ * @brief класс для формирования данных бегущей строки
+ *
+ */
+class StringData
+{
+private:
+  uint8_t *data;
+  uint8_t data_count = 0;
+
+public:
+  StringData() {}
+
+  /**
+   * @brief инициализация строки
+   *
+   * @param _data_count размер строки в байтах (столбцах, с учетом ширины
+   * символа и величины межсимвольного интервала)
+   * @return возвращает true, если память для строки успешно выделена; иначе возвращает false
+   */
+  bool stringInit(uint8_t _data_count)
+  {
+    bool result = false;
+    stringFree();
+
+    {
+      data = (uint8_t *)calloc(_data_count, sizeof(uint8_t));
+      if (data != NULL)
+      {
+        result = true;
+        data_count = _data_count;
+      }
+    }
+
+    return (result);
+  }
+
+/**
+ * @brief освобождение памяти, занимаемой строкой
+ * 
+ * @return возвращает true, если память успешно освобождена
+ */
+  bool stringFree()
+  {
+    if (data != NULL)
+    {
+      free(data);
+      data_count = 0;
+    }
+
+    return (data == NULL);
+  }
+
+  /**
+   * @brief получение битовой маски столбца
+   *
+   * @param index индекс столбца
+   * @return результат
+   */
+  uint8_t getData(uint8_t index)
+  {
+    uint8_t result = 0;
+    if (data != NULL)
+    {
+      result = (index < data_count) ? data[index] : 0;
+    }
+    return (result);
+  }
+
+  /**
+   * @brief установка битовой маски столбца
+   *
+   * @param index индекс столбца
+   * @param _data битовая маска столбца
+   */
+  void setData(uint8_t index, uint8_t _data)
+
+  {
+    if ((data != NULL) && (index < data_count))
+    {
+      data[index] = _data;
+    }
+  }
+
+  /**
+   * @brief получение размера строки в столбцах
+   *
+   * @return результат
+   */
+  uint8_t getDataLenght()
+  {
+    return (data_count);
+  }
+};
+
+StringData sData; // данные бегущей строки
+

@@ -110,12 +110,12 @@
 #define USE_RU_LANGUAGE // использовать русский язык и символы кириллицы при выводе данных
 
 // ---- анимация ---------------------------
-#define USE_TICKER_FOR_DATE // использовать вывод даты в виде бегущей строки
+#define USE_TICKER_FOR_DATA // использовать вывод информации в виде бегущей строки
 
-#ifdef USE_TICKER_FOR_DATE
+#ifdef USE_TICKER_FOR_DATA
 
 // ---- скорость анимации, fps -------------
-#define TICKER_SPEED 50 // скорость бегущей строки в кадрах в секунду; 
+#define TICKER_SPEED 100 // скорость бегущей строки в кадрах в секунду; 
 
 #endif
 
@@ -274,8 +274,14 @@ uint8_t constexpr _bit_depth = 10;           // разрядность АЦП и
 
 // ==== настройки EEPROM =============================
 
+#if defined(USE_CALENDAR) || defined(USE_TEMP_DATA)
+#define PERIOD_FOR_ASHD_EEPROM_VALUE 96 //  индекс в EEPROM для сохранения периодичности автопоказа даты и температуры
+#endif
+#ifdef USE_TICKER_FOR_DATA
+#define TICKER_STATE_EEPROM_VALUE 97 // индекс в EEPROM для сохранения статуса анимации
+#endif
 #ifdef USE_LIGHT_SENSOR
-#define LIGHT_THRESHOLD_EEPROM_INDEX 97      // индекс в EEPROM для сохранения порога переключения яркости (uint8_t)
+#define LIGHT_THRESHOLD_EEPROM_INDEX 95      // индекс в EEPROM для сохранения порога переключения яркости (uint8_t)
 #define MIN_BRIGHTNESS_VALUE_EEPROM_INDEX 98 // индекс в EEPROM для сохранения  минимального значения яркости экрана (uint8_t)
 #endif
 #define MAX_BRIGHTNESS_VALUE_EEPROM_INDEX 99 // индекс в EEPROM для сохранения  максимального значение яркости экрана (uint8_t)

@@ -123,47 +123,6 @@ private:
     }
   }
 
-#ifdef USE_TICKER_FOR_DATE
-  uint8_t getOffset(uint8_t index)
-  {
-    static const uint8_t PROGMEM offset[] = {1, 48, 82, 167};
-
-    return ((index < 9) ? pgm_read_byte(&offset[index]) : 0);
-  }
-
-  void getDateString(uint8_t *_data, uint8_t _data_count, DateTime date)
-  {
-    for (uint8_t i = 0; i < _data_count; i++)
-    {
-      _data[i] = 0x00;
-    }
-
-    uint8_t offset = getOffset(0);
-    // формирование строки времени
-    setNumString(offset, date.hour(), 6, 1, _data, _data_count);
-    _data[offset + 14] = 0x24; // двоеточие
-    setNumString(offset + 16, date.minute(), 6, 1, _data, _data_count);
-
-    // формирование строки дня недели
-    offset = getOffset(1);
-    setDayOfWeakString(offset, date, _data, _data_count);
-
-    // формирование строки даты
-    offset = getOffset(2);
-    setNumString(offset, date.day(), 6, 2, _data, _data_count);
-    _data[offset + 15] = 0x01; // точка
-    setNumString(offset + 18, date.month(), 6, 2, _data, _data_count);
-    _data[offset + 33] = 0x01; // точка
-    setNumString(offset + 36, 20, 6, 2, _data, _data_count);
-    setNumString(offset + 52, date.year() % 100, 6, 2, _data, _data_count);
-
-    // формирование строки времени
-    offset = getOffset(3);
-    setNumString(offset, date.hour(), 6, 1, _data, _data_count);
-    _data[offset + 14] = 0x24; // двоеточие
-    setNumString(offset + 16, date.minute(), 6, 1, _data, _data_count);
-  }
-#endif
 
   void setChar(uint8_t offset, uint8_t chr,
                uint8_t width = 6, uint8_t *_arr = NULL, uint8_t _arr_length = 0)
@@ -368,27 +327,12 @@ public:
 
     if (upd)
     {
-#ifdef USE_TICKER_FOR_DATE
-      n = 32;
-#else
       n = 0;
-#endif
       return (result);
     }
     clear();
 
-// бегущая строка
-#ifdef USE_TICKER_FOR_DATE
-    uint8_t str_len = 200;
-    uint8_t date_str[str_len];
-    getDateString(date_str, str_len, date);
-
-    for (uint8_t i = 32, j = n; i > 0 && j > 0; i--, j--)
-    {
-      setColumn(i, date_str[j - 1]);
-    }
 // последовательный вывод - день недели, число и месяц, год
-#else
     switch (n)
     {
     case 0:
@@ -404,15 +348,10 @@ public:
       setNumString(17, date.year() % 100, 6, 2);
       break;
     }
-#endif
 
     FastLED.show();
 
-#ifdef USE_TICKER_FOR_DATE
-    result = (n++ >= str_len - 2);
-#else
     result = (n++ >= 3);
-#endif
 
     return (result);
   }
