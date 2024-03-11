@@ -6,6 +6,7 @@
 #include <avr/pgmspace.h>
 #include <shButton.h> // https://github.com/VAleSh-Soft/shButton
 #include "shSimpleRTC.h"
+#include "shClockEvent.h"
 
 // ===================================================
 
@@ -57,6 +58,9 @@ void sscCheckDS18b20();
 #include "ntc.h"
 #endif
 #endif
+
+shClockEvent sscClockEvent;
+shClockEvent sscAlarmEvent;
 
 // ==== clkTaskManager ===============================
 
@@ -507,6 +511,25 @@ public:
   void setDisplayMode(clkDisplayMode _mode) { ssc_display_mode = _mode; }
 
   /**
+   * @brief подключить callback-функцию к ежесекундному событию
+   *
+   * @param _interval интервал вызова функции в секундах
+   * @param _callback вызываемая функция
+   * @param _active статус события - активно/не активно
+   */
+  void setClockEvent(uint16_t _interval, sceCallback _callback, bool _active = true)
+  {
+    sscClockEvent.init(_interval, _callback, _active);
+  }
+
+  /**
+   * @brief установить статус ежесекундного события
+   *
+   * @param _state true - событие активно; flase - событие не активно
+   */
+  void setClockEventState(bool _state) { sscClockEvent.setState(_state); }
+
+  /**
    * @brief получить текущий статус или событие кнопки Set
    *
    * @return uint8_t
@@ -669,6 +692,24 @@ public:
 
 #ifdef USE_ALARM
   /**
+   * @brief подключить callback-функцию к событию будильника
+   *
+   * @param _callback вызываемая функция
+   * @param _active статус события - активно/не активно
+   */
+  void setAlarmEvent(sceCallback _callback, bool _active = true)
+  {
+    sscAlarmEvent.init(_callback, _active);
+  }
+
+  /**
+   * @brief установить статус события будильника
+   *
+   * @param _state true - событие активно; flase - событие не активно
+   */
+  void setAlarmEventState(bool _state) { sscAlarmEvent.setState(_state); }
+
+  /**
    * @brief получение времени срабатывания будильника
    *
    * @return uint16_t количество минут с полуночи
@@ -793,6 +834,7 @@ void sscBlink()
   static uint32_t tmr = 0;
   if (cur_sec != sscClock.getCurTime().second())
   {
+    sscClockEvent.run();
     cur_sec = sscClock.getCurTime().second();
     sscBlinkFlag = true;
     tmr = millis();
@@ -1383,6 +1425,7 @@ void sscCheckAlarm()
   if (sscAlarm.getAlarmState() == ALARM_YES && !sscTasks.getTaskState(ssc_alarm_buzzer))
   {
     sscRunAlarmBuzzer();
+    sscAlarmEvent.run();
   }
 }
 

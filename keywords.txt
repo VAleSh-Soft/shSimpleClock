@@ -40,6 +40,10 @@ getBrightnessMax	KEYWORD2
 setBrightnessMax	KEYWORD2
 getBrightnessMin	KEYWORD2
 setBrightnessMin	KEYWORD2
+setClockEvent	KEYWORD2
+setAlarmEvent	KEYWORD2
+setClockEventState	KEYWORD2
+setAlarmEventState	KEYWORD2
 
 #######################################
 # Constants (LITERAL1)
