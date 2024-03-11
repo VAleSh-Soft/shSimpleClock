@@ -195,6 +195,27 @@ public:
   }
 
   /**
+   * @brief получение битовой маски столбца из буфера устройства
+   *
+   * @param column столбец (координата X)
+   * @return результат
+   */
+  uint8_t getColumn(uint8_t col)
+  {
+    uint8_t result = 0x00;
+    if (col < 32)
+    {
+      for (uint8_t i = 0; i < 8; i++)
+      {
+        CRGB x = leds[getLedIndexOfStrip(i, col)];
+        ((x.r != 0x00 || x.g != 0x00 || x.b != 0x00)) ? (result) |= (1UL << (i))
+                                                      : (result) &= ~(1UL << (i));
+      }
+    }
+    return (result);
+  }
+
+  /**
    * @brief очистка буфера экрана
    *
    * @param upd при false очищается только буфер экрана, при true - очищается и сам экран

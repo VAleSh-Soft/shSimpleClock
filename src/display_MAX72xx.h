@@ -352,6 +352,22 @@ public:
   DisplayMAX72xxMatrix() : shMAX72xxMini<cs_pin, 4>() { clear(); }
 
   /**
+   * @brief получение битовой маски столбца из буфера устройства
+   *
+   * @param column столбец (координата X)
+   * @return результат
+   */
+  uint8_t getColumn(uint8_t col)
+  {
+    uint8_t result = 0x00;
+    if (col < 32)
+    {
+      result = shMAX72xxMini<cs_pin, 4>::getColumn(col / 8, col % 8);
+    }
+    return (result);
+  }
+
+  /**
    * @brief очистка экрана
    *
    * @param upd при false очищается только буфер экрана, при true - очищается и сам экран
