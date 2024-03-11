@@ -1,3 +1,13 @@
+/**
+ * @file alarm.h
+ * @author Vladimir Shatalov (valesh-soft@yandex.ru)
+ * @brief Класс, реализующий будильник
+ * @version 1.0
+ * @date 11.03.2024
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
 #pragma once
 #include <Arduino.h>
 #include "shSimpleRTC.h"
@@ -58,7 +68,7 @@ private:
       led_state = HIGH;
       n = 0;
       break;
-    case ALARM_YES: // при сработавшем будильнике светодиод мигает с периодом 0.2 секунды
+    case ALARM_YES: // при сработавшем будильнике светодиод мигает с частотой вызова метода tick()
       led_state = n != 0;
       if (++n > 1)
       {

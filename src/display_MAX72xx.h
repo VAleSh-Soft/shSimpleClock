@@ -1,3 +1,13 @@
+/**
+ * @file display_MAX72xx.h
+ * @author Vladimir Shatalov (valesh-soft@yandex.ru)
+ * @brief Модуль, реализующий работу часов с экранами, основанными на драйверах MAX7219/MAX7221
+ * @version 1.0
+ * @date 11.03.2024
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
 #pragma once
 #include "matrix_data.h"
 #include <Arduino.h>

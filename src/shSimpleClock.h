@@ -265,6 +265,12 @@ public:
       {
         sscTasks.startTask(ssc_return_to_default_mode);
       }
+#ifdef USE_BUZZER_FOR_BUTTON
+      if (_state != BTN_LONGCLICK)
+      {
+        tone(BUZZER_PIN, 2000, 25); // на каждый клик срабатывает пищалка
+      }
+#endif
 #ifdef USE_ALARM
       // если сработал будильник, отключить его
       if (sscAlarm.getAlarmState() == ALARM_YES)
@@ -705,6 +711,18 @@ public:
    * @return AlarmState 0 - будильник выключен, 1 - будильник включен, 2 - будильник сработал
    */
   AlarmState getAlarmState() { return (sscAlarm.getAlarmState()); }
+
+  /**
+   * @brief отключение сигнала сработавшего будильника
+   *
+   */
+  void buzzerStop()
+  {
+    if (sscAlarm.getAlarmState() == ALARM_YES)
+    {
+      sscAlarm.setAlarmState(ALARM_ON);
+    }
+  }
 #endif
 
 #ifdef USE_SET_BRIGHTNESS_MODE

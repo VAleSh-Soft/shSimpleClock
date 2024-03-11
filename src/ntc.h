@@ -14,6 +14,7 @@
    int16_t getTemp() - получение температуры с датчика;
 
    void setADCbitDepth(bit_depth) - установка разрядности АЦП используемого микроконтроллера; для Ардуино UNO, Nano, Pro Mini bit_depth = 10; (это значение по умолчанию)
+   
 */
 #pragma once
 #include <Arduino.h>

@@ -1,3 +1,13 @@
+/**
+ * @file shSimpleRTC.h
+ * @author Vladimir Shatalov (valesh-soft@yandex.ru)
+ * @brief Небольшой модуль для работы с модулями часов реального времени DS3231 и DS1307
+ * @version 1.0
+ * @date 11.03.2024
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
 #pragma once
 #include <Arduino.h>
 #include <Wire.h>

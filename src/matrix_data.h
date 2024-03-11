@@ -1,3 +1,13 @@
+/**
+ * @file matrix_data.h
+ * @author Vladimir Shatalov (valesh-soft@yandex.ru)
+ * @brief Модуль для работы с матричными экранами
+ * @version 1.0
+ * @date 11.03.2024
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
 #pragma once
 
 #include <avr/pgmspace.h>

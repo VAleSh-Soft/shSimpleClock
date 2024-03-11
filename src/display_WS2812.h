@@ -1,3 +1,13 @@
+/**
+ * @file display_WS2812.h
+ * @author Vladimir Shatalov (valesh-soft@yandex.ru)
+ * @brief Модуль, реализующий работу часов с матрицами, построенными на адресных светодиодах
+ * @version 1.0
+ * @date 11.03.2024
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
 #pragma once
 #include "matrix_data.h"
 #include <Arduino.h>
