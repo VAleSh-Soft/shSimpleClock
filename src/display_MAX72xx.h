@@ -352,6 +352,20 @@ public:
   DisplayMAX72xxMatrix() : shMAX72xxMini<cs_pin, 4>() { clear(); }
 
   /**
+   * @brief запись столбца в буфер экрана
+   *
+   * @param col столбец
+   * @param _data байт для записи
+   */
+  void setColumn(uint8_t col, uint8_t _data)
+  {
+    if (col < 32)
+    {
+      shMAX72xxMini<cs_pin, 4>::setColumn(col / 8, col % 8, _data);
+    }
+  }
+
+  /**
    * @brief получение битовой маски столбца из буфера устройства
    *
    * @param column столбец (координата X)

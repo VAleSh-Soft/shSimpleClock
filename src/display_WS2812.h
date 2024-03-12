@@ -4,9 +4,9 @@
  * @brief Модуль, реализующий работу часов с матрицами, построенными на адресных светодиодах
  * @version 1.0
  * @date 11.03.2024
- * 
+ *
  * @copyright Copyright (c) 2024
- * 
+ *
  */
 #pragma once
 #include "matrix_data.h"
@@ -123,7 +123,6 @@ private:
     }
   }
 
-
   void setChar(uint8_t offset, uint8_t chr,
                uint8_t width = 6, uint8_t *_arr = NULL, uint8_t _arr_length = 0)
   {
@@ -208,8 +207,9 @@ public:
       for (uint8_t i = 0; i < 8; i++)
       {
         CRGB x = leds[getLedIndexOfStrip(i, col)];
-        ((x.r != 0x00 || x.g != 0x00 || x.b != 0x00)) ? (result) |= (1UL << (i))
-                                                      : (result) &= ~(1UL << (i));
+        CRGB y = COLOR_OF_BACKGROUND;
+        ((x.r != y.r || x.g != y.g || x.b != y.b)) ? (result) |= (1UL << (7 - i))
+                                                   : (result) &= ~(1UL << (7 - i));
       }
     }
     return (result);
@@ -353,7 +353,7 @@ public:
     }
     clear();
 
-// последовательный вывод - день недели, число и месяц, год
+    // последовательный вывод - день недели, число и месяц, год
     switch (n)
     {
     case 0:

@@ -4,14 +4,13 @@
  * @brief Модуль для работы с матричными экранами
  * @version 1.0
  * @date 11.03.2024
- * 
+ *
  * @copyright Copyright (c) 2024
- * 
+ *
  */
 #pragma once
 
 #include <avr/pgmspace.h>
-
 
 // цифры 6x8
 static const uint8_t PROGMEM font_digit[] = {
@@ -27,7 +26,7 @@ static const uint8_t PROGMEM font_digit[] = {
     0x72, 0x89, 0x89, 0x89, 0x89, 0x7E, // 9 0x09
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // space 0x0A
     0x22, 0x14, 0x08, 0x14, 0x22, 0x00, // x 0x0B
-    0x08, 0x04, 0x02, 0x0C, 0x30, 0x40  // √ 0x0C    
+    0x08, 0x04, 0x02, 0x0C, 0x30, 0x40  // √ 0x0C
 };
 
 // шрифт 5х7
@@ -268,7 +267,7 @@ static const uint8_t PROGMEM font_5_7[] = {
     0x7C, 0x40, 0x26, 0x10, 0x7C, // й 0xE9
     0x7C, 0x10, 0x10, 0x28, 0x44, // к 0xEA
     0x40, 0x38, 0x04, 0x04, 0x7C, // л 0xEB
-    0x7C, 0x08, 0x10, 0x08, 0x7C, // ь 0xEC
+    0x7C, 0x08, 0x10, 0x08, 0x7C, // м 0xEC
     0x7C, 0x10, 0x10, 0x10, 0x7C, // н 0xED
     0x38, 0x44, 0x44, 0x44, 0x38, // о 0xEE
     0x7C, 0x04, 0x04, 0x04, 0x7C, // п 0xEF
@@ -290,6 +289,11 @@ static const uint8_t PROGMEM font_5_7[] = {
     0x48, 0x34, 0x14, 0x14, 0x7C  // я 0xFF
 };
 
+#define DISP_DATE_DISPLAY_INTERVAL_TAG 0
+#define DISP_ANIMATION_TAG 1
+#define DISP_ALARM_TAG 2
+#define DISP_BRIGHTNESS_TAG 3
+
 #ifdef USE_RU_LANGUAGE
 static const uint8_t PROGMEM day_of_week[] = {
     0xC2, 0xD1, 0xCA, // "ВСК";
@@ -299,6 +303,13 @@ static const uint8_t PROGMEM day_of_week[] = {
     0xD7, 0xD2, 0xC2, // "ЧТВ";
     0xCF, 0xD2, 0xCD, // "ПТН";
     0xD1, 0xC1, 0xD2  // "СБТ";
+};
+
+static const uint8_t PROGMEM tags[] = {
+    0xC0, 0xE2, 0xE4, // Авд - автовывод даты
+    0xC0, 0xED, 0xEC, // Анм - анимация
+    0xC1, 0xE4, 0xEA, // Бдк - будильник
+    0xDF, 0xF0, 0xEA  // Ярк - яркость
 };
 #else
 static const uint8_t PROGMEM day_of_week[] = {
@@ -310,6 +321,13 @@ static const uint8_t PROGMEM day_of_week[] = {
     0x46, 0x52, 0x49, // "FRI";
     0x53, 0x41, 0x54  // "SAT";
 };
+
+static const uint8_t PROGMEM tags[] = {
+    0x44, 0x64, 0x69, // Ddi - Date display interval
+    0x41, 0x6E, 0x69, // Ani - Animation
+    0x41, 0x6C, 0x6D, // Alm - Alarm
+    0x42, 0x72, 0x73  // Brs - Brightness
+};
 #endif
 
 /**
@@ -320,7 +338,8 @@ static const uint8_t PROGMEM day_of_week[] = {
  * @param _year год
  * @return номер дня недели в интервале 0 (воскресенье) .. 6 (суббота)
  */
-uint8_t getDayOfWeek(uint8_t _day, uint8_t _month, uint16_t _year)
+uint8_t
+getDayOfWeek(uint8_t _day, uint8_t _month, uint16_t _year)
 {
   static const uint8_t PROGMEM m[12] = {6, 2, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4};
 
@@ -352,7 +371,6 @@ uint8_t reverseByte(uint8_t b)
   b = (b & 0xAA) >> 1 | (b & 0x55) << 1;
   return (b);
 }
-
 
 /**
  * @brief класс для формирования данных бегущей строки
@@ -391,11 +409,11 @@ public:
     return (result);
   }
 
-/**
- * @brief освобождение памяти, занимаемой строкой
- * 
- * @return возвращает true, если память успешно освобождена
- */
+  /**
+   * @brief освобождение памяти, занимаемой строкой
+   *
+   * @return возвращает true, если память успешно освобождена
+   */
   bool stringFree()
   {
     if (data != NULL)
@@ -450,4 +468,3 @@ public:
 };
 
 StringData sData; // данные бегущей строки
-

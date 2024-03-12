@@ -275,10 +275,10 @@ uint8_t constexpr _bit_depth = 10;           // разрядность АЦП и
 // ==== настройки EEPROM =============================
 
 #if defined(USE_CALENDAR) || defined(USE_TEMP_DATA)
-#define PERIOD_FOR_ASHD_EEPROM_VALUE 96 //  индекс в EEPROM для сохранения периодичности автопоказа даты и температуры
+#define INTERVAL_FOR_AUTOSHOWDATA_EEPROM_INDEX 96 //  индекс в EEPROM для сохранения периодичности автопоказа даты и температуры
 #endif
 #ifdef USE_TICKER_FOR_DATA
-#define TICKER_STATE_EEPROM_VALUE 97 // индекс в EEPROM для сохранения статуса анимации
+#define TICKER_STATE_VALUE_EEPROM_INDEX 97 // индекс в EEPROM для сохранения статуса анимации
 #endif
 #ifdef USE_LIGHT_SENSOR
 #define LIGHT_THRESHOLD_EEPROM_INDEX 95      // индекс в EEPROM для сохранения порога переключения яркости (uint8_t)
@@ -286,7 +286,7 @@ uint8_t constexpr _bit_depth = 10;           // разрядность АЦП и
 #endif
 #define MAX_BRIGHTNESS_VALUE_EEPROM_INDEX 99 // индекс в EEPROM для сохранения  максимального значение яркости экрана (uint8_t)
 #ifdef USE_ALARM
-#define ALARM_EEPROM_INDEX 100 // индекс в EEPROM для сохранения настроек будильника (uint8_t + uint16_t)
+#define ALARM_DATA_EEPROM_INDEX 100 // индекс в EEPROM для сохранения настроек будильника (uint8_t + uint16_t)
 #endif
 
 
