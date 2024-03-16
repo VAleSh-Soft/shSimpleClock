@@ -29,10 +29,10 @@ public:
     callback = _callback;
   }
 
-  ~shClockEvent()
-  {
-    callback = NULL;
-  }
+  // ~shClockEvent()
+  // {
+  //   callback = NULL;
+  // }
 
   void run()
   {

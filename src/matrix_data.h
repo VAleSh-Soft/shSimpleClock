@@ -293,6 +293,7 @@ static const uint8_t PROGMEM font_5_7[] = {
 #define DISP_ANIMATION_TAG 1
 #define DISP_ALARM_TAG 2
 #define DISP_BRIGHTNESS_TAG 3
+#define DISP_LIGHT_THRESHOLD_TAG 4
 
 #ifdef USE_RU_LANGUAGE
 static const uint8_t PROGMEM day_of_week[] = {
@@ -309,8 +310,25 @@ static const uint8_t PROGMEM tags[] = {
     0xC0, 0xE2, 0xE4, // Авд - автовывод даты
     0xC0, 0xED, 0xEC, // Анм - анимация
     0xC1, 0xE4, 0xEA, // Бдк - будильник
-    0xDF, 0xF0, 0xEA  // Ярк - яркость
+    0xDF, 0xF0, 0xEA, // Ярк - яркость
+    0xCF, 0xF0, 0xE3  // Прг - порог переключения яркости
 };
+
+static const uint8_t PROGMEM months[] = {
+    // янв
+    // фев
+    // мар
+    // апр
+    // мая
+    // июн
+    // июл
+    // авг
+    // сен
+    // окт
+    // ноя
+    // дек
+};
+
 #else
 static const uint8_t PROGMEM day_of_week[] = {
     0x53, 0x55, 0x4E, // "SUN";
@@ -326,7 +344,8 @@ static const uint8_t PROGMEM tags[] = {
     0x44, 0x64, 0x69, // Ddi - Date display interval
     0x41, 0x6E, 0x69, // Ani - Animation
     0x41, 0x6C, 0x6D, // Alm - Alarm
-    0x42, 0x72, 0x73  // Brs - Brightness
+    0x42, 0x72, 0x73, // Brs - Brightness
+    0x54, 0x68, 0x72  // Thr - Threshold
 };
 #endif
 

@@ -29,7 +29,7 @@ void clockEventExample()
   Serial.println(" seconds have passed");
 }
 
-void AlarmEventExample()
+void alarmEventExample()
 {
   Serial.println("The alarm went off");
 }
@@ -42,7 +42,7 @@ void setup()
   clock.setClockEvent(5, clockEventExample);
 
   // подключаем событие будильника
-  clock.setAlarmEvent(AlarmEventExample);
+  clock.setAlarmEvent(alarmEventExample);
 
   // инициализируем часы
   clock.init();

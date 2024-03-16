@@ -298,9 +298,19 @@ uint8_t constexpr _bit_depth = 10;
 ### Блок "настройки EEPROM"
 
 ```
+#define INTERVAL_FOR_AUTOSHOWDATA_EEPROM_INDEX 96
+```
+индекс ячейки в **EEPROM** для сохранения интервала автовывода даты и/или температуры на экран (uint8_t); имеет смысл только при использовании одной из опций `USE_CALENDAR` или `USE_TEMP_DATA`.
+
+```
 #define LIGHT_THRESHOLD_EEPROM_INDEX 97  
 ```
 индекс ячейки в **EEPROM** для сохранения порога переключения яркости (uint8_t); имеет смысл только при использовании датчика освещенности.
+
+```
+#define LIGHT_THRESHOLD_EEPROM_INDEX 95
+```
+индекс ячейки в **EEPROM** для сохранения порога переключения яркости экрана (uint8_t); имеет смысл только при использовании опции `USE_LIGHT_SENSOR`.
 
 ```
 #define MIN_BRIGHTNESS_VALUE_EEPROM_INDEX 98 

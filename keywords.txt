@@ -45,6 +45,12 @@ setClockEvent	KEYWORD2
 setAlarmEvent	KEYWORD2
 setClockEventState	KEYWORD2
 setAlarmEventState	KEYWORD2
+getLightThresholdValue	KEYWORD2
+setLightThresholdValue	KEYWORD2
+setClockEventState	KEYWORD2
+getAlarmEventState	KEYWORD2
+setAnimationState	KEYWORD2
+getAnimationState	KEYWORD2
 
 #######################################
 # Constants (LITERAL1)

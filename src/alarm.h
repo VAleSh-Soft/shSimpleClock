@@ -4,29 +4,29 @@
  * @brief Класс, реализующий будильник
  * @version 1.0
  * @date 11.03.2024
- * 
+ *
  * @copyright Copyright (c) 2024
- * 
+ *
  */
 #pragma once
 #include <Arduino.h>
 #include "shSimpleRTC.h"
-#include <EEPROM.h>
+#include "_eeprom.h"
 
 #define MAX_DATA 1439 // максимальное количество минут для установки будильника (23 ч, 59 мин)
 
-enum IndexOffset : uint8_t // смещение от стартового индекса в EEPROM для хранения настроек
-/* общий размер настроек - 3 байта */
-{
-  ALARM_STATE = 0, // состояние будильника, включен/нет, uint8_t
-  ALARM_POINT = 1  // точка срабатывания будильника в минутах от полуночи, uint16_t
-};
+/*смещение от стартового индекса в EEPROM для хранения настроек
+ * общий размер настроек - 3 байта 
+ */
+
+uint8_t constexpr ALARM_STATE = 0; // состояние будильника, включен/нет, uint8_t
+uint8_t constexpr ALARM_POINT = 1; // точка срабатывания будильника в минутах от полуночи, uint16_t
 
 enum AlarmState : uint8_t // состояние будильника
 {
   ALARM_OFF, // будильник выключен
   ALARM_ON,  // будильник включен
-  ALARM_YES  //будильник сработал
+  ALARM_YES  // будильник сработал
 };
 
 class Alarm
@@ -35,28 +35,6 @@ private:
   uint8_t led_pin;
   uint16_t eeprom_index;
   AlarmState state;
-
-  uint8_t read_eeprom_8(IndexOffset _index)
-  {
-    return (EEPROM.read(eeprom_index + _index));
-  }
-
-  uint16_t read_eeprom_16(IndexOffset _index)
-  {
-    uint16_t _data;
-    EEPROM.get(eeprom_index + _index, _data);
-    return (_data);
-  }
-
-  void write_eeprom_8(IndexOffset _index, uint8_t _data)
-  {
-    EEPROM.update(eeprom_index + _index, _data);
-  }
-
-  void write_eeprom_16(IndexOffset _index, uint16_t _data)
-  {
-    EEPROM.put(eeprom_index + _index, _data);
-  }
 
   void setLed()
   {
@@ -87,15 +65,15 @@ public:
     led_pin = _led_pin;
     pinMode(led_pin, OUTPUT);
     eeprom_index = _eeprom_index;
-    if (read_eeprom_8(ALARM_STATE) > 1)
+    if (read_eeprom_8(eeprom_index + ALARM_STATE) > 1)
     {
-      write_eeprom_8(ALARM_STATE, 0);
+      write_eeprom_8(eeprom_index + ALARM_STATE, 0);
     }
-    if (read_eeprom_16(ALARM_POINT) > MAX_DATA)
+    if (read_eeprom_16(eeprom_index + ALARM_POINT) > MAX_DATA)
     {
-      write_eeprom_16(ALARM_POINT, 360);
+      write_eeprom_16(eeprom_index + ALARM_POINT, 360);
     }
-    state = (AlarmState)read_eeprom_8(ALARM_STATE);
+    state = (AlarmState)read_eeprom_8(eeprom_index + ALARM_STATE);
   }
 
   /**
@@ -118,7 +96,7 @@ public:
    * @return true
    * @return false
    */
-  bool getOnOffAlarm() { return (bool)read_eeprom_8(ALARM_STATE); }
+  bool getOnOffAlarm() { return (bool)read_eeprom_8(eeprom_index + ALARM_STATE); }
 
   /**
    * @brief включение/выключение будильника
@@ -127,7 +105,7 @@ public:
    */
   void setOnOffAlarm(bool _state)
   {
-    write_eeprom_8(ALARM_STATE, (uint8_t)_state);
+    write_eeprom_8(eeprom_index + ALARM_STATE, (uint8_t)_state);
     state = (AlarmState)_state;
   }
 
@@ -136,14 +114,14 @@ public:
    *
    * @return uint16_t
    */
-  uint16_t getAlarmPoint() { return (read_eeprom_16(ALARM_POINT)); }
+  uint16_t getAlarmPoint() { return (read_eeprom_16(eeprom_index + ALARM_POINT)); }
 
   /**
    * @brief установка времени срабатывания будильника
    *
    * @param _time время в минутах от начала суток
    */
-  void setAlarmPoint(uint16_t _time) { write_eeprom_16(ALARM_POINT, _time); }
+  void setAlarmPoint(uint16_t _time) { write_eeprom_16(eeprom_index + ALARM_POINT, _time); }
 
   /**
    * @brief проверка текущего состояния будильника
