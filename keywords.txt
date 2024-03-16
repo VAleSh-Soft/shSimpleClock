@@ -35,6 +35,7 @@ setOnOffAlarm	KEYWORD2
 getAlarmState	KEYWORD2
 buzzerStop	KEYWORD2
 setColorOfNumber	KEYWORD2
+getColorOfNumber	KEYWORD2
 setColorOfBackground	KEYWORD2
 setMaxPSP	KEYWORD2
 getBrightnessMax	KEYWORD2

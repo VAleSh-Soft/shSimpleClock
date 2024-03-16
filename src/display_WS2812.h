@@ -19,6 +19,19 @@
 
 #define __ESPICHIPSET__ defined CHIPSET_LPD6803 || defined CHIPSET_LPD8806 || defined CHIPSET_WS2801 || defined CHIPSET_WS2803 || defined CHIPSET_SM16716 || defined CHIPSET_P9813 || defined CHIPSET_APA102 || defined CHIPSET_SK9822 || defined CHIPSET_DOTSTAR
 
+// ===================================================
+
+static const uint32_t PROGMEM color_of_number[] = {
+    0xFFFFFF, // белый (White)
+    0xFF0000, // красный (Red)
+    0xFF4500, // оранжевый (Orange)
+    0xFFCC00, // желтый (Yellow)
+    0x00FF00, // зеленый (Green)
+    0x00FFFF, // голубой (Blue)
+    0x0000FF, // синий (Indigo)
+    0xEE82EE  // фиолетовый (Violet)
+};
+
 // ==== класс для матрицы 8х32 адресных светодиодов ==
 
 /**
@@ -72,8 +85,10 @@ private:
                     uint8_t width = 6, uint8_t space = 1,
                     uint8_t *_data = NULL, uint8_t _data_count = 0)
   {
-    setChar(offset, num / 10, width, _data, _data_count);
-    setChar(offset + width + space, num % 10, width, _data, _data_count);
+    uint8_t x = (width == 6) ? num / 10 : num / 10 + 0x30;
+    setChar(offset, x, width);
+    x = (width == 6) ? num % 10 : num % 10 + 0x30;
+    setChar(offset + width + space, x, width);
   }
 
   void setDayOfWeakString(uint8_t offset, DateTime date, uint8_t *_data = NULL, uint8_t _data_count = 0)
@@ -289,17 +304,36 @@ public:
   void showTime(int8_t hour, int8_t minute, uint8_t second, bool show_colon, bool date = false)
   {
     clear();
+
     if (hour >= 0)
     {
-      setNumString(1, hour, 6, 1);
+      if (date)
+      {
+        setNumString(1, hour, 5, 1);
+      }
+      else
+      {
+        setNumString(1, hour, 6, 1);
+      }
     }
     if (minute >= 0)
     {
-      setNumString(17, minute, 6, 1);
+      if (date)
+      {
+        for (uint8_t j = 0; j < 3; j++)
+        {
+          setChar(15 + j * 6,
+                  pgm_read_byte(&months[(minute - 1) * 3 + j]), 5);
+        }
+      }
+      else
+      {
+        setNumString(17, minute, 6, 1);
+      }
     }
-    if (show_colon)
+    if (show_colon && !date)
     {
-      setColon(date);
+      setColon(false);
     }
 
 #ifdef SHOW_SECOND_COLUMN
@@ -321,6 +355,23 @@ public:
     }
     setColumn(31, col_sec);
 #endif
+  }
+
+/**
+ * @brief вывод года на экран; если _year < 0, то вторая часть года стирается, что позволяет организовать мигание значения при его настройке
+ * 
+ * @param _year значение для вывода (вторая часть)
+ */
+  void showYear(int8_t _year)
+  {
+    clear();
+
+    setNumString(1, 20, 6, 1);
+
+    if (_year >= 0)
+    {
+      setNumString(17, _year, 6, 1);
+    }
   }
 
   /**
@@ -424,6 +475,16 @@ public:
   void setColorOfNumber(CRGB _color)
   {
     color = _color;
+  }
+
+  /**
+   * @brief получение текущего цвета символов
+   *
+   * @return CRGB
+   */
+  CRGB getColorOfNumber()
+  {
+    return (color);
   }
 
   /**

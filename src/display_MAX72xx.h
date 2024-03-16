@@ -4,15 +4,15 @@
  * @brief Модуль, реализующий работу часов с экранами, основанными на драйверах MAX7219/MAX7221
  * @version 1.0
  * @date 11.03.2024
- * 
+ *
  * @copyright Copyright (c) 2024
- * 
+ *
  */
 #pragma once
 #include "matrix_data.h"
 #include <Arduino.h>
 #include <avr/pgmspace.h>
-#include "shSimpleRTC.h"      
+#include "shSimpleRTC.h"
 #include <shMAX72xxMini.h> // https://github.com/VAleSh-Soft/shMAX72xxMini
 
 // ==== класс для 7-сегментного индикатора MAX72xx ===
@@ -261,8 +261,10 @@ private:
                     uint8_t width = 6, uint8_t space = 1,
                     uint8_t *_data = NULL, uint8_t _data_count = 0)
   {
-    setChar(offset, num / 10, width, _data, _data_count);
-    setChar(offset + width + space, num % 10, width, _data, _data_count);
+    uint8_t x = (width == 6) ? num / 10 : num / 10 + 0x30;
+    setChar(offset, x, width);
+    x = (width == 6) ? num % 10 : num % 10 + 0x30;
+    setChar(offset + width + space, x, width);
   }
 
   void setDayOfWeakString(uint8_t offset, DateTime date, uint8_t *_data = NULL, uint8_t _data_count = 0)
@@ -311,7 +313,6 @@ private:
       setChar(offset + 25, 0x43, 5, _data, _data_count);
     }
   }
-
 
   void setChar(uint8_t offset, uint8_t chr,
                uint8_t width = 6, uint8_t *_arr = NULL, uint8_t _arr_length = 0)
@@ -432,20 +433,40 @@ public:
    * @param show_colon отображать или нет двоеточие между часами и минутами
    * @param date флаг, показывающий, что выводится дата, а не время
    */
+
   void showTime(int8_t hour, int8_t minute, uint8_t second, bool show_colon, bool date = false)
   {
     clear();
+
     if (hour >= 0)
     {
-      setNumString(1, hour, 6, 1);
+      if (date)
+      {
+        setNumString(1, hour, 5, 1);
+      }
+      else
+      {
+        setNumString(1, hour, 6, 1);
+      }
     }
     if (minute >= 0)
     {
-      setNumString(17, minute, 6, 1);
+      if (date)
+      {
+        for (uint8_t j = 0; j < 3; j++)
+        {
+          setChar(15 + j * 6,
+                  pgm_read_byte(&months[(minute - 1) * 3 + j]), 5);
+        }
+      }
+      else
+      {
+        setNumString(17, minute, 6, 1);
+      }
     }
-    if (show_colon)
+    if (show_colon && !date)
     {
-      setColon(date);
+      setColon(false);
     }
 
 #ifdef SHOW_SECOND_COLUMN
@@ -467,6 +488,23 @@ public:
     }
     setColumn(3, 7, col_sec);
 #endif
+  }
+
+  /**
+   * @brief вывод года на экран; если _year < 0, то вторая часть года стирается, что позволяет организовать мигание значения при его настройке
+   *
+   * @param _year значение для вывода (вторая часть)
+   */
+  void showYear(int8_t _year)
+  {
+    clear();
+
+    setNumString(1, 20, 6, 1);
+
+    if (_year >= 0)
+    {
+      setNumString(17, _year, 6, 1);
+    }
   }
 
   /**
@@ -499,7 +537,7 @@ public:
     }
     shMAX72xxMini<cs_pin, 4>::clearAllDevices();
 
-// последовательный вывод - день недели, число и месяц, год
+    // последовательный вывод - день недели, число и месяц, год
     switch (n)
     {
     case 0:
@@ -538,7 +576,7 @@ public:
 #ifdef USE_RU_LANGUAGE
     setChar(0, 0xDF, 5); // Я
     setChar(6, 0xF0, 5); // р
-    uint8_t x = 0xEA;       // к
+    uint8_t x = 0xEA;    // к
     if (toSensor)
     {
       x = (toMin) ? 0 : 1;

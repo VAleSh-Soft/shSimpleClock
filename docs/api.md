@@ -100,9 +100,17 @@ void setMatrixFlipMode(bool _mode);
 Для матриц, основанных на адресных светодиодах доступны дополнительные методы:
 ```
 void setColorOfNumber(CRGB _color);
+CRGB getColorOfNumber();
+```
+позволяют устанавливать и получать текущий цвет символов соответственно.
+
+Метод
+```
 void setColorOfBackground(CRGB _color);
 ```
-позволяют устанавливать цвет символов и цвет фона соответственно. А метод:
+позволяет установить цвет фона; 
+
+Метод
 ```
 void setMaxPSP(uint8_t volts, uint32_t milliamps);
 ```

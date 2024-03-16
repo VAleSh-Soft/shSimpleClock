@@ -171,7 +171,7 @@ uint16_t constexpr TIMEOUT_OF_DEBOUNCE = 50;    // интервал антидр
 
 // ---- календарь -------------------------------
 
-#define USE_CALENDAR // использовать или нет вывод даты по клику кнопкой Down
+// #define USE_CALENDAR // использовать или нет вывод даты по клику кнопкой Down
 
 
 // ---- будильник -------------------------------
@@ -275,18 +275,21 @@ uint8_t constexpr _bit_depth = 10;           // разрядность АЦП и
 // ==== настройки EEPROM =============================
 
 #if defined(USE_CALENDAR) || defined(USE_TEMP_DATA)
-#define INTERVAL_FOR_AUTOSHOWDATA_EEPROM_INDEX 96 //  индекс в EEPROM для сохранения периодичности автопоказа даты и температуры
+#define INTERVAL_FOR_AUTOSHOWDATA_EEPROM_INDEX 96 //  индекс ячейки в EEPROM для сохранения периодичности автопоказа даты и температуры
 #endif
 #ifdef USE_TICKER_FOR_DATA
-#define TICKER_STATE_VALUE_EEPROM_INDEX 97 // индекс в EEPROM для сохранения статуса анимации
+#define TICKER_STATE_VALUE_EEPROM_INDEX 97 // индекс ячейки в EEPROM для сохранения статуса анимации
 #endif
 #ifdef USE_LIGHT_SENSOR
-#define LIGHT_THRESHOLD_EEPROM_INDEX 95      // индекс в EEPROM для сохранения порога переключения яркости (uint8_t)
-#define MIN_BRIGHTNESS_VALUE_EEPROM_INDEX 98 // индекс в EEPROM для сохранения  минимального значения яркости экрана (uint8_t)
+#define LIGHT_THRESHOLD_EEPROM_INDEX 95      // индекс ячейки в EEPROM для сохранения порога переключения яркости (uint8_t)
+#define MIN_BRIGHTNESS_VALUE_EEPROM_INDEX 98 // индекс ячейки в EEPROM для сохранения  минимального значения яркости экрана (uint8_t)
 #endif
-#define MAX_BRIGHTNESS_VALUE_EEPROM_INDEX 99 // индекс в EEPROM для сохранения  максимального значение яркости экрана (uint8_t)
+#define MAX_BRIGHTNESS_VALUE_EEPROM_INDEX 99 // индекс ячейки в EEPROM для сохранения  максимального значение яркости экрана (uint8_t)
 #ifdef USE_ALARM
-#define ALARM_DATA_EEPROM_INDEX 100 // индекс в EEPROM для сохранения настроек будильника (uint8_t + uint16_t)
+#define ALARM_DATA_EEPROM_INDEX 100 // индекс ячейки в EEPROM для сохранения настроек будильника (uint8_t + uint16_t)
+#endif
+#ifdef WS2812_MATRIX_DISPLAY
+#define COLOR_OF_NUMBER_VALUE_EEPROM_INDEX 103 // индекс ячейки в EEPROM для сохранения цвета цифр для экранов на адресных светодиодах (uint8_t x 4)
 #endif
 
 

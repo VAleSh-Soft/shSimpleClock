@@ -34,7 +34,6 @@ enum clkDataType : uint8_t
 #endif
 #if USE_AUTO_SHOW_DATA
   ,
-  AUTO_SHOW_TAG,
   AUTO_SHOW_PERIOD_TAG
 #endif
 #ifdef USE_SET_BRIGHTNESS_MODE
@@ -44,6 +43,10 @@ enum clkDataType : uint8_t
 #ifdef USE_LIGHT_SENSOR
   ,
   SET_LIGHT_THRESHOLD_TAG
+#endif
+#ifdef WS2812_MATRIX_DISPLAY
+  ,
+  SET_COLOR_OF_NUMBER_TAG
 #endif
 };
 #endif
@@ -100,6 +103,10 @@ enum clkDisplayMode : uint8_t
   ,
   DISPLAY_MODE_SET_AUTO_SHOW_PERIOD // режим настройки периода автовывода даты и/или температуры
 #endif
+#ifdef WS2812_MATRIX_DISPLAY
+  ,
+  DISPLAY_MODE_SET_COLOR_OF_NUMBER // режим настройки цвета символов для адресных светодиодов
+#endif
 };
 
 // ===================================================
@@ -146,12 +153,7 @@ void sscSetNumString(uint8_t offset, uint8_t num,
 void sscSetChar(uint8_t offset, uint8_t chr, uint8_t width, bool toStringData = false);
 void sscShowOnOffData(clkDataType _type, bool _state, bool blink);
 
-#ifdef USE_ALARM
-void sscSetAlarmTag(uint8_t offset, bool toStringData);
-#endif
-
 #ifdef USE_TICKER_FOR_DATA
-void sscSetTickerTag(uint8_t offset, bool toStringData);
 void sscAssembleString(clkDisplayMode data_type, uint8_t lenght = 80);
 void sscRunTicker();
 #endif
@@ -167,18 +169,15 @@ void sscSetTempString(uint8_t offset, int16_t temp, bool toStringData = false);
 
 #if USE_AUTO_SHOW_DATA
 void sscAutoShowData();
-void sscSetAutoShowPeriodTag(uint8_t offset, bool toStringData = false);
 void sscShowAutoShowPeriodData(uint8_t _data, bool blink);
 uint8_t sscGetPeriodForAutoShow(uint8_t index);
 #endif
 
-#ifdef USE_SET_BRIGHTNESS_MODE
-void sscSetBrightnessTag(uint8_t offset, bool toStringData);
+#ifdef WS2812_MATRIX_DISPLAY
+void sscShowColorOfNumberData(uint8_t _data, bool blink);
+uint8_t sscGetIndexOfCurrentColorOfNumber();
 #endif
 
-#ifdef USE_LIGHT_SENSOR
-void sscSetLightThresholdTag(uint8_t offset, bool toStringData = false);
-#endif
 #endif
 
 // ===================================================
@@ -329,6 +328,74 @@ public:
   }
 };
 
+void sscSetBtnFlag(clkButton &btn, clkButtonFlag _flag)
+{
+  if (&btn != NULL)
+  {
+    btn.setBtnFlag(_flag);
+  }
+}
+
+clkButtonFlag sscGetBtnFlag(clkButton &btn)
+{
+  clkButtonFlag result = BTN_FLAG_NONE;
+  if (&btn != NULL)
+  {
+    result = btn.getBtnFlag();
+  }
+  return result;
+}
+
+uint8_t sscGetButtonState(clkButton &btn)
+{
+  uint8_t result = BTN_RELEASED;
+  if (&btn != NULL)
+  {
+    result = btn.getButtonState();
+  }
+  return result;
+}
+
+uint8_t sscGetLastState(clkButton &btn)
+{
+  uint8_t result = BTN_RELEASED;
+  if (&btn != NULL)
+  {
+    result = btn.getLastState();
+  }
+  return result;
+}
+
+void sscResetButtonState(clkButton &btn)
+{
+  if (&btn != NULL)
+  {
+    btn.resetButtonState();
+  }
+}
+
+bool sscIsButtonClosed(clkButton &btn)
+{
+  bool result = BTN_RELEASED;
+  if (&btn != NULL)
+  {
+    result = btn.isButtonClosed();
+  }
+  return result;
+}
+
+bool sscIsSecondButtonPressed(clkButton &btn1, clkButton &btn2, uint8_t _state)
+{
+  bool result = false;
+
+  if (&btn1 != NULL && &btn2 != NULL)
+  {
+    result = btn1.isSecondButtonPressed(btn2, _state);
+  }
+
+  return result;
+}
+
 // ==== end clkButton=================================
 
 clkDisplayMode ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
@@ -393,6 +460,19 @@ public:
     {
       write_eeprom_8(LIGHT_THRESHOLD_EEPROM_INDEX, 3);
     }
+#endif
+
+#ifdef WS2812_MATRIX_DISPLAY
+    CRGB c;
+    read_eeprom_crgb(COLOR_OF_NUMBER_VALUE_EEPROM_INDEX, c);
+    // если задан черный цвет или не записана ячейка обновления, задать цвет по умолчанию
+    if ((c.r == 0x00 && c.g == 0x00 && c.b == 0x00) ||
+        read_eeprom_8(COLOR_OF_NUMBER_VALUE_EEPROM_INDEX) != CRGB_UPDATE_DATA)
+    {
+      c = COLOR_OF_NUMBER;
+      write_eeprom_crgb(COLOR_OF_NUMBER_VALUE_EEPROM_INDEX, c);
+    }
+    setColorOfNumber(c);
 #endif
 
 // ==== датчики ====================================
@@ -548,45 +628,21 @@ public:
    *
    * @return uint8_t
    */
-  uint8_t getBtnSetState()
-  {
-    uint8_t result = 0;
-    if (&sscBtnSet != NULL)
-    {
-      result = sscBtnSet.getLastState();
-    }
-    return result;
-  }
+  uint8_t getBtnSetState() { return (sscGetLastState(sscBtnSet)); }
 
   /**
    * @brief получить текущий статус или событие кнопки Up
    *
    * @return uint8_t
    */
-  uint8_t getBtnUpState()
-  {
-    uint8_t result = 0;
-    if (&sscBtnUp != NULL)
-    {
-      result = sscBtnUp.getLastState();
-    }
-    return result;
-  }
+  uint8_t getBtnUpState() { return (sscGetLastState(sscBtnUp)); }
 
   /**
    * @brief получить текущий статус или событие кнопки Down
    *
    * @return uint8_t
    */
-  uint8_t getBtnDownState()
-  {
-    uint8_t result = 0;
-    if (&sscBtnDown != NULL)
-    {
-      result = sscBtnDown.getLastState();
-    }
-    return result;
-  }
+  uint8_t getBtnDownState() { return (sscGetLastState(sscBtnDown)); }
 
 #ifdef MAX72XX_MATRIX_DISPLAY
   /**
@@ -619,6 +675,17 @@ public:
   void setColorOfNumber(CRGB _color)
   {
     sscDisp.setColorOfNumber(_color);
+    write_eeprom_crgb(COLOR_OF_NUMBER_VALUE_EEPROM_INDEX, _color);
+  }
+
+  /**
+   * @brief получение текущего цвета символов экрана из адресных светдиодов
+   *
+   * @return CRGB
+   */
+  CRGB getColorOfNumber()
+  {
+    return (sscDisp.getColorOfNumber());
   }
 
   /**
@@ -911,7 +978,7 @@ void sscRtcNow()
     }
 #endif
 
-#if defined(USE_CALENDAR) || defined(USE_TEMP_DATA)
+#if USE_AUTO_SHOW_DATA
     uint8_t x = read_eeprom_8(INTERVAL_FOR_AUTOSHOWDATA_EEPROM_INDEX);
     if (((sscGetPeriodForAutoShow(x) > 0) &&
          (sscClock.getCurTime().minute() % sscGetPeriodForAutoShow(x) == 0)) &&
@@ -986,14 +1053,23 @@ void sscReturnToDefMode()
 #if USE_AUTO_SHOW_DATA
   case DISPLAY_MODE_SET_AUTO_SHOW_PERIOD:
 #endif
-    sscBtnSet.setBtnFlag(BTN_FLAG_EXIT);
+#ifdef WS2812_MATRIX_DISPLAY
+  case DISPLAY_MODE_SET_COLOR_OF_NUMBER:
+#endif
+    sscSetBtnFlag(sscBtnSet, BTN_FLAG_EXIT);
     break;
+#ifdef USE_TEMP_DATA
+  case DISPLAY_MODE_SHOW_TEMP:
+#endif
+#ifdef USE_CALENDAR
+  case DISPLAY_MODE_SHOW_DATE:
+#endif
 #if USE_AUTO_SHOW_DATA
   case DISPLAY_AUTO_SHOW_DATA:
     sscTasks.stopTask(ssc_auto_show_mode);
+#endif
     ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
     break;
-#endif
   default:
     break;
   }
@@ -1009,7 +1085,7 @@ void sscReturnToDefMode()
 void sscShowTimeData(uint8_t hour, uint8_t minute)
 {
   // если наступило время блинка и кнопки Up/Down не нажаты, то стереть соответствующие разряды; при нажатых кнопках Up/Down во время изменения данных ничего не мигает
-  if (!sscBlinkFlag && !sscBtnUp.isButtonClosed() && !sscBtnDown.isButtonClosed())
+  if (!sscBlinkFlag && !sscIsButtonClosed(sscBtnUp) && !sscIsButtonClosed(sscBtnDown))
   {
     switch (ssc_display_mode)
     {
@@ -1044,7 +1120,14 @@ void sscShowTimeData(uint8_t hour, uint8_t minute)
   toColon = ssc_display_mode != DISPLAY_MODE_SET_YEAR;
 #endif
 #if defined(MAX72XX_MATRIX_DISPLAY) || defined(WS2812_MATRIX_DISPLAY)
-  sscDisp.showTime(hour, minute, 0, toColon, toDate);
+  if (ssc_display_mode == DISPLAY_MODE_SET_YEAR)
+  {
+    sscDisp.showYear(minute);
+  }
+  else
+  {
+    sscDisp.showTime(hour, minute, 0, toColon, toDate);
+  }
 #else
   sscDisp.showTime(hour, minute, toColon);
 #endif
@@ -1127,7 +1210,7 @@ void _startTimeSettingMode(uint8_t &curHour, uint8_t &curMinute)
 
 void _checkBtnSetForTmSet(uint8_t &curHour, uint8_t &curMinute, bool &time_checked)
 {
-  if (sscBtnSet.getBtnFlag() > BTN_FLAG_NONE)
+  if (sscGetBtnFlag(sscBtnSet) > BTN_FLAG_NONE)
   {
     if (time_checked)
     {
@@ -1168,7 +1251,7 @@ void _checkBtnSetForTmSet(uint8_t &curHour, uint8_t &curMinute, bool &time_check
       }
       time_checked = false;
     }
-    if (sscBtnSet.getBtnFlag() == BTN_FLAG_NEXT)
+    if (sscGetBtnFlag(sscBtnSet) == BTN_FLAG_NEXT)
     {
       switch (ssc_display_mode)
       {
@@ -1194,6 +1277,8 @@ void _checkBtnSetForTmSet(uint8_t &curHour, uint8_t &curMinute, bool &time_check
       case DISPLAY_MODE_SET_TICKER_ON_OFF:
 #if USE_AUTO_SHOW_DATA
         ssc_display_mode = DISPLAY_MODE_SET_AUTO_SHOW_PERIOD;
+#elif defined(WS2812_MATRIX_DISPLAY)
+        ssc_display_mode = DISPLAY_MODE_SET_COLOR_OF_NUMBER;
 #else
         ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
 #endif
@@ -1217,7 +1302,7 @@ void _checkBtnSetForTmSet(uint8_t &curHour, uint8_t &curMinute, bool &time_check
       ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
       sscStopSetting(ssc_set_time_mode);
     }
-    sscBtnSet.setBtnFlag(BTN_FLAG_NONE);
+    sscSetBtnFlag(sscBtnSet, BTN_FLAG_NONE);
   }
 }
 
@@ -1226,9 +1311,9 @@ void _checkBtnUpDownForTmSet(uint8_t &curHour, uint8_t &curMinute, bool &time_ch
 #ifdef USE_CALENDAR
   static const uint8_t PROGMEM days_of_month[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 #endif
-  if ((sscBtnUp.getBtnFlag() == BTN_FLAG_NEXT) || (sscBtnDown.getBtnFlag() == BTN_FLAG_NEXT))
+  if ((sscGetBtnFlag(sscBtnUp) == BTN_FLAG_NEXT) || (sscGetBtnFlag(sscBtnDown) == BTN_FLAG_NEXT))
   {
-    bool dir = sscBtnUp.getBtnFlag() == BTN_FLAG_NEXT;
+    bool dir = sscGetBtnFlag(sscBtnUp) == BTN_FLAG_NEXT;
     switch (ssc_display_mode)
     {
     case DISPLAY_MODE_SET_HOUR:
@@ -1274,8 +1359,8 @@ void _checkBtnUpDownForTmSet(uint8_t &curHour, uint8_t &curMinute, bool &time_ch
       break;
     }
     time_checked = true;
-    sscBtnUp.setBtnFlag(BTN_FLAG_NONE);
-    sscBtnDown.setBtnFlag(BTN_FLAG_NONE);
+    sscSetBtnFlag(sscBtnUp, BTN_FLAG_NONE);
+    sscSetBtnFlag(sscBtnDown, BTN_FLAG_NONE);
   }
 }
 
@@ -1298,18 +1383,14 @@ void _setDisplayForTmSet(uint8_t &curHour, uint8_t &curMinute)
     case DISPLAY_MODE_ALARM_ON_OFF:
       sscShowOnOffData(ALARM_TAG,
                        curHour,
-                       (!sscBlinkFlag &&
-                        (&sscBtnUp == NULL || !sscBtnUp.isButtonClosed()) &&
-                        (&sscBtnDown == NULL || !sscBtnDown.isButtonClosed())));
+                       (!sscBlinkFlag && !sscIsButtonClosed(sscBtnUp) && !sscIsButtonClosed(sscBtnDown)));
       break;
 #endif
 #ifdef USE_TICKER_FOR_DATA
     case DISPLAY_MODE_SET_TICKER_ON_OFF:
       sscShowOnOffData(TICKER_TAG,
                        curHour,
-                       (!sscBlinkFlag &&
-                        (&sscBtnUp == NULL || !sscBtnUp.isButtonClosed()) &&
-                        (&sscBtnDown == NULL || !sscBtnDown.isButtonClosed())));
+                       (!sscBlinkFlag && !sscIsButtonClosed(sscBtnUp) && !sscIsButtonClosed(sscBtnDown)));
       break;
 #endif
     default:
@@ -1385,12 +1466,7 @@ void sscSetDisp()
 
 void sscCheckSetButton()
 {
-  if (&sscBtnSet == NULL)
-  {
-    return;
-  }
-
-  switch (sscBtnSet.getButtonState())
+  switch (sscGetButtonState(sscBtnSet))
   {
   case BTN_ONECLICK:
     switch (ssc_display_mode)
@@ -1422,7 +1498,10 @@ void sscCheckSetButton()
 #if USE_AUTO_SHOW_DATA
     case DISPLAY_MODE_SET_AUTO_SHOW_PERIOD:
 #endif
-      sscBtnSet.setBtnFlag(BTN_FLAG_NEXT);
+#ifdef WS2812_MATRIX_DISPLAY
+    case DISPLAY_MODE_SET_COLOR_OF_NUMBER:
+#endif
+      sscSetBtnFlag(sscBtnSet, BTN_FLAG_NEXT);
       break;
     case DISPLAY_MODE_SHOW_TIME:
 #ifdef USE_ALARM
@@ -1482,7 +1561,10 @@ void sscCheckSetButton()
 #ifdef USE_LIGHT_SENSOR
     case DISPLAY_MODE_SET_LIGHT_THRESHOLD:
 #endif
-      sscBtnSet.setBtnFlag(BTN_FLAG_EXIT);
+#ifdef WS2812_MATRIX_DISPLAY
+    case DISPLAY_MODE_SET_COLOR_OF_NUMBER:
+#endif
+      sscSetBtnFlag(sscBtnSet, BTN_FLAG_EXIT);
       break;
     default:
       break;
@@ -1493,11 +1575,11 @@ void sscCheckSetButton()
 
 void sscCheckUDbtn(clkButton &btn)
 {
-  switch (btn.getLastState())
+  switch (sscGetLastState(btn))
   {
   case BTN_DOWN:
   case BTN_DBLCLICK:
-    btn.setBtnFlag(BTN_FLAG_NEXT);
+    sscSetBtnFlag(btn, BTN_FLAG_NEXT);
     break;
   case BTN_LONGCLICK:
     switch (ssc_display_mode)
@@ -1510,7 +1592,7 @@ void sscCheckUDbtn(clkButton &btn)
 #endif
       return;
     default:
-      btn.setBtnFlag(BTN_FLAG_NEXT);
+      sscSetBtnFlag(btn, BTN_FLAG_NEXT);
       break;
     }
     break;
@@ -1519,51 +1601,41 @@ void sscCheckUDbtn(clkButton &btn)
 
 void sscCheckUpDownButton()
 {
-  uint8_t btn_up = 0;
-  uint8_t btn_down = 0;
-
-  if (&sscBtnUp != NULL)
-  {
-    btn_up = sscBtnUp.getButtonState();
-  }
-  if (&sscBtnDown != NULL)
-  {
-    btn_down = sscBtnDown.getButtonState();
-  }
+  sscGetButtonState(sscBtnUp);
+  sscGetButtonState(sscBtnDown);
 
   switch (ssc_display_mode)
   {
   case DISPLAY_MODE_SHOW_TIME:
-    if (btn_down == BTN_LONGCLICK)
+    if (sscGetLastState(sscBtnDown) == BTN_LONGCLICK)
     {
 #ifdef USE_TICKER_FOR_DATA
       // вход в настройки анимации
       ssc_display_mode = DISPLAY_MODE_SET_TICKER_ON_OFF;
-      sscBtnDown.resetButtonState();
+      sscResetButtonState(sscBtnDown);
 #elif USE_AUTO_SHOW_DATA
       // вход в настройки периода автовывода на экран даты и/или температуры
       ssc_display_mode = DISPLAY_MODE_SET_AUTO_SHOW_PERIOD;
-      sscBtnDown.resetButtonState();
+      sscResetButtonState(sscBtnDown);
+#elif WS2812_MATRIX_DISPLAY
+      disp = DISPLAY_MODE_SET_COLOR_OF_NUMBER;
+      sscResetButtonState(sscBtnDown);
 #endif
     }
 #ifdef USE_TEMP_DATA
-    if (btn_up == BTN_ONECLICK)
+    if (sscGetLastState(sscBtnUp) == BTN_ONECLICK)
     {
       ssc_display_mode = DISPLAY_MODE_SHOW_TEMP;
     }
 #endif
 #ifdef USE_CALENDAR
-    if (btn_down == BTN_ONECLICK)
+    if (sscGetLastState(sscBtnDown) == BTN_ONECLICK)
     {
       ssc_display_mode = DISPLAY_MODE_SHOW_DATE;
     }
 #endif
-    if (&sscBtnUp != NULL &&
-            (&sscBtnDown != NULL &&
-             sscBtnUp.isSecondButtonPressed(sscBtnDown, BTN_LONGCLICK)) ||
-        &sscBtnDown != NULL &&
-            (&sscBtnUp != NULL &&
-             sscBtnDown.isSecondButtonPressed(sscBtnUp, BTN_LONGCLICK)))
+    if (sscIsSecondButtonPressed(sscBtnUp, sscBtnDown, BTN_LONGCLICK) ||
+        sscIsSecondButtonPressed(sscBtnDown, sscBtnUp, BTN_LONGCLICK))
     {
 #ifdef USE_SET_BRIGHTNESS_MODE
 #ifdef USE_LIGHT_SENSOR
@@ -1603,18 +1675,21 @@ void sscCheckUpDownButton()
 #if USE_AUTO_SHOW_DATA
   case DISPLAY_MODE_SET_AUTO_SHOW_PERIOD:
 #endif
-    if (&sscBtnUp != NULL && (&sscBtnDown == NULL || !sscBtnDown.isButtonClosed()))
+#ifdef WS2812_MATRIX_DISPLAY
+  case DISPLAY_MODE_SET_COLOR_OF_NUMBER:
+#endif
+    if (!sscIsButtonClosed(sscBtnDown))
     {
       sscCheckUDbtn(sscBtnUp);
     }
-    if (&sscBtnDown != NULL && (&sscBtnUp == NULL || !sscBtnUp.isButtonClosed()))
+    if (!sscIsButtonClosed(sscBtnUp))
     {
       sscCheckUDbtn(sscBtnDown);
     }
     break;
 #ifdef USE_TEMP_DATA
   case DISPLAY_MODE_SHOW_TEMP:
-    if (btn_up == BTN_ONECLICK)
+    if (sscGetLastState(sscBtnUp) == BTN_ONECLICK)
     {
       sscReturnToDefMode();
     }
@@ -1622,7 +1697,7 @@ void sscCheckUpDownButton()
 #endif
 #ifdef USE_CALENDAR
   case DISPLAY_MODE_SHOW_DATE:
-    if (btn_down == BTN_ONECLICK)
+    if (sscGetLastState(sscBtnDown) == BTN_ONECLICK)
     { // выход из режима показа даты по клику кнопкой Down
       sscReturnToDefMode();
     }
@@ -1689,6 +1764,9 @@ void sscSetDisplay()
   case DISPLAY_MODE_SET_BRIGHTNESS_MIN:
 #endif
   case DISPLAY_MODE_SET_BRIGHTNESS_MAX:
+#endif
+#ifdef WS2812_MATRIX_DISPLAY
+  case DISPLAY_MODE_SET_COLOR_OF_NUMBER:
 #endif
     if (!sscTasks.getTaskState(ssc_other_setting_mode))
     {
@@ -1784,7 +1862,7 @@ void sscShowAlarmState(uint8_t _state)
   sscDisp.setColumn(21, 0b00100100);
 #endif
 
-  if (!sscBlinkFlag && !sscBtnUp.isButtonClosed() && !sscBtnDown.isButtonClosed())
+  if (!sscBlinkFlag && !sscIsButtonClosed(sscBtnUp) && !sscIsButtonClosed(sscBtnDown))
   {
 #if defined(TM1637_DISPLAY) || defined(MAX72XX_7SEGMENT_DISPLAY)
     sscDisp.setDispData(3, 0x00);
@@ -1892,6 +1970,11 @@ void _startOtherSettingMode(uint8_t &x)
     x = read_eeprom_8(INTERVAL_FOR_AUTOSHOWDATA_EEPROM_INDEX);
     break;
 #endif
+#ifdef WS2812_MATRIX_DISPLAY
+  case DISPLAY_MODE_SET_COLOR_OF_NUMBER:
+    x = sscGetIndexOfCurrentColorOfNumber();
+    break;
+#endif
   }
 #ifdef USE_TICKER_FOR_DATA
   if (read_eeprom_8(TICKER_STATE_VALUE_EEPROM_INDEX))
@@ -1903,70 +1986,84 @@ void _startOtherSettingMode(uint8_t &x)
 
 void _checkBtnSetForOthSet(uint8_t &x)
 {
-  if (&sscBtnSet != NULL)
+  if (sscGetBtnFlag(sscBtnSet) > BTN_FLAG_NONE)
   {
-    if (sscBtnSet.getBtnFlag() > BTN_FLAG_NONE)
+    switch (ssc_display_mode)
     {
-      switch (ssc_display_mode)
-      {
 #ifdef USE_LIGHT_SENSOR
-      case DISPLAY_MODE_SET_LIGHT_THRESHOLD:
-        write_eeprom_8(LIGHT_THRESHOLD_EEPROM_INDEX, x);
-        ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
-        sscStopSetting(ssc_other_setting_mode);
-        break;
+    case DISPLAY_MODE_SET_LIGHT_THRESHOLD:
+      write_eeprom_8(LIGHT_THRESHOLD_EEPROM_INDEX, x);
+      ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
+      sscStopSetting(ssc_other_setting_mode);
+      break;
 #endif
 #ifdef USE_SET_BRIGHTNESS_MODE
-      case DISPLAY_MODE_SET_BRIGHTNESS_MAX:
-        write_eeprom_8(MAX_BRIGHTNESS_VALUE_EEPROM_INDEX, x);
+    case DISPLAY_MODE_SET_BRIGHTNESS_MAX:
+      write_eeprom_8(MAX_BRIGHTNESS_VALUE_EEPROM_INDEX, x);
 #ifdef USE_LIGHT_SENSOR
-        if (sscBtnSet.getBtnFlag() == BTN_FLAG_NEXT)
-        {
-          ssc_display_mode = DISPLAY_MODE_SET_LIGHT_THRESHOLD;
-        }
-        else
+      if (sscGetBtnFlag(sscBtnSet) == BTN_FLAG_NEXT)
+      {
+        ssc_display_mode = DISPLAY_MODE_SET_LIGHT_THRESHOLD;
+      }
+      else
 #endif
-        {
-          ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
-        }
-        sscStopSetting(ssc_other_setting_mode);
-        break;
+      {
+        ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
+      }
+      sscStopSetting(ssc_other_setting_mode);
+      break;
 #ifdef USE_LIGHT_SENSOR
-      case DISPLAY_MODE_SET_BRIGHTNESS_MIN:
-        write_eeprom_8(MIN_BRIGHTNESS_VALUE_EEPROM_INDEX, x);
-        if (sscBtnSet.getBtnFlag() == BTN_FLAG_NEXT)
-        {
-          ssc_display_mode = DISPLAY_MODE_SET_BRIGHTNESS_MAX;
-        }
-        else
-        {
-          ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
-        }
-        sscStopSetting(ssc_other_setting_mode);
-        break;
+    case DISPLAY_MODE_SET_BRIGHTNESS_MIN:
+      write_eeprom_8(MIN_BRIGHTNESS_VALUE_EEPROM_INDEX, x);
+      if (sscGetBtnFlag(sscBtnSet) == BTN_FLAG_NEXT)
+      {
+        ssc_display_mode = DISPLAY_MODE_SET_BRIGHTNESS_MAX;
+      }
+      else
+      {
+        ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
+      }
+      sscStopSetting(ssc_other_setting_mode);
+      break;
 #endif
 #endif
 #if USE_AUTO_SHOW_DATA
-      case DISPLAY_MODE_SET_AUTO_SHOW_PERIOD:
-        write_eeprom_8(INTERVAL_FOR_AUTOSHOWDATA_EEPROM_INDEX, x);
-        ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
-        sscStopSetting(ssc_other_setting_mode);
-        break;
-#endif
-      default:
-        break;
+    case DISPLAY_MODE_SET_AUTO_SHOW_PERIOD:
+      write_eeprom_8(INTERVAL_FOR_AUTOSHOWDATA_EEPROM_INDEX, x);
+      if (sscGetBtnFlag(sscBtnSet) == BTN_FLAG_NEXT)
+#ifdef WS2812_MATRIX_DISPLAY
+      {
+        ssc_display_mode = DISPLAY_MODE_SET_COLOR_OF_NUMBER;
       }
-      sscBtnSet.setBtnFlag(BTN_FLAG_NONE);
+      else
+#endif
+      {
+        ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
+      }
+      sscStopSetting(ssc_other_setting_mode);
+      break;
+#endif
+#ifdef WS2812_MATRIX_DISPLAY
+    case DISPLAY_MODE_SET_COLOR_OF_NUMBER:
+      write_eeprom_crgb(COLOR_OF_NUMBER_VALUE_EEPROM_INDEX, pgm_read_dword(&color_of_number[x]));
+      sscDisp.setColorOfNumber(pgm_read_dword(&color_of_number[x]));
+      ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
+      sscStopSetting(ssc_other_setting_mode);
+      break;
+#endif
+    default:
+      break;
     }
+    sscSetBtnFlag(sscBtnSet, BTN_FLAG_NONE);
   }
 }
 
 void _checkBtnUpDownForOthSet(uint8_t &x)
 {
-  if (((&sscBtnUp != NULL) && (sscBtnUp.getBtnFlag() == BTN_FLAG_NEXT)) ||
-      ((&sscBtnDown != NULL) && (sscBtnDown.getBtnFlag() == BTN_FLAG_NEXT)))
+  if ((sscGetBtnFlag(sscBtnUp) == BTN_FLAG_NEXT) ||
+      (sscGetBtnFlag(sscBtnDown) == BTN_FLAG_NEXT))
   {
-    bool dir = ((&sscBtnUp != NULL) && (sscBtnUp.getBtnFlag() == BTN_FLAG_NEXT));
+    bool dir = (sscGetBtnFlag(sscBtnUp) == BTN_FLAG_NEXT);
     switch (ssc_display_mode)
     {
 #ifdef USE_LIGHT_SENSOR
@@ -1991,12 +2088,18 @@ void _checkBtnUpDownForOthSet(uint8_t &x)
       sscCheckData(x, 7, dir, 0, false);
       break;
 #endif
+#ifdef WS2812_MATRIX_DISPLAY
+    case DISPLAY_MODE_SET_COLOR_OF_NUMBER:
+      sscCheckData(x, 7, dir, 0, true);
+      sscDisp.setColorOfNumber(pgm_read_dword(&color_of_number[x]));
+      break;
+#endif
     default:
       break;
     }
 
-    sscBtnUp.setBtnFlag(BTN_FLAG_NONE);
-    sscBtnDown.setBtnFlag(BTN_FLAG_NONE);
+    sscSetBtnFlag(sscBtnUp, BTN_FLAG_NONE);
+    sscSetBtnFlag(sscBtnDown, BTN_FLAG_NONE);
   }
 }
 
@@ -2013,7 +2116,7 @@ void _setDisplayDataForOthSet(uint8_t &x)
   }
   else
   {
-    bool blink = !sscBlinkFlag && !sscBtnUp.isButtonClosed() && !sscBtnDown.isButtonClosed();
+    bool blink = !sscBlinkFlag && !sscIsButtonClosed(sscBtnUp) && !sscIsButtonClosed(sscBtnDown);
     switch (ssc_display_mode)
     {
 #ifdef USE_LIGHT_SENSOR
@@ -2040,6 +2143,11 @@ void _setDisplayDataForOthSet(uint8_t &x)
 #if USE_AUTO_SHOW_DATA
     case DISPLAY_MODE_SET_AUTO_SHOW_PERIOD:
       sscShowAutoShowPeriodData(x, blink);
+      break;
+#endif
+#ifdef WS2812_MATRIX_DISPLAY
+    case DISPLAY_MODE_SET_COLOR_OF_NUMBER:
+      sscShowColorOfNumberData(x, blink);
       break;
 #endif
     default:
@@ -2085,15 +2193,33 @@ void sscSetTimeString(uint8_t offset, int8_t hour, int8_t minute, bool show_colo
 {
   if (hour >= 0)
   {
-    sscSetNumString(offset, hour, 6, 1, toStringData);
+    if (toDate)
+    {
+      sscSetNumString(offset, hour, 5, 1, toStringData);
+    }
+    else
+    {
+      sscSetNumString(offset, hour, 6, 1, toStringData);
+    }
   }
   if (minute >= 0)
   {
-    sscSetNumString(offset + 16, minute, 6, 1, toStringData);
+    if (toDate)
+    {
+      for (uint8_t j = 0; j < 3; j++)
+      {
+        sscSetChar(offset + 14 + j * 6,
+                   pgm_read_byte(&months[(minute - 1) * 3 + j]), 5, toStringData);
+      }
+    }
+    else
+    {
+      sscSetNumString(offset + 16, minute, 6, 1, toStringData);
+    }
   }
-  if (show_colon)
+  if (show_colon && !toDate)
   {
-    uint8_t colon = (toDate) ? 0x01 : 0x24;
+    uint8_t colon = /*(toDate) ? 0x01 : */ 0x24;
     if (toStringData)
     {
       sData.setData(offset + 14, colon);
@@ -2112,17 +2238,27 @@ void sscSetOtherDataString(clkDataType _type, uint8_t offset, uint8_t _data, boo
   {
 #ifdef USE_SET_BRIGHTNESS_MODE
   case SET_BRIGHTNESS_TAG:
-    sscSetBrightnessTag(offset, toStringData);
+    sscSetTag(offset, DISP_BRIGHTNESS_TAG, 5, toStringData);
+#ifdef USE_LIGHT_SENSOR
+    uint8_t x;
+    x = (ssc_display_mode == DISPLAY_MODE_SET_BRIGHTNESS_MIN) ? 0x30 : 0x31;
+    sscSetChar(offset + 12, x, 5, toStringData);
+#endif
     break;
 #endif
 #ifdef USE_LIGHT_SENSOR
   case SET_LIGHT_THRESHOLD_TAG:
-    sscSetLightThresholdTag(offset, toStringData);
+    sscSetTag(offset, DISP_LIGHT_THRESHOLD_TAG, 5, toStringData);
     break;
 #endif
 #if USE_AUTO_SHOW_DATA
   case AUTO_SHOW_PERIOD_TAG:
-    sscSetAutoShowPeriodTag(offset, toStringData);
+    sscSetTag(offset, DISP_DATE_DISPLAY_INTERVAL_TAG, 5, toStringData);
+    break;
+#endif
+#ifdef WS2812_MATRIX_DISPLAY
+  case SET_COLOR_OF_NUMBER_TAG:
+    sscSetTag(offset, DISP_COLOR_TAG, 5, toStringData);
     break;
 #endif
   default:
@@ -2170,12 +2306,12 @@ void sscSetOnOffDataString(clkDataType _type, uint8_t offset, bool _state, bool 
   {
 #ifdef USE_TICKER_FOR_DATA
   case TICKER_TAG:
-    sscSetTickerTag(offset, toStringData);
+    sscSetTag(offset, DISP_ANIMATION_TAG, 5, toStringData);
     break;
 #endif
 #ifdef USE_ALARM
   case ALARM_TAG:
-    sscSetAlarmTag(offset, toStringData);
+    sscSetTag(offset, DISP_ALARM_TAG, 5, toStringData);
     break;
 #endif
   default:
@@ -2199,8 +2335,10 @@ void sscSetOnOffDataString(clkDataType _type, uint8_t offset, bool _state, bool 
 
 void sscSetNumString(uint8_t offset, uint8_t num, uint8_t width, uint8_t space, bool toStringData)
 {
-  sscSetChar(offset, num / 10, width, toStringData);
-  sscSetChar(offset + width + space, num % 10, width, toStringData);
+  uint8_t x = (width == 6) ? num / 10 : num / 10 + 0x30;
+  sscSetChar(offset, x, width, toStringData);
+  x = (width == 6) ? num % 10 : num % 10 + 0x30;
+  sscSetChar(offset + width + space, x, width, toStringData);
 }
 
 void sscSetChar(uint8_t offset, uint8_t chr, uint8_t width, bool toStringData)
@@ -2244,19 +2382,7 @@ void sscShowOnOffData(clkDataType _type, bool _state, bool blink)
   sscSetOnOffDataString(_type, 1, _state, blink);
 }
 
-#ifdef USE_ALARM
-void sscSetAlarmTag(uint8_t offset, bool toStringData)
-{
-  sscSetTag(offset, DISP_ALARM_TAG, 5, toStringData);
-}
-#endif
-
 #ifdef USE_TICKER_FOR_DATA
-void sscSetTickerTag(uint8_t offset, bool toStringData)
-{
-  sscSetTag(offset, DISP_ANIMATION_TAG, 5, toStringData);
-}
-
 void sscAssembleString(clkDisplayMode data_type, uint8_t lenght)
 {
   if (!sData.stringInit(lenght))
@@ -2310,7 +2436,7 @@ void sscAssembleString(clkDisplayMode data_type, uint8_t lenght)
 #endif
 
 #ifdef USE_LIGHT_SENSOR
-  case DISPLAY_MODE_SET_LIGHT_THRESHOLD:
+  case DISPLAY_MODE_SET_LIGHT_THRESHOLD: // настройка порога переключения яркости
     uint8_t y;
     y = read_eeprom_8(LIGHT_THRESHOLD_EEPROM_INDEX);
     sscSetOtherDataString(SET_LIGHT_THRESHOLD_TAG, lenght - 31, y, false, true);
@@ -2360,6 +2486,15 @@ void sscAssembleString(clkDisplayMode data_type, uint8_t lenght)
     sscSetOtherDataString(AUTO_SHOW_PERIOD_TAG,
                           lenght - 31,
                           sscGetPeriodForAutoShow(read_eeprom_8(INTERVAL_FOR_AUTOSHOWDATA_EEPROM_INDEX)),
+                          false,
+                          true);
+    break;
+#endif
+#ifdef WS2812_MATRIX_DISPLAY
+  case DISPLAY_MODE_SET_COLOR_OF_NUMBER:
+    sscSetOtherDataString(SET_COLOR_OF_NUMBER_TAG,
+                          lenght - 31,
+                          sscGetIndexOfCurrentColorOfNumber(),
                           false,
                           true);
     break;
@@ -2583,11 +2718,6 @@ void sscAutoShowData()
   }
 }
 
-void sscSetAutoShowPeriodTag(uint8_t offset, bool toStringData)
-{
-  sscSetTag(offset, DISP_DATE_DISPLAY_INTERVAL_TAG, 5, toStringData);
-}
-
 void sscShowAutoShowPeriodData(uint8_t _data, bool blink)
 {
   sscDisp.clear();
@@ -2615,28 +2745,39 @@ uint8_t sscGetPeriodForAutoShow(uint8_t index)
 }
 #endif
 
-#ifdef USE_SET_BRIGHTNESS_MODE
-void sscSetBrightnessTag(uint8_t offset, bool toStringData)
+#ifdef WS2812_MATRIX_DISPLAY
+void sscShowColorOfNumberData(uint8_t _data, bool blink)
 {
-  sscSetTag(offset, DISP_BRIGHTNESS_TAG, 5, toStringData);
-#ifdef USE_LIGHT_SENSOR
-  uint8_t x = (ssc_display_mode == DISPLAY_MODE_SET_BRIGHTNESS_MIN) ? 0x30 : 0x31;
-  sscSetChar(offset + 12, x, 5, toStringData);
-#endif
+  sscDisp.clear();
+
+  sscSetOtherDataString(SET_COLOR_OF_NUMBER_TAG, 0, _data, blink);
 }
 
+uint8_t sscGetIndexOfCurrentColorOfNumber()
+{
+  uint8_t result = 1;
+  CRGB col;
+  col = sscDisp.getColorOfNumber();
+  for (uint8_t i = 0; i < 8; i++)
+  {
+    CRGB t_col = pgm_read_dword(&color_of_number[i]);
+    if (col.r == t_col.r && col.g == t_col.g && col.b == t_col.b)
+    {
+      result = i;
+      break;
+    }
+  }
+
+  return result;
+}
+#endif
+
+#ifdef USE_SET_BRIGHTNESS_MODE
 void sscShowBrightnessData(uint8_t br, bool blink, bool toSensor, bool toMin)
 {
   sscDisp.clear();
 
   sscSetOtherDataString(SET_BRIGHTNESS_TAG, 1, br, blink);
-}
-#endif
-
-#ifdef USE_LIGHT_SENSOR
-void sscSetLightThresholdTag(uint8_t offset, bool toStringData)
-{
-  sscSetTag(offset, DISP_LIGHT_THRESHOLD_TAG, 5, toStringData);
 }
 #endif
 
