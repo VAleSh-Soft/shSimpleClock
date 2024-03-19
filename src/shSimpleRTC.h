@@ -38,7 +38,7 @@ public:
     for (yOff = 0;; ++yOff)
     {
       leap = yOff % 4 == 0;
-      if (days < 365 + leap)
+      if (days < 365u + leap)
         break;
       days -= 365 + leap;
     }

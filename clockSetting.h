@@ -210,8 +210,6 @@ uint8_t constexpr ALARM_REPETITION_COUNT = 3;
 
 #if defined(USE_ALARM) || defined(USE_BUZZER_FOR_BUTTON)
 
-
-
 // ==== пищалка ======================================
 #define BUZZER_PIN 5    // пин для подключения пищалки
 
@@ -308,3 +306,30 @@ uint8_t constexpr _bit_depth = 10;           // разрядность АЦП и
 #define RTC_SCL_PIN A5 // пин для подключения вывода SCL RTC модуля (для Atmega168/328 не менять!!!)
 
 // ==== конец настроек часов =========================
+
+
+
+
+// ==== служебная информация, НЕ МЕНЯТЬ!!!!! =========
+
+// используется периодический автовывод даты и/или температуры
+#if defined(USE_CALENDAR) || defined(USE_TEMP_DATA)
+#define USE_AUTO_SHOW_DATA 1
+#else
+#define USE_AUTO_SHOW_DATA 0
+#endif
+
+// дополнительные настройки; настраиваются: уровни яркости, порог переключения яркости, период автовывода и включение/отключение анимации
+#if defined(USE_SET_BRIGHTNESS_MODE) || defined(USE_LIGHT_SENSOR) || defined(USE_CALENDAR) || defined(USE_TEMP_DATA) || defined(USE_TICKER_FOR_DATA)
+#define USE_OTHER_SETTING 1
+#else
+#define USE_OTHER_SETTING 0
+#endif
+
+// используются матричные экраны
+#if defined(MAX72XX_MATRIX_DISPLAY) || defined(WS2812_MATRIX_DISPLAY)
+#define USE_MATRIX_DISPLAY 1
+#else
+#define USE_MATRIX_DISPLAY 0
+#endif
+

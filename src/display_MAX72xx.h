@@ -225,7 +225,8 @@ public:
     data[0] = 0b00011111;
     if (toSensor)
     {
-      data[1] = (toMin) ? encodeDigit(0) : encodeDigit(1);
+      data[1] = (toMin) ? shMAX72xx7Segment<cs_pin, 1, NUM_DIGITS>::encodeDigit(0)
+                        : shMAX72xx7Segment<cs_pin, 1, NUM_DIGITS>::encodeDigit(1);
     }
     else
     {
@@ -234,8 +235,8 @@ public:
     data[1] |= 0x80; // для показа двоеточия установить старший бит во второй цифре
     if (!blink)
     {
-      data[2] = encodeDigit(br / 10);
-      data[3] = encodeDigit(br % 10);
+      data[2] = shMAX72xx7Segment<cs_pin, 1, NUM_DIGITS>::encodeDigit(br / 10);
+      data[3] = shMAX72xx7Segment<cs_pin, 1, NUM_DIGITS>::encodeDigit(br % 10);
     }
   }
 
@@ -262,9 +263,9 @@ private:
                     uint8_t *_data = NULL, uint8_t _data_count = 0)
   {
     uint8_t x = (width == 6) ? num / 10 : num / 10 + 0x30;
-    setChar(offset, x, width);
+    setChar(offset, x, width, _data, _data_count);
     x = (width == 6) ? num % 10 : num % 10 + 0x30;
-    setChar(offset + width + space, x, width);
+    setChar(offset + width + space, x, width, _data, _data_count);
   }
 
   void setDayOfWeakString(uint8_t offset, DateTime date, uint8_t *_data = NULL, uint8_t _data_count = 0)
