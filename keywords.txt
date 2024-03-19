@@ -9,6 +9,7 @@
 shSimpleClock	KEYWORD1
 clkDisplayMode	KEYWORD1
 shSimpleRTC	KEYWORD1
+clkButtonGroup	KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2) 
@@ -18,9 +19,9 @@ init	KEYWORD2
 tick	KEYWORD2
 getDisplayMode	KEYWORD2
 setDisplayMode	KEYWORD2
-getBtnSetState	KEYWORD2
-getBtnUpState	KEYWORD2
-getBtnDownState	KEYWORD2
+getButtonState	KEYWORD2
+getButtonFlag	KEYWORD2
+setButtonFlag	KEYWORD2
 setMatrixDirection	KEYWORD2
 setMatrixFlipMode	KEYWORD2
 getCurrentDateTime	KEYWORD2
