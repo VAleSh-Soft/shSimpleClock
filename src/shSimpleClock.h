@@ -11,7 +11,6 @@
 
 // ===================================================
 
-#if USE_MATRIX_DISPLAY
 enum clkDataType : uint8_t
 {
   NO_TAG
@@ -40,7 +39,6 @@ enum clkDataType : uint8_t
   SET_COLOR_OF_NUMBER_TAG
 #endif
 };
-#endif
 
 enum clkDisplayMode : uint8_t
 {
@@ -118,9 +116,6 @@ void sscShowAlarmState(uint8_t _state); // ????????????????????????
 void sscSetBrightness();
 void sscShowLightThresholdData(uint8_t _data, bool blink);
 #endif
-#ifdef USE_SET_BRIGHTNESS_MODE
-void sscShowBrightnessData(uint8_t br, bool blink);
-#endif
 #ifdef USE_TEMP_DATA
 int8_t sscGetCurTemp();
 #ifdef USE_DS18B20
@@ -130,8 +125,14 @@ void sscCheckDS18b20();
 #if USE_OTHER_SETTING
 void sscShowOtherSetting();
 #endif
+#if USE_AUTO_SHOW_DATA
+void sscAutoShowData();
+void sscShowAutoShowPeriodData(uint8_t _data, bool blink);
+uint8_t sscGetPeriodForAutoShow(uint8_t index);
+#endif
 
 #if USE_MATRIX_DISPLAY
+
 void sscSetTimeString(uint8_t offset, int8_t hour, int8_t minute, bool show_colon,
                       bool toDate, bool toStringData = false);
 void sscSetOtherDataString(clkDataType _type, uint8_t offset, uint8_t _data, bool blink,
@@ -158,17 +159,22 @@ void sscSetYearString(uint8_t offset, uint16_t _year, bool toStringData = false)
 void sscSetTempString(uint8_t offset, int16_t temp, bool toStringData = false);
 #endif
 
-#if USE_AUTO_SHOW_DATA
-void sscAutoShowData();
-void sscShowAutoShowPeriodData(uint8_t _data, bool blink);
-uint8_t sscGetPeriodForAutoShow(uint8_t index);
-#endif
-
 #ifdef WS2812_MATRIX_DISPLAY
 void sscShowColorOfNumberData(uint8_t _data, bool blink);
 uint8_t sscGetIndexOfCurrentColorOfNumber();
 #endif
 
+#ifdef USE_SET_BRIGHTNESS_MODE
+void sscShowBrightnessData(uint8_t br, bool blink);
+#endif
+
+#else
+
+#ifdef USE_SET_BRIGHTNESS_MODE
+void sscShowBrightnessData(uint8_t br, bool blink);
+#endif
+void sscSetOtherData(clkDataType _type, uint8_t _data, bool blink);
+void sscSetTag(clkDataType _type, uint8_t &item_0, uint8_t &item_1);
 #endif
 
 // ===================================================
@@ -1414,11 +1420,13 @@ void _setDisplayForTmSet(uint8_t &curHour, uint8_t &curMinute)
     {
 #ifdef USE_ALARM
     case DISPLAY_MODE_ALARM_ON_OFF:
+#if USE_MATRIX_DISPLAY
       sscShowOnOffData(ALARM_TAG,
                        curHour,
                        (!sscBlinkFlag &&
                         !buttons.isButtonClosed(SSC_BTN_UP) &&
                         !buttons.isButtonClosed(SSC_BTN_DOWN)));
+#endif
       break;
 #endif
 #ifdef USE_TICKER_FOR_DATA
@@ -1571,9 +1579,11 @@ void sscCheckSetButton()
     case DISPLAY_MODE_SHOW_TIME:
       ssc_display_mode = DISPLAY_MODE_SET_HOUR;
       break;
-#ifdef USE_CALENDAR
+#if defined(USE_CALENDAR)
     case DISPLAY_MODE_SHOW_DATE:
+#if USE_AUTO_SHOW_DATA
       sscTasks.stopTask(sscTasks.auto_show_mode());
+#endif
       ssc_display_mode = DISPLAY_MODE_SET_DAY;
       break;
 #endif
@@ -1653,10 +1663,10 @@ void sscCheckUpDownButton()
 #elif USE_AUTO_SHOW_DATA
       // вход в настройки периода автовывода на экран даты и/или температуры
       ssc_display_mode = DISPLAY_MODE_SET_AUTO_SHOW_PERIOD;
-      sscResetButtonState(sscBtnDown);
+      buttons.resetButtonState(SSC_BTN_DOWN);
 #elif WS2812_MATRIX_DISPLAY
       disp = DISPLAY_MODE_SET_COLOR_OF_NUMBER;
-      sscResetButtonState(sscBtnDown);
+      buttons.resetButtonState(SSC_BTN_DOWN));
 #endif
     }
 #ifdef USE_TEMP_DATA
@@ -1953,8 +1963,9 @@ void sscSetBrightness()
 void sscShowLightThresholdData(uint8_t _data, bool blink)
 {
   sscDisp.clear();
-
+#if USE_MATRIX_DISPLAY
   sscSetOtherDataString(SET_LIGHT_THRESHOLD_TAG, 1, _data, blink);
+#endif
 }
 #endif
 
@@ -2071,8 +2082,8 @@ void _checkBtnSetForOthSet(uint8_t &x)
 #if USE_AUTO_SHOW_DATA
     case DISPLAY_MODE_SET_AUTO_SHOW_PERIOD:
       write_eeprom_8(INTERVAL_FOR_AUTOSHOWDATA_EEPROM_INDEX, x);
-      if (buttons.getButtonFlag(SSC_BTN_SET) == BTN_FLAG_NEXT)
 #ifdef WS2812_MATRIX_DISPLAY
+      if (buttons.getButtonFlag(SSC_BTN_SET) == BTN_FLAG_NEXT)
       {
         ssc_display_mode = DISPLAY_MODE_SET_COLOR_OF_NUMBER;
       }
@@ -2178,7 +2189,7 @@ void _setDisplayDataForOthSet(uint8_t &x)
 #endif
 #if USE_AUTO_SHOW_DATA
     case DISPLAY_MODE_SET_AUTO_SHOW_PERIOD:
-      sscShowAutoShowPeriodData(x, blink);
+      sscSetOtherData(AUTO_SHOW_PERIOD_TAG, x, blink);
       break;
 #endif
 #ifdef WS2812_MATRIX_DISPLAY
@@ -2220,6 +2231,220 @@ void sscShowOtherSetting()
 }
 // ==== end sscShowOtherSetting =========================
 
+#endif
+
+#if USE_AUTO_SHOW_DATA
+
+void _startAutoShowMode(uint8_t &n, uint8_t &n_max)
+{
+#if !USE_MATRIX_DISPLAY
+  sscDisp.showDate(sscClock.getCurTime(), true);
+#endif
+  switch (ssc_display_mode)
+  {
+#ifdef USE_CALENDAR
+  case DISPLAY_MODE_SHOW_DATE:
+#if USE_MATRIX_DISPLAY
+    n = 0;
+#else
+    n = 1;
+#endif
+    n_max = 3;
+    break;
+#endif
+#ifdef USE_TEMP_DATA
+  case DISPLAY_MODE_SHOW_TEMP:
+    n = 3;
+    n_max = 4;
+    break;
+#endif
+  case DISPLAY_AUTO_SHOW_DATA:
+#ifdef USE_CALENDAR
+    n = 0;
+    n_max = 3;
+#else
+    n = 3;
+#endif
+#ifdef USE_TEMP_DATA
+    n_max = 4;
+#endif
+    break;
+  default:
+    break;
+  }
+  sscTasks.startTask(sscTasks.auto_show_mode());
+}
+
+#if USE_MATRIX_DISPLAY
+
+void _setDisplayForAutoShowData(uint8_t &n)
+{
+  switch (n)
+  {
+#ifdef USE_CALENDAR
+  case 0:
+#ifdef USE_TICKER_FOR_DATA
+    if (read_eeprom_8(TICKER_STATE_VALUE_EEPROM_INDEX))
+    {
+      sscAssembleString(DISPLAY_MODE_SHOW_DOW);
+    }
+    else
+#endif
+    {
+      sscSetDayOfWeakString(7, getDayOfWeek(sscClock.getCurTime().day(),
+                                            sscClock.getCurTime().month(),
+                                            sscClock.getCurTime().year()));
+    }
+    break;
+  case 1:
+#ifdef USE_TICKER_FOR_DATA
+    if (read_eeprom_8(TICKER_STATE_VALUE_EEPROM_INDEX))
+    {
+      sscAssembleString(DISPLAY_MODE_SHOW_DAY_AND_MONTH);
+    }
+    else
+#endif
+    {
+      sscSetTimeString(1, sscClock.getCurTime().day(), sscClock.getCurTime().month(), true, true, false);
+    }
+    break;
+  case 2:
+#ifdef USE_TICKER_FOR_DATA
+    if (read_eeprom_8(TICKER_STATE_VALUE_EEPROM_INDEX))
+    {
+      sscAssembleString(DISPLAY_MODE_SHOW_YEAR);
+    }
+    else
+#endif
+    {
+      sscSetYearString(1, sscClock.getCurTime().year());
+    }
+    break;
+#endif
+#ifdef USE_TEMP_DATA
+  case 3:
+#ifdef USE_TICKER_FOR_DATA
+    if (read_eeprom_8(TICKER_STATE_VALUE_EEPROM_INDEX))
+    {
+      sscAssembleString(DISPLAY_MODE_SHOW_TEMP);
+    }
+    else
+#endif
+    {
+      sscSetTempString(1, sscGetCurTemp());
+    }
+    break;
+#endif
+  }
+
+#ifdef USE_TICKER_FOR_DATA
+  if (!read_eeprom_8(TICKER_STATE_VALUE_EEPROM_INDEX))
+  {
+    sscDisp.show();
+  }
+#else
+  sscDisp.show();
+#endif
+}
+
+#else
+
+void _setDisplayForAutoShowData(uint8_t &n)
+{
+  DateTime dt = sscClock.getCurTime();
+
+  switch (n)
+  {
+#ifdef USE_CALENDAR
+  case 0:
+    sscDisp.clear();
+    break;
+  case 1:
+  case 2:
+    sscDisp.showDate(dt);
+    break;
+#endif
+#ifdef USE_TEMP_DATA
+  case 3:
+    sscDisp.showTemp(sscGetCurTemp());
+    break;
+#endif
+  default:
+    break;
+  }
+  sscDisp.show();
+}
+
+#endif
+
+void sscAutoShowData()
+{
+  static uint8_t n = 0;
+  static uint8_t n_max = 0;
+  static uint32_t timer = millis();
+
+  if (!sscTasks.getTaskState(sscTasks.auto_show_mode()))
+  {
+    _startAutoShowMode(n, n_max);
+  }
+
+#ifdef USE_TICKER_FOR_DATA
+  if (sscTasks.getTaskState(sscTasks.ticker()))
+  {
+    timer = millis();
+    return;
+  }
+#endif
+
+  if (millis() - timer >= 1000)
+  {
+    timer = millis();
+#ifdef USE_TICKER_FOR_DATA
+    if (!read_eeprom_8(TICKER_STATE_VALUE_EEPROM_INDEX))
+    {
+      sscDisp.clear();
+    }
+#else
+    sscDisp.clear();
+#endif
+    _setDisplayForAutoShowData(n);
+
+    if (++n > n_max)
+    {
+      sscReturnToDefMode();
+    }
+  }
+}
+
+void sscShowAutoShowPeriodData(uint8_t _data, bool blink)
+{
+  sscDisp.clear();
+  _data = sscGetPeriodForAutoShow(_data);
+#if USE_MATRIX_DISPLAY
+  sscSetOtherDataString(AUTO_SHOW_PERIOD_TAG, 0, _data, blink);
+#else
+
+#endif
+}
+
+uint8_t sscGetPeriodForAutoShow(uint8_t index)
+{
+  uint8_t result = index;
+  if (index > 7)
+  {
+    result = 1;
+  }
+  else if (index > 1)
+  {
+    index--;
+    result = (index < 5) ? index * 5
+                         : ((index == 5) ? 30 : 60);
+  }
+  // таблица соответствий
+  // index:  0  1  2  3  4  5  6  7
+  // return: 0  1  5 10 15 20 30 60
+  return (result);
+}
 #endif
 
 #if USE_MATRIX_DISPLAY
@@ -2620,165 +2845,6 @@ void sscSetTempString(uint8_t offset, int16_t temp, bool toStringData)
 
 #endif
 
-#if USE_AUTO_SHOW_DATA
-void sscAutoShowData()
-{
-  static uint8_t n = 0;
-  static uint8_t n_max = 0;
-  static uint32_t timer = 0;
-
-  if (!sscTasks.getTaskState(sscTasks.auto_show_mode()))
-  {
-    switch (ssc_display_mode)
-    {
-#ifdef USE_CALENDAR
-    case DISPLAY_MODE_SHOW_DATE:
-      n = 0;
-      n_max = 3;
-      break;
-#endif
-#ifdef USE_TEMP_DATA
-    case DISPLAY_MODE_SHOW_TEMP:
-      n = 3;
-      n_max = 4;
-      break;
-#endif
-    case DISPLAY_AUTO_SHOW_DATA:
-#ifdef USE_CALENDAR
-      n = 0;
-      n_max = 3;
-#else
-      n = 3;
-#endif
-#ifdef USE_TEMP_DATA
-      n_max = 4;
-#endif
-      break;
-    default:
-      break;
-    }
-    sscTasks.startTask(sscTasks.auto_show_mode());
-  }
-
-#ifdef USE_TICKER_FOR_DATA
-  if (sscTasks.getTaskState(sscTasks.ticker()))
-  {
-    timer = millis();
-    return;
-  }
-#endif
-
-  if (millis() - timer >= 1000)
-  {
-    timer = millis();
-#ifdef USE_TICKER_FOR_DATA
-    if (!read_eeprom_8(TICKER_STATE_VALUE_EEPROM_INDEX))
-    {
-      sscDisp.clear();
-    }
-#else
-    sscDisp.clear();
-#endif
-    switch (n)
-    {
-#ifdef USE_CALENDAR
-    case 0:
-#ifdef USE_TICKER_FOR_DATA
-      if (read_eeprom_8(TICKER_STATE_VALUE_EEPROM_INDEX))
-      {
-        sscAssembleString(DISPLAY_MODE_SHOW_DOW);
-      }
-      else
-#endif
-      {
-        sscSetDayOfWeakString(7, getDayOfWeek(sscClock.getCurTime().day(),
-                                              sscClock.getCurTime().month(),
-                                              sscClock.getCurTime().year()));
-      }
-      break;
-    case 1:
-#ifdef USE_TICKER_FOR_DATA
-      if (read_eeprom_8(TICKER_STATE_VALUE_EEPROM_INDEX))
-      {
-        sscAssembleString(DISPLAY_MODE_SHOW_DAY_AND_MONTH);
-      }
-      else
-#endif
-      {
-        sscSetTimeString(1, sscClock.getCurTime().day(), sscClock.getCurTime().month(), true, true, false);
-      }
-      break;
-    case 2:
-#ifdef USE_TICKER_FOR_DATA
-      if (read_eeprom_8(TICKER_STATE_VALUE_EEPROM_INDEX))
-      {
-        sscAssembleString(DISPLAY_MODE_SHOW_YEAR);
-      }
-      else
-#endif
-      {
-        sscSetYearString(1, sscClock.getCurTime().year());
-      }
-      break;
-#endif
-#ifdef USE_TEMP_DATA
-    case 3:
-#ifdef USE_TICKER_FOR_DATA
-      if (read_eeprom_8(TICKER_STATE_VALUE_EEPROM_INDEX))
-      {
-        sscAssembleString(DISPLAY_MODE_SHOW_TEMP);
-      }
-      else
-#endif
-      {
-        sscSetTempString(1, sscGetCurTemp());
-      }
-      break;
-#endif
-    }
-#ifdef USE_TICKER_FOR_DATA
-    if (!read_eeprom_8(TICKER_STATE_VALUE_EEPROM_INDEX))
-    {
-      sscDisp.show();
-    }
-#else
-    sscDisp.show();
-#endif
-
-    if (++n > n_max)
-    {
-      sscReturnToDefMode();
-    }
-  }
-}
-
-void sscShowAutoShowPeriodData(uint8_t _data, bool blink)
-{
-  sscDisp.clear();
-
-  sscSetOtherDataString(AUTO_SHOW_PERIOD_TAG, 0, sscGetPeriodForAutoShow(_data), blink);
-}
-
-uint8_t sscGetPeriodForAutoShow(uint8_t index)
-{
-  uint8_t result = index;
-  if (index > 7)
-  {
-    result = 1;
-  }
-  else if (index > 1)
-  {
-    index--;
-    result = (index < 5) ? index * 5
-                         : ((index == 5) ? 30 : 60);
-  }
-  // таблица соответствий
-  // index:  0  1  2  3  4  5  6  7
-  // return: 0  1  5 10 15 20 30 60
-  return (result);
-}
-#endif
-
 #ifdef WS2812_MATRIX_DISPLAY
 void sscShowColorOfNumberData(uint8_t _data, bool blink)
 {
@@ -2814,5 +2880,64 @@ void sscShowBrightnessData(uint8_t br, bool blink)
   sscSetOtherDataString(SET_BRIGHTNESS_TAG, 1, br, blink);
 }
 #endif
+
+#else
+
+#ifdef USE_SET_BRIGHTNESS_MODE
+void sscShowBrightnessData(uint8_t br, bool blink)
+{
+}
+#endif
+
+void sscSetOtherData(clkDataType _type, uint8_t _data, bool blink)
+{
+  uint8_t items[4] = {0x00};
+  _data %= 100;
+
+  switch (_type)
+  {
+#if USE_AUTO_SHOW_DATA
+  case AUTO_SHOW_PERIOD_TAG:
+    _data = sscGetPeriodForAutoShow(_data);
+    sscSetTag(_type, items[0], items[1]);
+    break;
+#endif
+  default:
+    break;
+  }
+
+  if (!blink)
+  {
+    items[2] = sscDisp.encodeDigit(_data / 10);
+    items[3] = sscDisp.encodeDigit(_data % 10);
+  }
+
+  items[1] |= 0x80; // для показа двоеточия установить старший бит во второй цифре
+  for (uint8_t i = 0; i < 4; i++)
+  {
+    sscDisp.setDispData(i, items[i]);
+  }
+
+  sscDisp.show();
+}
+
+void sscSetTag(clkDataType _type, uint8_t &item_0, uint8_t &item_1)
+{
+  switch (_type)
+  {
+#if USE_AUTO_SHOW_DATA
+  case AUTO_SHOW_PERIOD_TAG: // Au
+    item_0 = sscDisp.encodeDigit(0x0A);
+#ifdef TM1637_DISPLAY
+    item_1 = 0b00011100;
+#else
+    item_1 = 0b00011100;
+#endif
+    break;
+#endif
+  default:
+    break;
+  }
+}
 
 #endif

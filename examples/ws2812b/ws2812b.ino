@@ -45,7 +45,7 @@ void loop()
   clock.tick();
 
   // пример использования событий кнопок управления часами в своих целях
-  if (clock.getBtnUpState() == BTN_DBLCLICK)
+  if (clock.getButtonState(SSC_BTN_UP) == BTN_DBLCLICK)
   {
     // например, обрабатываем событие двойного клика кнопкой Up
     Serial.println("Double click of button Up");

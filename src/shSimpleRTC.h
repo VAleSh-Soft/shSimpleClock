@@ -4,9 +4,9 @@
  * @brief Небольшой модуль для работы с модулями часов реального времени DS3231 и DS1307
  * @version 1.0
  * @date 11.03.2024
- * 
+ *
  * @copyright Copyright (c) 2024
- * 
+ *
  */
 #pragma once
 #include <Arduino.h>
@@ -123,6 +123,12 @@ private:
   uint8_t decToBcd(uint8_t val) { return ((val / 10 * 16) + (val % 10)); }
   uint8_t bcdToDec(uint8_t val) { return ((val / 16 * 10) + (val % 16)); }
 
+  bool isClockPresent()
+  {
+    Wire.beginTransmission(CLOCK_ADDRESS);
+    return (Wire.endTransmission() == 0);
+  }
+
 public:
   /**
    * @brief конструктор объекта DS3231
@@ -136,19 +142,26 @@ public:
    */
   void now()
   {
-    Wire.beginTransmission(CLOCK_ADDRESS);
-    Wire.write(0);
-    Wire.endTransmission();
+    if (isClockPresent())
+    {
+      Wire.beginTransmission(CLOCK_ADDRESS);
+      Wire.write(0);
+      Wire.endTransmission();
 
-    Wire.requestFrom(CLOCK_ADDRESS, 7);
-    uint8_t ss = bcdToDec(Wire.read() & 0x7F);
-    uint8_t mm = bcdToDec(Wire.read());
-    uint8_t hh = bcdToDec(Wire.read());
-    Wire.read();
-    uint8_t d = bcdToDec(Wire.read());
-    uint8_t m = bcdToDec(Wire.read());
-    uint16_t y = bcdToDec(Wire.read());
-    cur_time = DateTime(y, m, d, hh, mm, ss);
+      Wire.requestFrom(CLOCK_ADDRESS, 7);
+      uint8_t ss = bcdToDec(Wire.read() & 0x7F);
+      uint8_t mm = bcdToDec(Wire.read());
+      uint8_t hh = bcdToDec(Wire.read());
+      Wire.read();
+      uint8_t d = bcdToDec(Wire.read());
+      uint8_t m = bcdToDec(Wire.read());
+      uint16_t y = bcdToDec(Wire.read());
+      cur_time = DateTime(y, m, d, hh, mm, ss);
+    }
+    else
+    {
+      cur_time = DateTime(0, 1, 1, 0, 0, 0);
+    }
   }
 
   /**
@@ -167,12 +180,15 @@ public:
    */
   void setCurTime(uint8_t _hour, uint8_t _minute, uint8_t _second)
   {
-    Wire.beginTransmission(CLOCK_ADDRESS);
-    Wire.write(0);
-    Wire.write(decToBcd(_second));
-    Wire.write(decToBcd(_minute));
-    Wire.write(decToBcd(_hour));
-    Wire.endTransmission();
+    if (isClockPresent())
+    {
+      Wire.beginTransmission(CLOCK_ADDRESS);
+      Wire.write(0);
+      Wire.write(decToBcd(_second));
+      Wire.write(decToBcd(_minute));
+      Wire.write(decToBcd(_hour));
+      Wire.endTransmission();
+    }
   }
 
   /**
@@ -183,11 +199,14 @@ public:
    */
   void setCurDate(uint8_t _date, uint8_t _month)
   {
-    Wire.beginTransmission(CLOCK_ADDRESS);
-    Wire.write(0x04);
-    Wire.write(decToBcd(_date));
-    Wire.write(decToBcd(_month));
-    Wire.endTransmission();
+    if (isClockPresent())
+    {
+      Wire.beginTransmission(CLOCK_ADDRESS);
+      Wire.write(0x04);
+      Wire.write(decToBcd(_date));
+      Wire.write(decToBcd(_month));
+      Wire.endTransmission();
+    }
   }
 
   /**
@@ -197,16 +216,19 @@ public:
    */
   void setCurYear(uint8_t _year)
   {
-    Wire.beginTransmission(CLOCK_ADDRESS);
-    Wire.write(0x06);
-    Wire.write(decToBcd(_year));
-    Wire.endTransmission();
+    if (isClockPresent())
+    {
+      Wire.beginTransmission(CLOCK_ADDRESS);
+      Wire.write(0x06);
+      Wire.write(decToBcd(_year));
+      Wire.endTransmission();
+    }
   }
 
   /**
    * @brief возвращает температуру внутреннего датчика DS3231; работает только с DS3231
-   * 
-   * @return uint8_t 
+   *
+   * @return uint8_t
    */
   uint8_t getTemperature()
   {
@@ -215,25 +237,23 @@ public:
     // http://forum.arduino.cc/index.php/topic,22301.0.html
 
     byte tMSB, tLSB;
-    float temp3231;
+    float temp3231 = -127;
 
-    // temp registers (11h-12h) get updated automatically every 64s
-    Wire.beginTransmission(CLOCK_ADDRESS);
-    Wire.write(0x11);
-    Wire.endTransmission();
-    Wire.requestFrom(CLOCK_ADDRESS, 2);
+    if (isClockPresent())
+    { // temp registers (11h-12h) get updated automatically every 64s
+      Wire.beginTransmission(CLOCK_ADDRESS);
+      Wire.write(0x11);
+      Wire.endTransmission();
+      Wire.requestFrom(CLOCK_ADDRESS, 2);
 
-    // Should I do more "if available" checks here?
-    if (Wire.available())
-    {
-      tMSB = Wire.read(); // 2's complement int portion
-      tLSB = Wire.read(); // fraction portion
+      // Should I do more "if available" checks here?
+      if (Wire.available())
+      {
+        tMSB = Wire.read(); // 2's complement int portion
+        tLSB = Wire.read(); // fraction portion
 
-      temp3231 = ((((short)tMSB << 8) | (short)tLSB) >> 6) / 4.0;
-    }
-    else
-    {
-      temp3231 = -127; 
+        temp3231 = ((((short)tMSB << 8) | (short)tLSB) >> 6) / 4.0;
+      }
     }
 
     return ((int)round(temp3231));
