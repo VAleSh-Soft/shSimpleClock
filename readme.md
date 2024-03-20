@@ -57,6 +57,7 @@
 
 ### Использованные сторонние библиотеки
 
+Для работы с кнопками:<br>
 **shButton.h** - https://github.com/VAleSh-Soft/shButton<br>
 
 Для работы с экранами используются библиотеки<br>
@@ -68,10 +69,6 @@
 
 для работы с датчиком **DS18b20** используется библиотека<br>
 **OneWire.h** - https://github.com/PaulStoffregen/OneWire
-
-<hr>
-
-Если возникнут вопросы, пишите на valesh-soft@yandex.ru 
 
 <hr>
 
@@ -90,3 +87,7 @@
   - [Датчики температуры](docs/temp_sensors.md)
 - [Описание файла `clockSetting.h`](docs/clock_setting.md)
 - [Взаимодействие с внешним кодом (API библиотеки)](docs/api.md)
+
+<hr>
+
+Если возникнут вопросы, пишите на valesh-soft@yandex.ru 
