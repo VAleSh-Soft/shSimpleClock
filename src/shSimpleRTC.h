@@ -129,12 +129,103 @@ private:
     return (Wire.endTransmission() == 0);
   }
 
+#ifdef RTC_DS3231
+  /**
+   * устанавливает режим 12-часовой (true) или 24-часовой (false).
+   * Одна вещь, которая меня беспокоит в том, как я это написал,
+   * заключается в том, что если чтение и правка происходят в правильную
+   * почасовую миллисекунду, часы будут переведены на час назад.
+   * Однако не знаю, как это сделать лучше, и пока режим не устанавливается
+   * часто, риск очень минимален. 
+   * Риск нулевой, если вы вызываете это ДО установки часа, поскольку 
+   * функция setHour() не меняет этот режим.
+   */
+  void setClockMode(bool h12)
+  {
+    // sets the mode to 12-hour (true) or 24-hour (false).
+    // One thing that bothers me about how I've written this is that
+    // if the read and right happen at the right hourly millisecnd,
+    // the clock will be set back an hour. Not sure how to do it better,
+    // though, and as long as one doesn't set the mode frequently it's
+    // a very minimal risk.
+    // It's zero risk if you call this BEFORE setting the hour, since
+    // the setHour() function doesn't change this mode.
+
+    uint8_t temp_buffer;
+
+    // старт считывания байта 0x02.
+    Wire.beginTransmission(CLOCK_ADDRESS);
+    Wire.write(0x02);
+    Wire.endTransmission();
+    Wire.requestFrom(CLOCK_ADDRESS, 1);
+    temp_buffer = Wire.read();
+
+    // установка заданного флага:
+    if (h12)
+    {
+      temp_buffer = temp_buffer | 0b01000000;
+    }
+    else
+    {
+      temp_buffer = temp_buffer & 0b10111111;
+    }
+
+    // запись байта
+    Wire.beginTransmission(CLOCK_ADDRESS);
+    Wire.write(0x02);
+    Wire.write(temp_buffer);
+    Wire.endTransmission();
+  }
+
+  uint8_t DS3231::readControlByte(bool which)
+  {
+    // чтение выбранного контрольного байта
+    // первый байт (false) is 0x0e, второй (true) is 0x0f
+    Wire.beginTransmission(CLOCK_ADDRESS);
+    if (which)
+    {
+      // второй контрольный байт
+      Wire.write(0x0f);
+    }
+    else
+    {
+      // первый контрольный байт
+      Wire.write(0x0e);
+    }
+    Wire.endTransmission();
+    Wire.requestFrom(CLOCK_ADDRESS, 1);
+    return Wire.read();
+  }
+
+  void DS3231::writeControlByte(uint8_t control, bool which)
+  {
+    // Запись выбранного контрольного байта.
+    // which = false -> 0x0e, true -> 0x0f.
+    Wire.beginTransmission(CLOCK_ADDRESS);
+    if (which)
+    {
+      Wire.write(0x0f);
+    }
+    else
+    {
+      Wire.write(0x0e);
+    }
+    Wire.write(control);
+    Wire.endTransmission();
+  }
+#endif
+
 public:
   /**
    * @brief конструктор объекта DS3231
    *
    */
-  shSimpleRTC() {}
+  shSimpleRTC()
+  {
+#ifdef RTC_DS3231
+    setClockMode(false);
+#endif
+  }
 
   /**
    * @brief запрос текущих времени и даты из RTC и сохранение их во внутреннем буфере
@@ -188,6 +279,11 @@ public:
       Wire.write(decToBcd(_minute));
       Wire.write(decToBcd(_hour));
       Wire.endTransmission();
+#ifdef RTC_DS3231
+      // Очищаем флаг OSF
+      uint8_t temp_buffer = readControlByte(1);
+      writeControlByte((temp_buffer & 0b01111111), 1);
+#endif
     }
   }
 
@@ -236,7 +332,7 @@ public:
     // Updated / modified a tiny bit from "Coding Badly" and "Tri-Again"
     // http://forum.arduino.cc/index.php/topic,22301.0.html
 
-    byte tMSB, tLSB;
+    uint8_t tMSB, tLSB;
     float temp3231 = -127;
 
     if (isClockPresent())

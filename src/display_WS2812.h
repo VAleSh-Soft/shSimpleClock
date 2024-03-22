@@ -29,7 +29,7 @@ static const uint32_t PROGMEM color_of_number[] = {
     0x00FF00, // зеленый (Green)
     0x00FFFF, // голубой (Blue)
     0x0000FF, // синий (Indigo)
-    0xEE82EE  // фиолетовый (Violet)
+    0x9600D7  // фиолетовый (Violet)
 };
 
 // ==== класс для матрицы 8х32 адресных светодиодов ==

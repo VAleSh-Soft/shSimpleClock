@@ -2158,7 +2158,7 @@ void _setDisplayDataForOthSet(uint8_t &x)
 #endif
 #ifdef WS2812_MATRIX_DISPLAY
     case DISPLAY_MODE_SET_COLOR_OF_NUMBER:
-      sscSetOtherDataString(SET_COLOR_OF_NUMBER_TAG, 0, x, blink);
+      sscSetOtherDataString(SET_COLOR_OF_NUMBER_TAG, 1, x, blink);
       break;
 #endif
     default:

@@ -316,3 +316,4 @@ void setAlarmEventState(bool _state);
   - [Датчик освещенности](light_sensor.md)
   - [Датчики температуры](temp_sensors.md)
 - [Описание файла `clockSetting.h`](clock_setting.md)
+- [Руководство по настройкам часов](setting.md)

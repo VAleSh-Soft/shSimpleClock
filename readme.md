@@ -87,6 +87,7 @@
   - [Датчики температуры](docs/temp_sensors.md)
 - [Описание файла `clockSetting.h`](docs/clock_setting.md)
 - [Взаимодействие с внешним кодом (API библиотеки)](docs/api.md)
+- [Руководство по настройкам часов](docs/setting.md)
 
 <hr>
 

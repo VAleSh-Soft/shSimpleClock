@@ -40,3 +40,4 @@ clock.setDisplayMode(DISPLAY_MODE_SHOW_TEMP);
   - [Датчики температуры](temp_sensors.md)
 - [Описание файла `clockSetting.h`](clock_setting.md)
 - [Взаимодействие с внешним кодом (API библиотеки)](api.md)
+- [Руководство по настройкам часов](setting.md)
