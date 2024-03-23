@@ -308,9 +308,9 @@ uint8_t constexpr BIT_DEPTH = 10;
 индекс ячейки в **EEPROM** для сохранения интервала автовывода даты и/или температуры на экран (uint8_t); имеет смысл только при использовании одной из опций `USE_CALENDAR` или `USE_TEMP_DATA`.
 
 ```
-#define LIGHT_THRESHOLD_EEPROM_INDEX 97  
+#define TICKER_STATE_VALUE_EEPROM_INDEX 97  
 ```
-индекс ячейки в **EEPROM** для сохранения порога переключения яркости (uint8_t); имеет смысл только при использовании датчика освещенности.
+индекс ячейки в **EEPROM** для сохранения статуса анимации (uint8_t); имеет смысл только при использовании опции `#define USE_TICKER_FOR_DATA`.
 
 ```
 #define LIGHT_THRESHOLD_EEPROM_INDEX 95
