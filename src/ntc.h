@@ -3,13 +3,13 @@
 
    Методы библиотеки:
 
-   NTCSensor temp_sensor(_sensor_pin, _resistor_std, _balance_resistor, _beta = 3950) - конструктора класса.
+   NTCSensor temp_sensor(_sensor_pin, RESISTOR_STD, BALANCE_RESISTOR, BETA_COEFFICIENT = 3950) - конструктор класса.
    Список аргументов:
 
     _sensor_pin - аналоговый пин, куда подключен датчик;
-    _resistor_std - сопротивление датчика при комнатной температуре (25 градусов Цельсия) в Омах;
-    _balance_resistor - сопротивление второго резистора делителя напряжения, в Омах;
-    _beta - бета-коэффициент датчика, см. данные производителя; если данных производителя нет, коэффициент можно расчитать, исходя из бета-формулы расчета температуры, которую можно легко найти в интернете.
+    RESISTOR_STD - сопротивление датчика при комнатной температуре (25 градусов Цельсия) в Омах;
+    BALANCE_RESISTOR - сопротивление второго резистора делителя напряжения, в Омах;
+    BETA_COEFFICIENT - бета-коэффициент датчика, см. данные производителя; если данных производителя нет, коэффициент можно расчитать, исходя из бета-формулы расчета температуры, которую можно легко найти в интернете.
 
    int16_t getTemp() - получение температуры с датчика;
 
@@ -32,14 +32,14 @@ private:
 
 public:
   NTCSensor(uint8_t _sensor_pin,
-            uint16_t _resistor_std,
-            uint16_t _balance_resistor,
-            uint16_t _beta = 3950)
+            uint16_t RESISTOR_STD,
+            uint16_t BALANCE_RESISTOR,
+            uint16_t BETA_COEFFICIENT = 3950)
   {
     sensor_pin = _sensor_pin;
-    balance = _balance_resistor;
-    resistor_room_temp = _resistor_std;
-    beta = _beta;
+    balance = BALANCE_RESISTOR;
+    resistor_room_temp = RESISTOR_STD;
+    beta = BETA_COEFFICIENT;
   }
 
   /**

@@ -207,37 +207,12 @@ public:
     }
 
     result = (n++ >= 2);
+    if (result)
+    {
+      n = 0;
+    }
 
     return (result);
-  }
-
-  /**
-   * @brief вывод на экран данных по настройке яркости экрана
-   *
-   * @param br величина яркости
-   * @param blink используется для мигания изменяемого значения
-   * @param toSensor используется или нет датчик освещенности
-   * @param toMin если true, то настраивается минимальный уровень яркости, иначе - максимальный
-   */
-  void showBrightnessData(uint8_t br, bool blink, bool toSensor = false, bool toMin = false)
-  {
-    clear();
-    data[0] = 0b00011111;
-    if (toSensor)
-    {
-      data[1] = (toMin) ? shMAX72xx7Segment<cs_pin, 1, NUM_DIGITS>::encodeDigit(0)
-                        : shMAX72xx7Segment<cs_pin, 1, NUM_DIGITS>::encodeDigit(1);
-    }
-    else
-    {
-      data[1] = 0b00000101;
-    }
-    data[1] |= 0x80; // для показа двоеточия установить старший бит во второй цифре
-    if (!blink)
-    {
-      data[2] = shMAX72xx7Segment<cs_pin, 1, NUM_DIGITS>::encodeDigit(br / 10);
-      data[3] = shMAX72xx7Segment<cs_pin, 1, NUM_DIGITS>::encodeDigit(br % 10);
-    }
   }
 
   /**
@@ -470,7 +445,7 @@ public:
       setColon(false);
     }
 
-#ifdef SHOW_SECOND_COLUMN
+#if defined(SHOW_SECOND_COLUMN)
     // формирование секундного столбца
     uint8_t col_sec = 0;
     uint8_t x = second / 5;
@@ -560,46 +535,6 @@ public:
     result = (n++ >= 3);
 
     return (result);
-  }
-
-  /**
-   * @brief вывод на экран данных по настройке яркости экрана
-   *
-   * @param br величина яркости
-   * @param blink используется для мигания изменяемого значения
-   * @param toSensor используется или нет датчик освещенности
-   * @param toMin если true, то настраивается минимальный уровень яркости, иначе - максимальный
-   */
-  void showBrightnessData(uint8_t br, bool blink, bool toSensor = false, bool toMin = false)
-  {
-    shMAX72xxMini<cs_pin, 4>::clearAllDevices();
-
-#ifdef USE_RU_LANGUAGE
-    setChar(0, 0xDF, 5); // Я
-    setChar(6, 0xF0, 5); // р
-    uint8_t x = 0xEA;    // к
-    if (toSensor)
-    {
-      x = (toMin) ? 0 : 1;
-      x += 0x30;
-    }
-    setChar(12, x, 5);
-#else
-    setChar(0, 0x42, 5); // B
-    setChar(6, 0x72, 5); // r
-    if (toSensor)
-    {
-      uint8_t x = (toMin) ? 0 : 1;
-      x += 0x30;
-      setChar(12, x, 5);
-    }
-#endif
-    shMAX72xxMini<cs_pin, 4>::setColumn(2, 2, 0b00100100);
-    if (!blink)
-    {
-      setChar(20, br / 10 + 0x30, 5);
-      setChar(26, br % 10 + 0x30, 5);
-    }
   }
 
   /**

@@ -42,7 +42,7 @@ private:
   clkHandle clk_return_to_default_mode; // таймер автовозврата в режим показа времени из любого режима настройки
   clkHandle clk_set_time_mode;          // режим настройки времени
   clkHandle clk_display_guard;          // вывод данных на экран
-#ifdef USE_ALARM
+#if defined(USE_ALARM)
   clkHandle clk_alarm_guard;  // отслеживание будильника
   clkHandle clk_alarm_buzzer; // пищалка будильника
 #endif
@@ -52,13 +52,13 @@ private:
 #if defined(USE_TEMP_DATA) && defined(USE_DS18B20)
   clkHandle clk_ds18b20_guard; // опрос датчика DS18b20
 #endif
-#ifdef USE_LIGHT_SENSOR
+#if defined(USE_LIGHT_SENSOR)
   clkHandle clk_light_sensor_guard; // отслеживание показаний датчика света
 #endif
 #if USE_OTHER_SETTING
   clkHandle clk_other_setting_mode; // режим настроек цифровых данных
 #endif
-#ifdef USE_TICKER_FOR_DATA
+#if defined(USE_TICKER_FOR_DATA)
   clkHandle clk_ticker; // отработка бегущей строки
 #endif
 
@@ -159,17 +159,17 @@ public:
 
   clkHandle return_to_default_mode() { return clk_return_to_default_mode; }
   void return_to_default_mode(clkHandle _idx) { clk_return_to_default_mode = _idx; }
-  
+
   clkHandle set_time_mode() { return clk_set_time_mode; }
   void set_time_mode(clkHandle _idx) { clk_set_time_mode = _idx; }
-  
+
   clkHandle display_guard() { return clk_display_guard; }
   void display_guard(clkHandle _idx) { clk_display_guard = _idx; }
-  
-#ifdef USE_ALARM
+
+#if defined(USE_ALARM)
   clkHandle alarm_guard() { return clk_alarm_guard; }
   void alarm_guard(clkHandle _idx) { clk_alarm_guard = _idx; }
-  
+
   clkHandle alarm_buzzer() { return clk_alarm_buzzer; }
   void alarm_buzzer(clkHandle _idx) { clk_alarm_buzzer = _idx; }
 #endif
@@ -184,7 +184,7 @@ public:
   void ds18b20_guard(clkHandle _idx) { clk_ds18b20_guard = _idx; }
 #endif
 
-#ifdef USE_LIGHT_SENSOR
+#if defined(USE_LIGHT_SENSOR)
   clkHandle light_sensor_guard() { return clk_light_sensor_guard; }
   void light_sensor_guard(clkHandle _idx) { clk_light_sensor_guard = _idx; }
 #endif
@@ -194,7 +194,7 @@ public:
   void other_setting_mode(clkHandle _idx) { clk_other_setting_mode = _idx; }
 #endif
 
-#ifdef USE_TICKER_FOR_DATA
+#if defined(USE_TICKER_FOR_DATA)
   clkHandle ticker() { return clk_ticker; }
   void ticker(clkHandle _idx) { clk_ticker = _idx; }
 #endif

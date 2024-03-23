@@ -296,7 +296,7 @@ static const uint8_t PROGMEM font_5_7[] = {
 #define DISP_LIGHT_THRESHOLD_TAG 4
 #define DISP_COLOR_TAG 5
 
-#ifdef USE_RU_LANGUAGE
+#if defined(USE_RU_LANGUAGE)
 static const uint8_t PROGMEM day_of_week[] = {
     0xC2, 0xD1, 0xCA, // "ВСК";
     0xCF, 0xCD, 0xC4, // "ПНД";

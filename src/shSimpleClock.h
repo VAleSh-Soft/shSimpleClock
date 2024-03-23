@@ -14,11 +14,11 @@
 enum clkDataType : uint8_t
 {
   NO_TAG
-#ifdef USE_TICKER_FOR_DATA
+#if defined(USE_TICKER_FOR_DATA)
   ,
   TICKER_TAG
 #endif
-#ifdef USE_ALARM
+#if defined(USE_ALARM)
   ,
   ALARM_TAG
 #endif
@@ -26,15 +26,15 @@ enum clkDataType : uint8_t
   ,
   AUTO_SHOW_PERIOD_TAG
 #endif
-#ifdef USE_SET_BRIGHTNESS_MODE
+#if defined(USE_SET_BRIGHTNESS_MODE)
   ,
   SET_BRIGHTNESS_TAG
 #endif
-#ifdef USE_LIGHT_SENSOR
+#if defined(USE_LIGHT_SENSOR)
   ,
   SET_LIGHT_THRESHOLD_TAG
 #endif
-#ifdef WS2812_MATRIX_DISPLAY
+#if defined(WS2812_MATRIX_DISPLAY)
   ,
   SET_COLOR_OF_NUMBER_TAG
 #endif
@@ -45,19 +45,19 @@ enum clkDisplayMode : uint8_t
   DISPLAY_MODE_SHOW_TIME, // основной режим - вывод времени на индикатор
   DISPLAY_MODE_SET_HOUR,  // режим настройки часов
   DISPLAY_MODE_SET_MINUTE // режим настройки минут
-#ifdef USE_CALENDAR
+#if defined(USE_CALENDAR)
   ,
   DISPLAY_MODE_SET_DAY,   // режим настройки дня месяца
   DISPLAY_MODE_SET_MONTH, // режим настройки месяца
   DISPLAY_MODE_SET_YEAR   // режим настройки года
 #endif
-#ifdef USE_ALARM
+#if defined(USE_ALARM)
   ,
   DISPLAY_MODE_ALARM_ON_OFF,    // режим настройки будильника - вкл/выкл
   DISPLAY_MODE_SET_ALARM_HOUR,  // режим настройки будильника - часы
   DISPLAY_MODE_SET_ALARM_MINUTE // режим настройки будильника - минуты
 #endif
-#ifdef USE_TEMP_DATA
+#if defined(USE_TEMP_DATA)
   ,
   DISPLAY_MODE_SHOW_TEMP // режим вывода температуры
 #endif
@@ -65,26 +65,26 @@ enum clkDisplayMode : uint8_t
   ,
   DISPLAY_AUTO_SHOW_DATA // автовывод даты и/или температуры в конце каждой минуты
 #endif
-#ifdef USE_CALENDAR
+#if defined(USE_CALENDAR)
   ,
   DISPLAY_MODE_SHOW_DATE,          // вывод полной даты
   DISPLAY_MODE_SHOW_DOW,           // режим вывода дня недели
   DISPLAY_MODE_SHOW_DAY_AND_MONTH, // режим вывода числа и месяца
   DISPLAY_MODE_SHOW_YEAR           // режим вывода года
 #endif
-#ifdef USE_LIGHT_SENSOR
+#if defined(USE_LIGHT_SENSOR)
   ,
   DISPLAY_MODE_SET_LIGHT_THRESHOLD // режим настройки порога переключения яркости
 #endif
-#ifdef USE_SET_BRIGHTNESS_MODE
-#ifdef USE_LIGHT_SENSOR
+#if defined(USE_SET_BRIGHTNESS_MODE)
+#if defined(USE_LIGHT_SENSOR)
   ,
   DISPLAY_MODE_SET_BRIGHTNESS_MIN // режим настройки минимального уровня яркости экрана
 #endif
   ,
   DISPLAY_MODE_SET_BRIGHTNESS_MAX // режим настройки максимального уровня яркости экрана
 #endif
-#ifdef USE_TICKER_FOR_DATA
+#if defined(USE_TICKER_FOR_DATA)
   ,
   DISPLAY_MODE_SET_TICKER_ON_OFF // режим включения/выключения анимации
 #endif
@@ -92,7 +92,7 @@ enum clkDisplayMode : uint8_t
   ,
   DISPLAY_MODE_SET_AUTO_SHOW_PERIOD // режим настройки периода автовывода даты и/или температуры
 #endif
-#ifdef WS2812_MATRIX_DISPLAY
+#if defined(WS2812_MATRIX_DISPLAY)
   ,
   DISPLAY_MODE_SET_COLOR_OF_NUMBER // режим настройки цвета символов для адресных светодиодов
 #endif
@@ -107,16 +107,16 @@ void sscShowTimeSetting();
 void sscSetDisp();
 void sscCheckButton();
 void sscSetDisplay();
-#ifdef USE_ALARM
+#if defined(USE_ALARM)
 void sscCheckAlarm();
 void sscRunAlarmBuzzer();
 #endif
-#ifdef USE_LIGHT_SENSOR
+#if defined(USE_LIGHT_SENSOR)
 void sscSetBrightness();
 #endif
-#ifdef USE_TEMP_DATA
+#if defined(USE_TEMP_DATA)
 int8_t sscGetCurTemp();
-#ifdef USE_DS18B20
+#if defined(USE_DS18B20)
 void sscCheckDS18b20();
 #endif
 #endif
@@ -143,21 +143,21 @@ void sscSetNumString(uint8_t offset, uint8_t num,
                      uint8_t width = 6, uint8_t space = 1, bool toStringData = false);
 void sscSetChar(uint8_t offset, uint8_t chr, uint8_t width, bool toStringData = false);
 
-#ifdef USE_TICKER_FOR_DATA
+#if defined(USE_TICKER_FOR_DATA)
 void sscAssembleString(clkDisplayMode data_type, uint8_t lenght = 80);
 void sscRunTicker();
 #endif
 
-#ifdef USE_CALENDAR
+#if defined(USE_CALENDAR)
 void sscSetDayOfWeakString(uint8_t offset, uint8_t dow, bool toStringData = false);
 void sscSetYearString(uint8_t offset, uint16_t _year, bool toStringData = false);
 #endif
 
-#ifdef USE_TEMP_DATA
+#if defined(USE_TEMP_DATA)
 void sscSetTempString(uint8_t offset, int16_t temp, bool toStringData = false);
 #endif
 
-#ifdef WS2812_MATRIX_DISPLAY
+#if defined(WS2812_MATRIX_DISPLAY)
 uint8_t sscGetIndexOfCurrentColorOfNumber();
 #endif
 
@@ -178,10 +178,10 @@ void sscSetOnOffData(clkDataType _type, bool _state, bool _blink);
 #include <FastLED.h> // https://github.com/FastLED/FastLED
 #include "display_WS2812.h"
 #endif
-#ifdef USE_ALARM
+#if defined(USE_ALARM)
 #include "alarm.h"
 #endif
-#ifdef USE_TEMP_DATA
+#if defined(USE_TEMP_DATA)
 #if defined(USE_DS18B20)
 #include "ds1820.h"
 #elif defined(USE_NTC)
@@ -213,43 +213,47 @@ DisplayWS2812Matrix sscDisp(ssc_leds, COLOR_OF_NUMBER, MX_TYPE);
 shSimpleRTC sscClock;
 
 // ---- будильник --------------------------
-#ifdef USE_ALARM
+#if defined(USE_ALARM)
 Alarm sscAlarm(ALARM_LED_PIN, ALARM_DATA_EEPROM_INDEX);
 #endif
 
 // ---- датчики температуры ----------------
-#ifdef USE_TEMP_DATA
+#if defined(USE_TEMP_DATA)
 #if defined(USE_DS18B20)
 DS1820 sscTempSensor(DS18B20_PIN);
 #elif defined(USE_NTC)
-NTCSensor sscTempSensor(NTC_PIN, _resistor_std, _balance_resistor, _beta);
+NTCSensor sscTempSensor(NTC_PIN,
+                        RESISTOR_STD,
+                        BALANCE_RESISTOR,
+                        BETA_COEFFICIENT);
 #endif
 #endif
 
 // ==== clkButton ====================================
 enum clkButtonFlag : uint8_t
 {
-  BTN_FLAG_NONE, // флаг кнопки - ничего не делать
-  BTN_FLAG_NEXT, // флаг кнопки - изменить значение
-  BTN_FLAG_EXIT  // флаг кнопки - возврат в режим показа текущего времени
+  CLK_BTN_FLAG_NONE, // флаг кнопки - ничего не делать
+  CLK_BTN_FLAG_NEXT, // флаг кнопки - изменить значение
+  CLK_BTN_FLAG_EXIT  // флаг кнопки - возврат в режим показа текущего времени
 };
 
 class clkButton : public shButton
 {
 private:
-  clkButtonFlag _flag = BTN_FLAG_NONE;
+  clkButtonFlag _flag = CLK_BTN_FLAG_NONE;
 
 public:
-  clkButton(uint8_t button_pin, bool serial_mode = false) : shButton(button_pin, BTN_INPUT_TYPE, BTN_TYPE)
+  clkButton(uint8_t button_pin, bool serial_mode = false)
+      : shButton(button_pin, BTN_INPUT_TYPE, BTN_TYPE)
   {
-    shButton::setTimeoutOfLongClick(timeout_of_longclick);
+    shButton::setTimeoutOfLongClick(TIMEOUT_OF_LONGCLICK);
     shButton::setLongClickMode(LCM_ONLYONCE);
     shButton::setVirtualClickOn(true);
-    shButton::setTimeoutOfDebounce(timeout_of_debounce);
+    shButton::setTimeoutOfDebounce(TIMEOUT_OF_DEBOUNCE);
     if (serial_mode)
     {
       shButton::setLongClickMode(LCM_CLICKSERIES);
-      shButton::setIntervalOfSerial(interval_of_serial);
+      shButton::setIntervalOfSerial(INTERVAL_OF_SERIAL);
     }
   }
 
@@ -276,13 +280,13 @@ public:
       {
         sscTasks.startTask(sscTasks.return_to_default_mode());
       }
-#ifdef USE_BUZZER_FOR_BUTTON
+#if defined(USE_BUZZER_FOR_BUTTON)
       if (_state != BTN_LONGCLICK)
       {
         tone(BUZZER_PIN, 2000, 25); // на каждый клик срабатывает пищалка
       }
 #endif
-#ifdef USE_ALARM
+#if defined(USE_ALARM)
       // если сработал будильник, отключить его
       if (sscAlarm.getAlarmState() == ALARM_YES)
       {
@@ -300,9 +304,9 @@ public:
 // ==== clkButtonGroup ===============================
 enum clkButtonType : uint8_t
 {
-  SSC_BTN_SET,
-  SSC_BTN_UP,
-  SSC_BTN_DOWN
+  CLK_BTN_SET,
+  CLK_BTN_UP,
+  CLK_BTN_DOWN
 };
 
 class clkButtonGroup
@@ -333,7 +337,7 @@ public:
   {
     switch (_btn)
     {
-    case SSC_BTN_SET:
+    case CLK_BTN_SET:
       if (BTN_SET_PIN >= 0)
       {
         btn_set = (clkButton *)calloc(1, sizeof(clkButton));
@@ -344,7 +348,7 @@ public:
         buttons[0] = btn_set;
       }
       break;
-    case SSC_BTN_UP:
+    case CLK_BTN_UP:
       if (BTN_UP_PIN >= 0)
       {
         btn_up = (clkButton *)calloc(1, sizeof(clkButton));
@@ -355,7 +359,7 @@ public:
         buttons[1] = btn_up;
       }
       break;
-    case SSC_BTN_DOWN:
+    case CLK_BTN_DOWN:
       if (BTN_DOWN_PIN >= 0)
       {
         btn_down = (clkButton *)calloc(1, sizeof(clkButton));
@@ -379,7 +383,7 @@ public:
 
   clkButtonFlag getButtonFlag(clkButtonType _btn)
   {
-    clkButtonFlag result = BTN_FLAG_NONE;
+    clkButtonFlag result = CLK_BTN_FLAG_NONE;
     if (isValid(_btn))
     {
       result = buttons[(byte)_btn]->getButtonFlag();
@@ -425,13 +429,16 @@ public:
     return result;
   }
 
-  bool isSecondButtonPressed(clkButtonType _btn1, clkButtonType _btn2, uint8_t _state)
+  bool isSecondButtonPressed(clkButtonType _btn1,
+                             clkButtonType _btn2,
+                             uint8_t _state)
   {
     bool result = false;
 
     if (isValid(_btn1) && isValid(_btn2))
     {
-      result = buttons[(byte)_btn1]->isSecondButtonPressed(*buttons[(byte)_btn2], _state);
+      result = buttons[(byte)_btn1]->isSecondButtonPressed(*buttons[(byte)_btn2],
+                                                           _state);
     }
 
     return result;
@@ -462,12 +469,15 @@ public:
   void init()
   {
     // ==== кнопки ===================================
-    buttons.addButton(SSC_BTN_SET);
-    buttons.addButton(SSC_BTN_UP);
-    buttons.addButton(SSC_BTN_DOWN);
+    buttons.addButton(CLK_BTN_SET);
+    buttons.addButton(CLK_BTN_UP);
+    buttons.addButton(CLK_BTN_DOWN);
 
     // ==== RTC ======================================
     Wire.begin();
+#if defined(RTC_DS3231)
+    sscClock.setClockMode(false);
+#endif
     sscRtcNow();
 
     // ==== валидация EEPROM =========================
@@ -478,7 +488,7 @@ public:
     }
 #endif
 
-#ifdef USE_LIGHT_SENSOR
+#if defined(USE_LIGHT_SENSOR)
     uint8_t l = read_eeprom_8(LIGHT_THRESHOLD_EEPROM_INDEX);
     if (l > 9 || l == 0)
     {
@@ -486,7 +496,7 @@ public:
     }
 #endif
 
-#ifdef WS2812_MATRIX_DISPLAY
+#if defined(WS2812_MATRIX_DISPLAY)
     CRGB c;
     read_eeprom_crgb(COLOR_OF_NUMBER_VALUE_EEPROM_INDEX, c);
     // если задан черный цвет или не записана ячейка обновления, задать цвет по умолчанию
@@ -501,7 +511,7 @@ public:
 
 // ==== датчики ====================================
 #if defined(USE_NTC)
-    sscTempSensor.setADCbitDepth(_bit_depth); // установить разрядность АЦП вашего МК, для AVR обычно равна 10 бит
+    sscTempSensor.setADCbitDepth(BIT_DEPTH); // установить разрядность АЦП вашего МК, для AVR обычно равна 10 бит
 #endif
     // проверить корректность заданных уровней яркости
     uint8_t x = read_eeprom_8(MAX_BRIGHTNESS_VALUE_EEPROM_INDEX);
@@ -513,7 +523,7 @@ public:
     x = ((x > 7) || (x == 0)) ? 7 : x;
 #endif
     write_eeprom_8(MAX_BRIGHTNESS_VALUE_EEPROM_INDEX, x);
-#ifdef USE_LIGHT_SENSOR
+#if defined(USE_LIGHT_SENSOR)
     uint8_t y = read_eeprom_8(LIGHT_THRESHOLD_EEPROM_INDEX);
     if ((y > 9) || (y == 0))
     {
@@ -538,7 +548,7 @@ public:
     setFastLEDData(ssc_leds, 256);
 #elif defined(MAX72XX_MATRIX_DISPLAY) || defined(MAX72XX_7SEGMENT_DISPLAY)
     sscDisp.shutdownAllDevices(false);
-#ifdef MAX72XX_MATRIX_DISPLAY
+#if defdefined(MAX72XX_MATRIX_DISPLAY)
     sscDisp.setDirection(2);
     sscDisp.setFlip(false);
 #endif
@@ -555,7 +565,7 @@ public:
 
     // ==== задачи ===================================
     uint8_t task_count = 5; // базовое количество задач
-#ifdef USE_ALARM
+#if defined(USE_ALARM)
     task_count += 2;
 #endif
 #if USE_AUTO_SHOW_DATA
@@ -564,20 +574,22 @@ public:
 #if defined(USE_TEMP_DATA) && defined(USE_DS18B20)
     task_count++;
 #endif
-#ifdef USE_LIGHT_SENSOR
+#if defined(USE_LIGHT_SENSOR)
     task_count++;
 #endif
 #if USE_OTHER_SETTING
     task_count++;
 #endif
-#ifdef USE_TICKER_FOR_DATA
+#if defined(USE_TICKER_FOR_DATA)
     task_count++;
 #endif
     sscTasks.init(task_count);
 
     sscTasks.rtc_guard(sscTasks.addTask(50ul, sscRtcNow));
     sscTasks.blink_timer(sscTasks.addTask(50ul, sscBlink));
-    sscTasks.return_to_default_mode(sscTasks.addTask(AUTO_EXIT_TIMEOUT * 1000ul, sscReturnToDefMode, false));
+    sscTasks.return_to_default_mode(sscTasks.addTask(AUTO_EXIT_TIMEOUT * 1000ul,
+                                                     sscReturnToDefMode,
+                                                     false));
     sscTasks.set_time_mode(sscTasks.addTask(100ul, sscShowTimeSetting, false));
 #if defined(USE_TEMP_DATA) && defined(USE_DS18B20)
     sscTasks.ds18b20_guard(sscTasks.addTask(3000ul, sscCheckDS18b20));
@@ -585,7 +597,7 @@ public:
 #if USE_AUTO_SHOW_DATA
     sscTasks.auto_show_mode(sscTasks.addTask(100ul, sscAutoShowData, false));
 #endif
-#ifdef USE_ALARM
+#if defined(USE_ALARM)
     sscTasks.alarm_guard(sscTasks.addTask(200ul, sscCheckAlarm));
     sscTasks.alarm_buzzer(sscTasks.addTask(50ul, sscRunAlarmBuzzer, false));
 #endif
@@ -598,7 +610,7 @@ public:
 #if USE_OTHER_SETTING
     sscTasks.other_setting_mode(sscTasks.addTask(100ul, sscShowOtherSetting, false));
 #endif
-#ifdef USE_TICKER_FOR_DATA
+#if defined(USE_TICKER_FOR_DATA)
     sscTasks.ticker(sscTasks.addTask(1000ul / TICKER_SPEED, sscRunTicker, false));
 #endif
   }
@@ -635,7 +647,9 @@ public:
    * @param _callback вызываемая функция
    * @param _active статус события - активно/не активно
    */
-  void setClockEvent(uint16_t _interval, sceCallback _callback, bool _active = true)
+  void setClockEvent(uint16_t _interval,
+                     sceCallback _callback,
+                     bool _active = true)
   {
     sscClockEvent.init(_interval, _callback, _active);
   }
@@ -650,28 +664,37 @@ public:
   /**
    * @brief получить текущее состояние или событие кнопки
    *
-   * @param _btn идентификатор кнопки, может иметь значение: SSC_BTN_SET, SSC_BTN_UP, SSC_BTN_DOWN;
+   * @param _btn идентификатор кнопки, может иметь значение: CLK_BTN_SET, CLK_BTN_UP, CLK_BTN_DOWN;
    * @return uint8_t
    */
-  uint8_t getButtonState(clkButtonType _btn) { return (buttons.getLastState(_btn)); }
+  uint8_t getButtonState(clkButtonType _btn)
+  {
+    return (buttons.getLastState(_btn));
+  }
 
   /**
    * @brief получить флаг кнопки
    *
-   * @param _btn идентификатор кнопки, может иметь значение: SSC_BTN_SET, SSC_BTN_UP, SSC_BTN_DOWN;
-   * @return clkButtonFlag возможные варианты: BTN_FLAG_NONE, BTN_FLAG_NEXT, BTN_FLAG_EXIT
+   * @param _btn идентификатор кнопки, может иметь значение: CLK_BTN_SET, CLK_BTN_UP, CLK_BTN_DOWN;
+   * @return clkButtonFlag возможные варианты: CLK_BTN_FLAG_NONE, CLK_BTN_FLAG_NEXT, CLK_BTN_FLAG_EXIT
    */
-  clkButtonFlag getButtonFlag(clkButtonType _btn) { buttons.getButtonFlag(_btn); }
+  clkButtonFlag getButtonFlag(clkButtonType _btn)
+  {
+    buttons.getButtonFlag(_btn);
+  }
 
   /**
    * @brief установить флаг кнопки
    *
-   * @param _btn  идентификатор кнопки, может иметь значение: SSC_BTN_SET, SSC_BTN_UP, SSC_BTN_DOWN;
-   * @param _flag устанавливаемый флаг; возможные варианты: BTN_FLAG_NONE, BTN_FLAG_NEXT, BTN_FLAG_EXIT
+   * @param _btn  идентификатор кнопки, может иметь значение: CLK_BTN_SET, CLK_BTN_UP, CLK_BTN_DOWN;
+   * @param _flag устанавливаемый флаг; возможные варианты: CLK_BTN_FLAG_NONE, CLK_BTN_FLAG_NEXT, CLK_BTN_FLAG_EXIT
    */
-  void setButtonFlag(clkButtonType _btn, clkButtonFlag _flag) { buttons.setButtonFlag(_btn, _flag); }
+  void setButtonFlag(clkButtonType _btn, clkButtonFlag _flag)
+  {
+    buttons.setButtonFlag(_btn, _flag);
+  }
 
-#ifdef MAX72XX_MATRIX_DISPLAY
+#if defined(MAX72XX_MATRIX_DISPLAY)
   /**
    * @brief установить угол поворота изображения
    *
@@ -693,7 +716,7 @@ public:
   }
 #endif
 
-#ifdef WS2812_MATRIX_DISPLAY
+#if defined(WS2812_MATRIX_DISPLAY)
   /**
    * @brief установить цвет для вывода информации на матрице из адресных светодиодов
    *
@@ -731,7 +754,10 @@ public:
    * @param volts напряжение, Вольт
    * @param milliamps максимальный ток, милиампер
    */
-  void setMaxPSP(uint8_t volts, uint32_t milliamps) { sscDisp.setMaxPSP(volts, milliamps); }
+  void setMaxPSP(uint8_t volts, uint32_t milliamps)
+  {
+    sscDisp.setMaxPSP(volts, milliamps);
+  }
 #endif
 
   /**
@@ -756,7 +782,7 @@ public:
     sscClock.setCurTime(_hour, _minute, _second);
   }
 
-#ifdef USE_CALENDAR
+#if defined(USE_CALENDAR)
   /**
    * @brief установка текущей даты
    *
@@ -779,7 +805,7 @@ public:
   }
 #endif
 
-#ifdef USE_TEMP_DATA
+#if defined(USE_TEMP_DATA)
   /**
    * @brief получить текущую температуру, если определен используемый датчик
    *
@@ -791,7 +817,7 @@ public:
   }
 #endif
 
-#ifdef USE_ALARM
+#if defined(USE_ALARM)
   /**
    * @brief подключить callback-функцию к событию будильника
    *
@@ -867,13 +893,16 @@ public:
   }
 #endif
 
-#ifdef USE_SET_BRIGHTNESS_MODE
+#if defined(USE_SET_BRIGHTNESS_MODE)
   /**
    * @brief получение значения максимальной яркости экрана
    *
    * @return uint8_t
    */
-  uint8_t getBrightnessMax() { return (read_eeprom_8(MAX_BRIGHTNESS_VALUE_EEPROM_INDEX)); }
+  uint8_t getBrightnessMax()
+  {
+    return (read_eeprom_8(MAX_BRIGHTNESS_VALUE_EEPROM_INDEX));
+  }
 
   /**
    * @brief установка максимальной яркости экрана
@@ -883,7 +912,7 @@ public:
   void setBrightnessMax(uint8_t _br)
   {
     write_eeprom_8(MAX_BRIGHTNESS_VALUE_EEPROM_INDEX, _br);
-#if defined(CHIPSET_WS2812B)
+#if defined(WS2812_MATRIX_DISPLAY)
     _br *= 10;
 #endif
     sscDisp.setBrightness(_br);
@@ -895,7 +924,10 @@ public:
    *
    * @return uint8_t
    */
-  uint8_t getBrightnessMin() { return (read_eeprom_8(MIN_BRIGHTNESS_VALUE_EEPROM_INDEX)); }
+  uint8_t getBrightnessMin()
+  {
+    return (read_eeprom_8(MIN_BRIGHTNESS_VALUE_EEPROM_INDEX));
+  }
 
   /**
    * @brief установка минимальной яркости экрана
@@ -905,7 +937,7 @@ public:
   void setBrightnessMin(uint8_t _br)
   {
     write_eeprom_8(MIN_BRIGHTNESS_VALUE_EEPROM_INDEX, _br);
-#if defined(CHIPSET_WS2812B)
+#if defined(WS2812_MATRIX_DISPLAY)
     _br *= 10;
 #endif
     sscDisp.setBrightness(_br);
@@ -913,7 +945,7 @@ public:
 #endif
 #endif
 
-#ifdef USE_LIGHT_SENSOR
+#if defined(USE_LIGHT_SENSOR)
   /**
    * @brief получение текущего порога переключения яркости
    *
@@ -939,7 +971,7 @@ public:
 
 #if USE_MATRIX_DISPLAY
 
-#ifdef USE_TICKER_FOR_DATA
+#if defined(USE_TICKER_FOR_DATA)
   /**
    * @brief включение/выключение анимации
    *
@@ -997,7 +1029,7 @@ void sscRtcNow()
   sscClock.now();
   if (ssc_display_mode == DISPLAY_MODE_SHOW_TIME)
   {
-#ifdef USE_TICKER_FOR_DATA
+#if defined(USE_TICKER_FOR_DATA)
     // если работает бегущая строка, ничего не делать
     if (sscTasks.getTaskState(sscTasks.ticker()))
     {
@@ -1019,9 +1051,14 @@ void sscRtcNow()
 #endif
     {
 #if USE_MATRIX_DISPLAY
-      sscDisp.showTime(sscClock.getCurTime().hour(), sscClock.getCurTime().minute(), sscClock.getCurTime().second(), sscBlinkFlag);
+      sscDisp.showTime(sscClock.getCurTime().hour(),
+                       sscClock.getCurTime().minute(),
+                       sscClock.getCurTime().second(),
+                       sscBlinkFlag);
 #else
-      sscDisp.showTime(sscClock.getCurTime().hour(), sscClock.getCurTime().minute(), sscBlinkFlag);
+      sscDisp.showTime(sscClock.getCurTime().hour(),
+                       sscClock.getCurTime().minute(),
+                       sscBlinkFlag);
 #endif
     }
   }
@@ -1055,40 +1092,40 @@ void sscReturnToDefMode()
   {
   case DISPLAY_MODE_SET_HOUR:
   case DISPLAY_MODE_SET_MINUTE:
-#ifdef USE_CALENDAR
+#if defined(USE_CALENDAR)
   case DISPLAY_MODE_SET_DAY:
   case DISPLAY_MODE_SET_MONTH:
   case DISPLAY_MODE_SET_YEAR:
 #endif
-#ifdef USE_ALARM
+#if defined(USE_ALARM)
   case DISPLAY_MODE_SET_ALARM_HOUR:
   case DISPLAY_MODE_SET_ALARM_MINUTE:
   case DISPLAY_MODE_ALARM_ON_OFF:
 #endif
-#ifdef USE_LIGHT_SENSOR
+#if defined(USE_LIGHT_SENSOR)
   case DISPLAY_MODE_SET_LIGHT_THRESHOLD:
 #endif
-#ifdef USE_SET_BRIGHTNESS_MODE
-#ifdef USE_LIGHT_SENSOR
+#if defined(USE_SET_BRIGHTNESS_MODE)
+#if defined(USE_LIGHT_SENSOR)
   case DISPLAY_MODE_SET_BRIGHTNESS_MIN:
 #endif
   case DISPLAY_MODE_SET_BRIGHTNESS_MAX:
 #endif
-#ifdef USE_TICKER_FOR_DATA
+#if defined(USE_TICKER_FOR_DATA)
   case DISPLAY_MODE_SET_TICKER_ON_OFF:
 #endif
 #if USE_AUTO_SHOW_DATA
   case DISPLAY_MODE_SET_AUTO_SHOW_PERIOD:
 #endif
-#ifdef WS2812_MATRIX_DISPLAY
+#if defined(WS2812_MATRIX_DISPLAY)
   case DISPLAY_MODE_SET_COLOR_OF_NUMBER:
 #endif
-    buttons.setButtonFlag(SSC_BTN_SET, BTN_FLAG_EXIT);
+    buttons.setButtonFlag(CLK_BTN_SET, CLK_BTN_FLAG_EXIT);
     break;
-#ifdef USE_TEMP_DATA
+#if defined(USE_TEMP_DATA)
   case DISPLAY_MODE_SHOW_TEMP:
 #endif
-#ifdef USE_CALENDAR
+#if defined(USE_CALENDAR)
   case DISPLAY_MODE_SHOW_DATE:
 #endif
 #if USE_AUTO_SHOW_DATA
@@ -1100,8 +1137,9 @@ void sscReturnToDefMode()
   default:
     break;
   }
-#ifdef USE_TICKER_FOR_DATA
-  if (ssc_display_mode == DISPLAY_MODE_SHOW_TIME && read_eeprom_8(TICKER_STATE_VALUE_EEPROM_INDEX))
+#if defined(USE_TICKER_FOR_DATA)
+  if (ssc_display_mode == DISPLAY_MODE_SHOW_TIME &&
+      read_eeprom_8(TICKER_STATE_VALUE_EEPROM_INDEX))
   {
     sscAssembleString(DISPLAY_MODE_SHOW_TIME);
   }
@@ -1112,25 +1150,27 @@ void sscReturnToDefMode()
 void sscShowTimeData(uint8_t hour, uint8_t minute)
 {
   // если наступило время блинка и кнопки Up/Down не нажаты, то стереть соответствующие разряды; при нажатых кнопках Up/Down во время изменения данных ничего не мигает
-  if (!sscBlinkFlag && !buttons.isButtonClosed(SSC_BTN_UP) && !buttons.isButtonClosed(SSC_BTN_DOWN))
+  if (!sscBlinkFlag &&
+      !buttons.isButtonClosed(CLK_BTN_UP) &&
+      !buttons.isButtonClosed(CLK_BTN_DOWN))
   {
     switch (ssc_display_mode)
     {
     case DISPLAY_MODE_SET_HOUR:
-#ifdef USE_CALENDAR
+#if defined(USE_CALENDAR)
     case DISPLAY_MODE_SET_DAY:
 #endif
-#ifdef USE_ALARM
+#if defined(USE_ALARM)
     case DISPLAY_MODE_SET_ALARM_HOUR:
 #endif
       hour = -1;
       break;
     case DISPLAY_MODE_SET_MINUTE:
-#ifdef USE_CALENDAR
+#if defined(USE_CALENDAR)
     case DISPLAY_MODE_SET_MONTH:
     case DISPLAY_MODE_SET_YEAR:
 #endif
-#ifdef USE_ALARM
+#if defined(USE_ALARM)
     case DISPLAY_MODE_SET_ALARM_MINUTE:
 #endif
       minute = -1;
@@ -1142,12 +1182,13 @@ void sscShowTimeData(uint8_t hour, uint8_t minute)
 
   bool toDate = false;
   bool toColon = false;
-#ifdef USE_CALENDAR
-  toDate = (ssc_display_mode >= DISPLAY_MODE_SET_DAY && ssc_display_mode <= DISPLAY_MODE_SET_YEAR);
+#if defined(USE_CALENDAR)
+  toDate = (ssc_display_mode >= DISPLAY_MODE_SET_DAY &&
+            ssc_display_mode <= DISPLAY_MODE_SET_YEAR);
   toColon = ssc_display_mode != DISPLAY_MODE_SET_YEAR;
 #endif
 #if USE_MATRIX_DISPLAY
-#ifdef USE_CALENDAR
+#if defined(USE_CALENDAR)
   if (ssc_display_mode == DISPLAY_MODE_SET_YEAR)
   {
     sscDisp.showYear(minute);
@@ -1162,7 +1203,11 @@ void sscShowTimeData(uint8_t hour, uint8_t minute)
 #endif
 }
 
-void sscCheckData(uint8_t &dt, uint8_t max, bool toUp, uint8_t min = 0, bool toLoop = true)
+void sscCheckData(uint8_t &dt,
+                  uint8_t max,
+                  bool toUp,
+                  uint8_t min = 0,
+                  bool toLoop = true)
 {
   (toUp) ? dt++ : dt--;
   if ((dt > max) || (min > 0 && dt < min))
@@ -1191,7 +1236,7 @@ void _startTimeSettingMode(uint8_t &curHour, uint8_t &curMinute)
   sscTasks.startTask(sscTasks.return_to_default_mode());
   switch (ssc_display_mode)
   {
-#ifdef USE_ALARM
+#if defined(USE_ALARM)
   case DISPLAY_MODE_SET_ALARM_HOUR:
   case DISPLAY_MODE_SET_ALARM_MINUTE:
     curHour = sscAlarm.getAlarmPoint() / 60;
@@ -1201,7 +1246,7 @@ void _startTimeSettingMode(uint8_t &curHour, uint8_t &curMinute)
     curHour = (uint8_t)sscAlarm.getOnOffAlarm();
     break;
 #endif
-#ifdef USE_TICKER_FOR_DATA
+#if defined(USE_TICKER_FOR_DATA)
   case DISPLAY_MODE_SET_TICKER_ON_OFF:
     curHour = read_eeprom_8(TICKER_STATE_VALUE_EEPROM_INDEX);
     break;
@@ -1209,20 +1254,20 @@ void _startTimeSettingMode(uint8_t &curHour, uint8_t &curMinute)
   default:
     break;
   }
-#ifdef USE_TICKER_FOR_DATA
+#if defined(USE_TICKER_FOR_DATA)
   if (read_eeprom_8(TICKER_STATE_VALUE_EEPROM_INDEX))
   {
     switch (ssc_display_mode)
     {
-#ifdef USE_ALARM
+#if defined(USE_ALARM)
     case DISPLAY_MODE_ALARM_ON_OFF:
     case DISPLAY_MODE_SET_ALARM_HOUR:
 #endif
-#ifdef USE_CALENDAR
+#if defined(USE_CALENDAR)
     case DISPLAY_MODE_SET_DAY:
     case DISPLAY_MODE_SET_YEAR:
 #endif
-#ifdef USE_TICKER_FOR_DATA
+#if defined(USE_TICKER_FOR_DATA)
     case DISPLAY_MODE_SET_TICKER_ON_OFF:
       if (read_eeprom_8(TICKER_STATE_VALUE_EEPROM_INDEX))
       {
@@ -1237,9 +1282,11 @@ void _startTimeSettingMode(uint8_t &curHour, uint8_t &curMinute)
 #endif
 }
 
-void _checkBtnSetForTmSet(uint8_t &curHour, uint8_t &curMinute, bool &time_checked)
+void _checkBtnSetForTmSet(uint8_t &curHour,
+                          uint8_t &curMinute,
+                          bool &time_checked)
 {
-  if (buttons.getButtonFlag(SSC_BTN_SET) > BTN_FLAG_NONE)
+  if (buttons.getButtonFlag(CLK_BTN_SET) > CLK_BTN_FLAG_NONE)
   {
     if (time_checked)
     {
@@ -1250,7 +1297,7 @@ void _checkBtnSetForTmSet(uint8_t &curHour, uint8_t &curMinute, bool &time_check
         sscClock.setCurTime(curHour, curMinute, 0);
         sscRtcNow();
         break;
-#ifdef USE_CALENDAR
+#if defined(USE_CALENDAR)
       case DISPLAY_MODE_SET_DAY:
       case DISPLAY_MODE_SET_MONTH:
         sscClock.setCurDate(curHour, curMinute);
@@ -1261,7 +1308,7 @@ void _checkBtnSetForTmSet(uint8_t &curHour, uint8_t &curMinute, bool &time_check
         sscRtcNow();
         break;
 #endif
-#ifdef USE_ALARM
+#if defined(USE_ALARM)
       case DISPLAY_MODE_SET_ALARM_HOUR:
       case DISPLAY_MODE_SET_ALARM_MINUTE:
         sscAlarm.setAlarmPoint(curHour * 60 + curMinute);
@@ -1270,7 +1317,7 @@ void _checkBtnSetForTmSet(uint8_t &curHour, uint8_t &curMinute, bool &time_check
         sscAlarm.setOnOffAlarm((bool)curHour);
         break;
 #endif
-#ifdef USE_TICKER_FOR_DATA
+#if defined(USE_TICKER_FOR_DATA)
       case DISPLAY_MODE_SET_TICKER_ON_OFF:
         EEPROM.write(TICKER_STATE_VALUE_EEPROM_INDEX, curHour);
         break;
@@ -1280,29 +1327,30 @@ void _checkBtnSetForTmSet(uint8_t &curHour, uint8_t &curMinute, bool &time_check
       }
       time_checked = false;
     }
-    if (buttons.getButtonFlag(SSC_BTN_SET) == BTN_FLAG_NEXT)
+    if (buttons.getButtonFlag(CLK_BTN_SET) == CLK_BTN_FLAG_NEXT)
     {
       switch (ssc_display_mode)
       {
       case DISPLAY_MODE_SET_HOUR:
-#ifdef USE_CALENDAR
+#if defined(USE_CALENDAR)
       case DISPLAY_MODE_SET_MINUTE:
       case DISPLAY_MODE_SET_DAY:
       case DISPLAY_MODE_SET_MONTH:
 #endif
-#ifdef USE_ALARM
+#if defined(USE_ALARM)
       case DISPLAY_MODE_SET_ALARM_HOUR:
 #endif
         ssc_display_mode = clkDisplayMode(uint8_t(ssc_display_mode + 1));
         sscStopSetting(sscTasks.set_time_mode());
         break;
-#ifdef USE_ALARM
+#if defined(USE_ALARM)
       case DISPLAY_MODE_ALARM_ON_OFF:
-        ssc_display_mode = (curHour) ? DISPLAY_MODE_SET_ALARM_HOUR : DISPLAY_MODE_SHOW_TIME;
+        ssc_display_mode = (curHour) ? DISPLAY_MODE_SET_ALARM_HOUR
+                                     : DISPLAY_MODE_SHOW_TIME;
         sscStopSetting(sscTasks.set_time_mode());
         break;
 #endif
-#ifdef USE_TICKER_FOR_DATA
+#if defined(USE_TICKER_FOR_DATA)
       case DISPLAY_MODE_SET_TICKER_ON_OFF:
 #if USE_AUTO_SHOW_DATA
         ssc_display_mode = DISPLAY_MODE_SET_AUTO_SHOW_PERIOD;
@@ -1331,39 +1379,42 @@ void _checkBtnSetForTmSet(uint8_t &curHour, uint8_t &curMinute, bool &time_check
       ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
       sscStopSetting(sscTasks.set_time_mode());
     }
-    buttons.setButtonFlag(SSC_BTN_SET, BTN_FLAG_NONE);
+    buttons.setButtonFlag(CLK_BTN_SET, CLK_BTN_FLAG_NONE);
   }
 }
 
-void _checkBtnUpDownForTmSet(uint8_t &curHour, uint8_t &curMinute, bool &time_checked)
+void _checkBtnUpDownForTmSet(uint8_t &curHour,
+                             uint8_t &curMinute,
+                             bool &time_checked)
 {
-#ifdef USE_CALENDAR
-  static const uint8_t PROGMEM days_of_month[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+#if defined(USE_CALENDAR)
+  static const uint8_t PROGMEM days_of_month[] =
+      {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 #endif
-  if ((buttons.getButtonFlag(SSC_BTN_UP) == BTN_FLAG_NEXT) ||
-      (buttons.getButtonFlag(SSC_BTN_DOWN) == BTN_FLAG_NEXT))
+  if ((buttons.getButtonFlag(CLK_BTN_UP) == CLK_BTN_FLAG_NEXT) ||
+      (buttons.getButtonFlag(CLK_BTN_DOWN) == CLK_BTN_FLAG_NEXT))
   {
-    bool dir = buttons.getButtonFlag(SSC_BTN_UP) == BTN_FLAG_NEXT;
+    bool dir = buttons.getButtonFlag(CLK_BTN_UP) == CLK_BTN_FLAG_NEXT;
     switch (ssc_display_mode)
     {
     case DISPLAY_MODE_SET_HOUR:
-#ifdef USE_ALARM
+#if defined(USE_ALARM)
     case DISPLAY_MODE_SET_ALARM_HOUR:
 #endif
       sscCheckData(curHour, 23, dir);
       break;
     case DISPLAY_MODE_SET_MINUTE:
-#ifdef USE_ALARM
+#if defined(USE_ALARM)
     case DISPLAY_MODE_SET_ALARM_MINUTE:
 #endif
       sscCheckData(curMinute, 59, dir);
       break;
-#ifdef USE_ALARM
+#if defined(USE_ALARM)
     case DISPLAY_MODE_ALARM_ON_OFF:
       sscCheckData(curHour, 1, true);
       break;
 #endif
-#ifdef USE_CALENDAR
+#if defined(USE_CALENDAR)
     case DISPLAY_MODE_SET_DAY:
       uint8_t i;
       i = pgm_read_byte(&days_of_month[curMinute - 1]);
@@ -1380,7 +1431,7 @@ void _checkBtnUpDownForTmSet(uint8_t &curHour, uint8_t &curMinute, bool &time_ch
       sscCheckData(curMinute, 99, dir);
       break;
 #endif
-#ifdef USE_TICKER_FOR_DATA
+#if defined(USE_TICKER_FOR_DATA)
     case DISPLAY_MODE_SET_TICKER_ON_OFF:
       sscCheckData(curHour, 1, true);
       break;
@@ -1389,8 +1440,8 @@ void _checkBtnUpDownForTmSet(uint8_t &curHour, uint8_t &curMinute, bool &time_ch
       break;
     }
     time_checked = true;
-    buttons.setButtonFlag(SSC_BTN_UP, BTN_FLAG_NONE);
-    buttons.setButtonFlag(SSC_BTN_DOWN, BTN_FLAG_NONE);
+    buttons.setButtonFlag(CLK_BTN_UP, CLK_BTN_FLAG_NONE);
+    buttons.setButtonFlag(CLK_BTN_DOWN, CLK_BTN_FLAG_NONE);
   }
 }
 
@@ -1398,7 +1449,7 @@ void _setDisplayForTmSet(uint8_t &curHour, uint8_t &curMinute)
 {
   if (ssc_display_mode == DISPLAY_MODE_SHOW_TIME)
   {
-#ifdef USE_TICKER_FOR_DATA
+#if defined(USE_TICKER_FOR_DATA)
     if (read_eeprom_8(TICKER_STATE_VALUE_EEPROM_INDEX))
     {
       sscAssembleString(DISPLAY_MODE_SHOW_TIME);
@@ -1409,22 +1460,22 @@ void _setDisplayForTmSet(uint8_t &curHour, uint8_t &curMinute)
   {
     switch (ssc_display_mode)
     {
-#ifdef USE_ALARM
+#if defined(USE_ALARM)
     case DISPLAY_MODE_ALARM_ON_OFF:
       sscShowOnOffData(ALARM_TAG,
                        curHour,
                        (!sscBlinkFlag &&
-                        !buttons.isButtonClosed(SSC_BTN_UP) &&
-                        !buttons.isButtonClosed(SSC_BTN_DOWN)));
+                        !buttons.isButtonClosed(CLK_BTN_UP) &&
+                        !buttons.isButtonClosed(CLK_BTN_DOWN)));
       break;
 #endif
-#ifdef USE_TICKER_FOR_DATA
+#if defined(USE_TICKER_FOR_DATA)
     case DISPLAY_MODE_SET_TICKER_ON_OFF:
       sscShowOnOffData(TICKER_TAG,
                        curHour,
                        (!sscBlinkFlag &&
-                        !buttons.isButtonClosed(SSC_BTN_UP) &&
-                        !buttons.isButtonClosed(SSC_BTN_DOWN)));
+                        !buttons.isButtonClosed(CLK_BTN_UP) &&
+                        !buttons.isButtonClosed(CLK_BTN_DOWN)));
       break;
 #endif
     default:
@@ -1450,7 +1501,7 @@ void sscShowTimeSetting()
 #endif
   }
 
-#ifdef USE_TICKER_FOR_DATA
+#if defined(USE_TICKER_FOR_DATA)
   // подождать, пока отработает бегущая строка
   if (sscTasks.getTaskState(sscTasks.ticker()))
   {
@@ -1467,7 +1518,7 @@ void sscShowTimeSetting()
       curHour = sscClock.getCurTime().hour();
       curMinute = sscClock.getCurTime().minute();
       break;
-#ifdef USE_CALENDAR
+#if defined(USE_CALENDAR)
     case DISPLAY_MODE_SET_DAY:
     case DISPLAY_MODE_SET_MONTH:
       curHour = sscClock.getCurTime().day();
@@ -1495,7 +1546,7 @@ void sscShowTimeSetting()
 
 void sscSetDisp()
 {
-#ifdef USE_TICKER_FOR_DATA
+#if defined(USE_TICKER_FOR_DATA)
   // обновление экрана делать только если в данный момент не работает бегущая строка, она сама обновляет экран, когда ей это нужно
   if (!sscTasks.getTaskState(sscTasks.ticker()))
 #endif
@@ -1504,46 +1555,46 @@ void sscSetDisp()
 
 void sscCheckSetButton()
 {
-  switch (buttons.getButtonState(SSC_BTN_SET))
+  switch (buttons.getButtonState(CLK_BTN_SET))
   {
   case BTN_ONECLICK:
     switch (ssc_display_mode)
     {
     case DISPLAY_MODE_SET_HOUR:
     case DISPLAY_MODE_SET_MINUTE:
-#ifdef USE_CALENDAR
+#if defined(USE_CALENDAR)
     case DISPLAY_MODE_SET_DAY:
     case DISPLAY_MODE_SET_MONTH:
     case DISPLAY_MODE_SET_YEAR:
 #endif
-#ifdef USE_ALARM
+#if defined(USE_ALARM)
     case DISPLAY_MODE_SET_ALARM_HOUR:
     case DISPLAY_MODE_SET_ALARM_MINUTE:
     case DISPLAY_MODE_ALARM_ON_OFF:
 #endif
-#ifdef USE_SET_BRIGHTNESS_MODE
-#ifdef USE_LIGHT_SENSOR
+#if defined(USE_SET_BRIGHTNESS_MODE)
+#if defined(USE_LIGHT_SENSOR)
     case DISPLAY_MODE_SET_BRIGHTNESS_MIN:
 #endif
     case DISPLAY_MODE_SET_BRIGHTNESS_MAX:
 #endif
-#ifdef USE_LIGHT_SENSOR
+#if defined(USE_LIGHT_SENSOR)
     case DISPLAY_MODE_SET_LIGHT_THRESHOLD:
 #endif
-#ifdef USE_TICKER_FOR_DATA
+#if defined(USE_TICKER_FOR_DATA)
     case DISPLAY_MODE_SET_TICKER_ON_OFF:
 #endif
 #if USE_AUTO_SHOW_DATA
     case DISPLAY_MODE_SET_AUTO_SHOW_PERIOD:
 #endif
-#ifdef WS2812_MATRIX_DISPLAY
+#if defined(WS2812_MATRIX_DISPLAY)
     case DISPLAY_MODE_SET_COLOR_OF_NUMBER:
 #endif
-      buttons.setButtonFlag(SSC_BTN_SET, BTN_FLAG_NEXT);
+      buttons.setButtonFlag(CLK_BTN_SET, CLK_BTN_FLAG_NEXT);
       break;
     case DISPLAY_MODE_SHOW_TIME:
-#ifdef USE_ALARM
-#ifdef USE_ONECLICK_TO_SET_ALARM
+#if defined(USE_ALARM)
+#if defined(USE_ONECLICK_TO_SET_ALARM)
       ssc_display_mode = DISPLAY_MODE_ALARM_ON_OFF;
 #endif
 #endif
@@ -1556,8 +1607,8 @@ void sscCheckSetButton()
     switch (ssc_display_mode)
     {
     case DISPLAY_MODE_SHOW_TIME:
-#ifdef USE_ALARM
-#ifndef USE_ONECLICK_TO_SET_ALARM
+#if defined(USE_ALARM)
+#if !defined(USE_ONECLICK_TO_SET_ALARM)
       ssc_display_mode = DISPLAY_MODE_ALARM_ON_OFF;
 #endif
 #endif
@@ -1582,29 +1633,29 @@ void sscCheckSetButton()
 #endif
     case DISPLAY_MODE_SET_HOUR:
     case DISPLAY_MODE_SET_MINUTE:
-#ifdef USE_CALENDAR
+#if defined(USE_CALENDAR)
     case DISPLAY_MODE_SET_DAY:
     case DISPLAY_MODE_SET_MONTH:
     case DISPLAY_MODE_SET_YEAR:
 #endif
-#ifdef USE_ALARM
+#if defined(USE_ALARM)
     case DISPLAY_MODE_SET_ALARM_HOUR:
     case DISPLAY_MODE_SET_ALARM_MINUTE:
     case DISPLAY_MODE_ALARM_ON_OFF:
 #endif
-#ifdef USE_TICKER_FOR_DATA
+#if defined(USE_TICKER_FOR_DATA)
     case DISPLAY_MODE_SET_TICKER_ON_OFF:
 #endif
 #if USE_AUTO_SHOW_DATA
     case DISPLAY_MODE_SET_AUTO_SHOW_PERIOD:
 #endif
-#ifdef USE_LIGHT_SENSOR
+#if defined(USE_LIGHT_SENSOR)
     case DISPLAY_MODE_SET_LIGHT_THRESHOLD:
 #endif
-#ifdef WS2812_MATRIX_DISPLAY
+#if defined(WS2812_MATRIX_DISPLAY)
     case DISPLAY_MODE_SET_COLOR_OF_NUMBER:
 #endif
-      buttons.setButtonFlag(SSC_BTN_SET, BTN_FLAG_EXIT);
+      buttons.setButtonFlag(CLK_BTN_SET, CLK_BTN_FLAG_EXIT);
       break;
     default:
       break;
@@ -1619,20 +1670,20 @@ void sscCheckUDbtn(clkButtonType btn)
   {
   case BTN_DOWN:
   case BTN_DBLCLICK:
-    buttons.setButtonFlag(btn, BTN_FLAG_NEXT);
+    buttons.setButtonFlag(btn, CLK_BTN_FLAG_NEXT);
     break;
   case BTN_LONGCLICK:
     switch (ssc_display_mode)
     {
-#ifdef USE_ALARM
+#if defined(USE_ALARM)
     case DISPLAY_MODE_ALARM_ON_OFF:
 #endif
-#ifdef USE_TICKER_FOR_DATA
+#if defined(USE_TICKER_FOR_DATA)
     case DISPLAY_MODE_SET_TICKER_ON_OFF:
 #endif
       return;
     default:
-      buttons.setButtonFlag(btn, BTN_FLAG_NEXT);
+      buttons.setButtonFlag(btn, CLK_BTN_FLAG_NEXT);
       break;
     }
     break;
@@ -1641,45 +1692,45 @@ void sscCheckUDbtn(clkButtonType btn)
 
 void sscCheckUpDownButton()
 {
-  buttons.getButtonState(SSC_BTN_UP);
-  buttons.getButtonState(SSC_BTN_DOWN);
+  buttons.getButtonState(CLK_BTN_UP);
+  buttons.getButtonState(CLK_BTN_DOWN);
 
   switch (ssc_display_mode)
   {
   case DISPLAY_MODE_SHOW_TIME:
-    if (buttons.getLastState(SSC_BTN_DOWN) == BTN_LONGCLICK &&
-        !buttons.isButtonClosed(SSC_BTN_UP))
+    if (buttons.getLastState(CLK_BTN_DOWN) == BTN_LONGCLICK &&
+        !buttons.isButtonClosed(CLK_BTN_UP))
     {
-#ifdef USE_TICKER_FOR_DATA
+#if defined(USE_TICKER_FOR_DATA)
       // вход в настройки анимации
       ssc_display_mode = DISPLAY_MODE_SET_TICKER_ON_OFF;
-      buttons.resetButtonState(SSC_BTN_DOWN);
+      buttons.resetButtonState(CLK_BTN_DOWN);
 #elif USE_AUTO_SHOW_DATA
       // вход в настройки периода автовывода на экран даты и/или температуры
       ssc_display_mode = DISPLAY_MODE_SET_AUTO_SHOW_PERIOD;
-      buttons.resetButtonState(SSC_BTN_DOWN);
-#elif WS2812_MATRIX_DISPLAY
+      buttons.resetButtonState(CLK_BTN_DOWN);
+#elif defined(WS2812_MATRIX_DISPLAY)
       disp = DISPLAY_MODE_SET_COLOR_OF_NUMBER;
-      buttons.resetButtonState(SSC_BTN_DOWN));
+      buttons.resetButtonState(CLK_BTN_DOWN);
 #endif
     }
-#ifdef USE_TEMP_DATA
-    if (buttons.getLastState(SSC_BTN_UP) == BTN_ONECLICK)
+#if defined(USE_TEMP_DATA)
+    if (buttons.getLastState(CLK_BTN_UP) == BTN_ONECLICK)
     {
       ssc_display_mode = DISPLAY_MODE_SHOW_TEMP;
     }
 #endif
-#ifdef USE_CALENDAR
-    if (buttons.getLastState(SSC_BTN_DOWN) == BTN_ONECLICK)
+#if defined(USE_CALENDAR)
+    if (buttons.getLastState(CLK_BTN_DOWN) == BTN_ONECLICK)
     {
       ssc_display_mode = DISPLAY_MODE_SHOW_DATE;
     }
 #endif
-    if (buttons.isSecondButtonPressed(SSC_BTN_UP, SSC_BTN_DOWN, BTN_LONGCLICK) ||
-        buttons.isSecondButtonPressed(SSC_BTN_DOWN, SSC_BTN_UP, BTN_LONGCLICK))
+    if (buttons.isSecondButtonPressed(CLK_BTN_UP, CLK_BTN_DOWN, BTN_LONGCLICK) ||
+        buttons.isSecondButtonPressed(CLK_BTN_DOWN, CLK_BTN_UP, BTN_LONGCLICK))
     {
-#ifdef USE_SET_BRIGHTNESS_MODE
-#ifdef USE_LIGHT_SENSOR
+#if defined(USE_SET_BRIGHTNESS_MODE)
+#if defined(USE_LIGHT_SENSOR)
       ssc_display_mode = DISPLAY_MODE_SET_BRIGHTNESS_MIN;
 #else
       ssc_display_mode = DISPLAY_MODE_SET_BRIGHTNESS_MAX;
@@ -1691,54 +1742,54 @@ void sscCheckUpDownButton()
     break;
   case DISPLAY_MODE_SET_HOUR:
   case DISPLAY_MODE_SET_MINUTE:
-#ifdef USE_CALENDAR
+#if defined(USE_CALENDAR)
   case DISPLAY_MODE_SET_DAY:
   case DISPLAY_MODE_SET_MONTH:
   case DISPLAY_MODE_SET_YEAR:
 #endif
-#ifdef USE_ALARM
+#if defined(USE_ALARM)
   case DISPLAY_MODE_SET_ALARM_HOUR:
   case DISPLAY_MODE_SET_ALARM_MINUTE:
   case DISPLAY_MODE_ALARM_ON_OFF:
 #endif
-#ifdef USE_LIGHT_SENSOR
+#if defined(USE_LIGHT_SENSOR)
   case DISPLAY_MODE_SET_LIGHT_THRESHOLD:
 #endif
-#ifdef USE_SET_BRIGHTNESS_MODE
-#ifdef USE_LIGHT_SENSOR
+#if defined(USE_SET_BRIGHTNESS_MODE)
+#if defined(USE_LIGHT_SENSOR)
   case DISPLAY_MODE_SET_BRIGHTNESS_MIN:
 #endif
   case DISPLAY_MODE_SET_BRIGHTNESS_MAX:
 #endif
-#ifdef USE_TICKER_FOR_DATA
+#if defined(USE_TICKER_FOR_DATA)
   case DISPLAY_MODE_SET_TICKER_ON_OFF:
 #endif
 #if USE_AUTO_SHOW_DATA
   case DISPLAY_MODE_SET_AUTO_SHOW_PERIOD:
 #endif
-#ifdef WS2812_MATRIX_DISPLAY
+#if defined(WS2812_MATRIX_DISPLAY)
   case DISPLAY_MODE_SET_COLOR_OF_NUMBER:
 #endif
-    if (!buttons.isButtonClosed(SSC_BTN_DOWN))
+    if (!buttons.isButtonClosed(CLK_BTN_DOWN))
     {
-      sscCheckUDbtn(SSC_BTN_UP);
+      sscCheckUDbtn(CLK_BTN_UP);
     }
-    if (!buttons.isButtonClosed(SSC_BTN_UP))
+    if (!buttons.isButtonClosed(CLK_BTN_UP))
     {
-      sscCheckUDbtn(SSC_BTN_DOWN);
+      sscCheckUDbtn(CLK_BTN_DOWN);
     }
     break;
-#ifdef USE_TEMP_DATA
+#if defined(USE_TEMP_DATA)
   case DISPLAY_MODE_SHOW_TEMP:
-    if (buttons.getLastState(SSC_BTN_UP) == BTN_ONECLICK)
+    if (buttons.getLastState(CLK_BTN_UP) == BTN_ONECLICK)
     {
       sscReturnToDefMode();
     }
     break;
 #endif
-#ifdef USE_CALENDAR
+#if defined(USE_CALENDAR)
   case DISPLAY_MODE_SHOW_DATE:
-    if (buttons.getLastState(SSC_BTN_DOWN) == BTN_ONECLICK)
+    if (buttons.getLastState(CLK_BTN_DOWN) == BTN_ONECLICK)
     { // выход из режима показа даты по клику кнопкой Down
       sscReturnToDefMode();
     }
@@ -1761,17 +1812,17 @@ void sscSetDisplay()
   {
   case DISPLAY_MODE_SET_HOUR:
   case DISPLAY_MODE_SET_MINUTE:
-#ifdef USE_CALENDAR
+#if defined(USE_CALENDAR)
   case DISPLAY_MODE_SET_DAY:
   case DISPLAY_MODE_SET_MONTH:
   case DISPLAY_MODE_SET_YEAR:
 #endif
-#ifdef USE_ALARM
+#if defined(USE_ALARM)
   case DISPLAY_MODE_SET_ALARM_HOUR:
   case DISPLAY_MODE_SET_ALARM_MINUTE:
   case DISPLAY_MODE_ALARM_ON_OFF:
 #endif
-#ifdef USE_TICKER_FOR_DATA
+#if defined(USE_TICKER_FOR_DATA)
   case DISPLAY_MODE_SET_TICKER_ON_OFF:
 #endif
     if (!sscTasks.getTaskState(sscTasks.set_time_mode()))
@@ -1781,10 +1832,10 @@ void sscSetDisplay()
     break;
 #if USE_AUTO_SHOW_DATA
   case DISPLAY_AUTO_SHOW_DATA:
-#ifdef USE_CALENDAR
+#if defined(USE_CALENDAR)
   case DISPLAY_MODE_SHOW_DATE:
 #endif
-#ifdef USE_TEMP_DATA
+#if defined(USE_TEMP_DATA)
   case DISPLAY_MODE_SHOW_TEMP:
 #endif
     if (!sscTasks.getTaskState(sscTasks.auto_show_mode()))
@@ -1797,16 +1848,16 @@ void sscSetDisplay()
 #if USE_AUTO_SHOW_DATA
   case DISPLAY_MODE_SET_AUTO_SHOW_PERIOD:
 #endif
-#ifdef USE_LIGHT_SENSOR
+#if defined(USE_LIGHT_SENSOR)
   case DISPLAY_MODE_SET_LIGHT_THRESHOLD:
 #endif
-#ifdef USE_SET_BRIGHTNESS_MODE
-#ifdef USE_LIGHT_SENSOR
+#if defined(USE_SET_BRIGHTNESS_MODE)
+#if defined(USE_LIGHT_SENSOR)
   case DISPLAY_MODE_SET_BRIGHTNESS_MIN:
 #endif
   case DISPLAY_MODE_SET_BRIGHTNESS_MAX:
 #endif
-#ifdef WS2812_MATRIX_DISPLAY
+#if defined(WS2812_MATRIX_DISPLAY)
   case DISPLAY_MODE_SET_COLOR_OF_NUMBER:
 #endif
     if (!sscTasks.getTaskState(sscTasks.other_setting_mode()))
@@ -1820,14 +1871,15 @@ void sscSetDisplay()
   }
 }
 
-#ifdef USE_CALENDAR
+#if defined(USE_CALENDAR)
 #endif
 
-#ifdef USE_ALARM
+#if defined(USE_ALARM)
 void sscCheckAlarm()
 {
   sscAlarm.tick(sscClock.getCurTime());
-  if (sscAlarm.getAlarmState() == ALARM_YES && !sscTasks.getTaskState(sscTasks.alarm_buzzer()))
+  if (sscAlarm.getAlarmState() == ALARM_YES &&
+      !sscTasks.getTaskState(sscTasks.alarm_buzzer()))
   {
     sscRunAlarmBuzzer();
     sscAlarmEvent.run();
@@ -1857,8 +1909,11 @@ void sscRunAlarmBuzzer()
     return;
   }
 
-  tone(BUZZER_PIN, pgm_read_dword(&pick[0][n]), pgm_read_dword(&pick[1][n]));
-  sscTasks.setTaskInterval(sscTasks.alarm_buzzer(), pgm_read_dword(&pick[1][n]), true);
+  tone(BUZZER_PIN,
+       pgm_read_dword(&pick[0][n]),
+       pgm_read_dword(&pick[1][n]));
+  sscTasks.setTaskInterval(sscTasks.alarm_buzzer(),
+                           pgm_read_dword(&pick[1][n]), true);
   if (++n >= 8)
   {
     n = 0;
@@ -1873,7 +1928,9 @@ void sscRunAlarmBuzzer()
       }
       else
       {
-        sscTasks.setTaskInterval(sscTasks.alarm_buzzer(), ALARM_SNOOZE_DELAY * 1000ul, true);
+        sscTasks.setTaskInterval(sscTasks.alarm_buzzer(),
+                                 ALARM_SNOOZE_DELAY * 1000ul,
+                                 true);
       }
     }
   }
@@ -1881,10 +1938,10 @@ void sscRunAlarmBuzzer()
 
 #endif
 
-#ifdef USE_LIGHT_SENSOR
+#if defined(USE_LIGHT_SENSOR)
 void sscSetBrightness()
 {
-#ifdef USE_SET_BRIGHTNESS_MODE
+#if defined(USE_SET_BRIGHTNESS_MODE)
   if (sscTasks.getTaskState(sscTasks.other_setting_mode()))
   {
     if (ssc_display_mode == DISPLAY_MODE_SET_BRIGHTNESS_MAX ||
@@ -1897,7 +1954,7 @@ void sscSetBrightness()
 #endif
 
   uint8_t x = 1;
-#ifdef USE_LIGHT_SENSOR
+#if defined(USE_LIGHT_SENSOR)
   static uint16_t b;
   b = (b * 2 + analogRead(LIGHT_SENSOR_PIN)) / 3;
   if (b < read_eeprom_8(LIGHT_THRESHOLD_EEPROM_INDEX) * 100)
@@ -1914,9 +1971,9 @@ void sscSetBrightness()
 
 #endif
 
-#ifdef USE_TEMP_DATA
+#if defined(USE_TEMP_DATA)
 
-#ifdef USE_DS18B20
+#if defined(USE_DS18B20)
 void sscCheckDS18b20()
 {
   sscTempSensor.readData();
@@ -1945,16 +2002,16 @@ void _startOtherSettingMode(uint8_t &x)
   sscTasks.startTask(sscTasks.return_to_default_mode());
   switch (ssc_display_mode)
   {
-#ifdef USE_LIGHT_SENSOR
+#if defined(USE_LIGHT_SENSOR)
   case DISPLAY_MODE_SET_LIGHT_THRESHOLD:
     x = read_eeprom_8(LIGHT_THRESHOLD_EEPROM_INDEX);
     break;
 #endif
-#ifdef USE_SET_BRIGHTNESS_MODE
+#if defined(USE_SET_BRIGHTNESS_MODE)
   case DISPLAY_MODE_SET_BRIGHTNESS_MAX:
     x = read_eeprom_8(MAX_BRIGHTNESS_VALUE_EEPROM_INDEX);
     break;
-#ifdef USE_LIGHT_SENSOR
+#if defined(USE_LIGHT_SENSOR)
   case DISPLAY_MODE_SET_BRIGHTNESS_MIN:
     x = read_eeprom_8(MIN_BRIGHTNESS_VALUE_EEPROM_INDEX);
     break;
@@ -1965,7 +2022,7 @@ void _startOtherSettingMode(uint8_t &x)
     x = read_eeprom_8(INTERVAL_FOR_AUTOSHOWDATA_EEPROM_INDEX);
     break;
 #endif
-#ifdef WS2812_MATRIX_DISPLAY
+#if defined(WS2812_MATRIX_DISPLAY)
   case DISPLAY_MODE_SET_COLOR_OF_NUMBER:
     x = sscGetIndexOfCurrentColorOfNumber();
     break;
@@ -1973,7 +2030,7 @@ void _startOtherSettingMode(uint8_t &x)
   default:
     break;
   }
-#ifdef USE_TICKER_FOR_DATA
+#if defined(USE_TICKER_FOR_DATA)
   if (read_eeprom_8(TICKER_STATE_VALUE_EEPROM_INDEX))
   {
     sscAssembleString(ssc_display_mode);
@@ -1983,22 +2040,22 @@ void _startOtherSettingMode(uint8_t &x)
 
 void _checkBtnSetForOthSet(uint8_t &x)
 {
-  if (buttons.getButtonFlag(SSC_BTN_SET) > BTN_FLAG_NONE)
+  if (buttons.getButtonFlag(CLK_BTN_SET) > CLK_BTN_FLAG_NONE)
   {
     switch (ssc_display_mode)
     {
-#ifdef USE_LIGHT_SENSOR
+#if defined(USE_LIGHT_SENSOR)
     case DISPLAY_MODE_SET_LIGHT_THRESHOLD:
       write_eeprom_8(LIGHT_THRESHOLD_EEPROM_INDEX, x);
       ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
       sscStopSetting(sscTasks.other_setting_mode());
       break;
 #endif
-#ifdef USE_SET_BRIGHTNESS_MODE
+#if defined(USE_SET_BRIGHTNESS_MODE)
     case DISPLAY_MODE_SET_BRIGHTNESS_MAX:
       write_eeprom_8(MAX_BRIGHTNESS_VALUE_EEPROM_INDEX, x);
-#ifdef USE_LIGHT_SENSOR
-      if (buttons.getButtonFlag(SSC_BTN_SET) == BTN_FLAG_NEXT)
+#if defined(USE_LIGHT_SENSOR)
+      if (buttons.getButtonFlag(CLK_BTN_SET) == CLK_BTN_FLAG_NEXT)
       {
         ssc_display_mode = DISPLAY_MODE_SET_LIGHT_THRESHOLD;
       }
@@ -2009,10 +2066,10 @@ void _checkBtnSetForOthSet(uint8_t &x)
       }
       sscStopSetting(sscTasks.other_setting_mode());
       break;
-#ifdef USE_LIGHT_SENSOR
+#if defined(USE_LIGHT_SENSOR)
     case DISPLAY_MODE_SET_BRIGHTNESS_MIN:
       write_eeprom_8(MIN_BRIGHTNESS_VALUE_EEPROM_INDEX, x);
-      if (buttons.getButtonFlag(SSC_BTN_SET) == BTN_FLAG_NEXT)
+      if (buttons.getButtonFlag(CLK_BTN_SET) == CLK_BTN_FLAG_NEXT)
       {
         ssc_display_mode = DISPLAY_MODE_SET_BRIGHTNESS_MAX;
       }
@@ -2027,8 +2084,8 @@ void _checkBtnSetForOthSet(uint8_t &x)
 #if USE_AUTO_SHOW_DATA
     case DISPLAY_MODE_SET_AUTO_SHOW_PERIOD:
       write_eeprom_8(INTERVAL_FOR_AUTOSHOWDATA_EEPROM_INDEX, x);
-#ifdef WS2812_MATRIX_DISPLAY
-      if (buttons.getButtonFlag(SSC_BTN_SET) == BTN_FLAG_NEXT)
+#if defined(WS2812_MATRIX_DISPLAY)
+      if (buttons.getButtonFlag(CLK_BTN_SET) == CLK_BTN_FLAG_NEXT)
       {
         ssc_display_mode = DISPLAY_MODE_SET_COLOR_OF_NUMBER;
       }
@@ -2040,9 +2097,10 @@ void _checkBtnSetForOthSet(uint8_t &x)
       sscStopSetting(sscTasks.other_setting_mode());
       break;
 #endif
-#ifdef WS2812_MATRIX_DISPLAY
+#if defined(WS2812_MATRIX_DISPLAY)
     case DISPLAY_MODE_SET_COLOR_OF_NUMBER:
-      write_eeprom_crgb(COLOR_OF_NUMBER_VALUE_EEPROM_INDEX, pgm_read_dword(&color_of_number[x]));
+      write_eeprom_crgb(COLOR_OF_NUMBER_VALUE_EEPROM_INDEX,
+                        pgm_read_dword(&color_of_number[x]));
       sscDisp.setColorOfNumber(pgm_read_dword(&color_of_number[x]));
       ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
       sscStopSetting(sscTasks.other_setting_mode());
@@ -2051,25 +2109,25 @@ void _checkBtnSetForOthSet(uint8_t &x)
     default:
       break;
     }
-    buttons.setButtonFlag(SSC_BTN_SET, BTN_FLAG_NONE);
+    buttons.setButtonFlag(CLK_BTN_SET, CLK_BTN_FLAG_NONE);
   }
 }
 
 void _checkBtnUpDownForOthSet(uint8_t &x)
 {
-  if ((buttons.getButtonFlag(SSC_BTN_UP) == BTN_FLAG_NEXT) ||
-      (buttons.getButtonFlag(SSC_BTN_DOWN) == BTN_FLAG_NEXT))
+  if ((buttons.getButtonFlag(CLK_BTN_UP) == CLK_BTN_FLAG_NEXT) ||
+      (buttons.getButtonFlag(CLK_BTN_DOWN) == CLK_BTN_FLAG_NEXT))
   {
-    bool dir = (buttons.getButtonFlag(SSC_BTN_UP) == BTN_FLAG_NEXT);
+    bool dir = (buttons.getButtonFlag(CLK_BTN_UP) == CLK_BTN_FLAG_NEXT);
     switch (ssc_display_mode)
     {
-#ifdef USE_LIGHT_SENSOR
+#if defined(USE_LIGHT_SENSOR)
     case DISPLAY_MODE_SET_LIGHT_THRESHOLD:
       sscCheckData(x, 9, dir, 1, false);
       break;
 #endif
-#ifdef USE_SET_BRIGHTNESS_MODE
-#ifdef USE_LIGHT_SENSOR
+#if defined(USE_SET_BRIGHTNESS_MODE)
+#if defined(USE_LIGHT_SENSOR)
     case DISPLAY_MODE_SET_BRIGHTNESS_MIN:
 #endif
     case DISPLAY_MODE_SET_BRIGHTNESS_MAX:
@@ -2087,7 +2145,7 @@ void _checkBtnUpDownForOthSet(uint8_t &x)
       sscCheckData(x, 7, dir, 0, false);
       break;
 #endif
-#ifdef WS2812_MATRIX_DISPLAY
+#if defined(WS2812_MATRIX_DISPLAY)
     case DISPLAY_MODE_SET_COLOR_OF_NUMBER:
       sscCheckData(x, 7, dir, 0, true);
       sscDisp.setColorOfNumber(pgm_read_dword(&color_of_number[x]));
@@ -2097,8 +2155,8 @@ void _checkBtnUpDownForOthSet(uint8_t &x)
       break;
     }
 
-    buttons.setButtonFlag(SSC_BTN_UP, BTN_FLAG_NONE);
-    buttons.setButtonFlag(SSC_BTN_DOWN, BTN_FLAG_NONE);
+    buttons.setButtonFlag(CLK_BTN_UP, CLK_BTN_FLAG_NONE);
+    buttons.setButtonFlag(CLK_BTN_DOWN, CLK_BTN_FLAG_NONE);
   }
 }
 
@@ -2106,7 +2164,7 @@ void _setDisplayDataForOthSet(uint8_t &x)
 {
   if (ssc_display_mode == DISPLAY_MODE_SHOW_TIME)
   {
-#ifdef USE_TICKER_FOR_DATA
+#if defined(USE_TICKER_FOR_DATA)
     if (read_eeprom_8(TICKER_STATE_VALUE_EEPROM_INDEX))
     {
       sscAssembleString(DISPLAY_MODE_SHOW_TIME);
@@ -2116,11 +2174,11 @@ void _setDisplayDataForOthSet(uint8_t &x)
   else
   {
     bool blink = !sscBlinkFlag &&
-                 !buttons.isButtonClosed(SSC_BTN_UP) &&
-                 !buttons.isButtonClosed(SSC_BTN_DOWN);
+                 !buttons.isButtonClosed(CLK_BTN_UP) &&
+                 !buttons.isButtonClosed(CLK_BTN_DOWN);
     switch (ssc_display_mode)
     {
-#ifdef USE_LIGHT_SENSOR
+#if defined(USE_LIGHT_SENSOR)
     case DISPLAY_MODE_SET_LIGHT_THRESHOLD:
 #if USE_MATRIX_DISPLAY
       sscSetOtherDataString(SET_LIGHT_THRESHOLD_TAG, 1, x, blink);
@@ -2129,8 +2187,8 @@ void _setDisplayDataForOthSet(uint8_t &x)
 #endif
       break;
 #endif
-#ifdef USE_SET_BRIGHTNESS_MODE
-#ifdef USE_LIGHT_SENSOR
+#if defined(USE_SET_BRIGHTNESS_MODE)
+#if defined(USE_LIGHT_SENSOR)
     case DISPLAY_MODE_SET_BRIGHTNESS_MIN:
 #endif
     case DISPLAY_MODE_SET_BRIGHTNESS_MAX:
@@ -2156,7 +2214,7 @@ void _setDisplayDataForOthSet(uint8_t &x)
 #endif
       break;
 #endif
-#ifdef WS2812_MATRIX_DISPLAY
+#if defined(WS2812_MATRIX_DISPLAY)
     case DISPLAY_MODE_SET_COLOR_OF_NUMBER:
       sscSetOtherDataString(SET_COLOR_OF_NUMBER_TAG, 1, x, blink);
       break;
@@ -2181,7 +2239,7 @@ void sscShowOtherSetting()
 #endif
   }
 
-#ifdef USE_TICKER_FOR_DATA
+#if defined(USE_TICKER_FOR_DATA)
   // подождать, пока отработает бегущая строка
   if (sscTasks.getTaskState(sscTasks.ticker()))
   {
@@ -2206,11 +2264,12 @@ void sscShowOtherSetting()
 void _startAutoShowMode(uint8_t &n, uint8_t &n_max)
 {
 #if !USE_MATRIX_DISPLAY
+  // инициализировать переменные в showDate() перед показом
   sscDisp.showDate(sscClock.getCurTime(), true);
 #endif
   switch (ssc_display_mode)
   {
-#ifdef USE_CALENDAR
+#if defined(USE_CALENDAR)
   case DISPLAY_MODE_SHOW_DATE:
 #if USE_MATRIX_DISPLAY
     n = 0;
@@ -2220,20 +2279,20 @@ void _startAutoShowMode(uint8_t &n, uint8_t &n_max)
     n_max = 3;
     break;
 #endif
-#ifdef USE_TEMP_DATA
+#if defined(USE_TEMP_DATA)
   case DISPLAY_MODE_SHOW_TEMP:
     n = 3;
     n_max = 4;
     break;
 #endif
   case DISPLAY_AUTO_SHOW_DATA:
-#ifdef USE_CALENDAR
+#if defined(USE_CALENDAR)
     n = 0;
     n_max = 3;
 #else
     n = 3;
 #endif
-#ifdef USE_TEMP_DATA
+#if defined(USE_TEMP_DATA)
     n_max = 4;
 #endif
     break;
@@ -2249,9 +2308,9 @@ void _setDisplayForAutoShowData(uint8_t &n)
 {
   switch (n)
   {
-#ifdef USE_CALENDAR
+#if defined(USE_CALENDAR)
   case 0:
-#ifdef USE_TICKER_FOR_DATA
+#if defined(USE_TICKER_FOR_DATA)
     if (read_eeprom_8(TICKER_STATE_VALUE_EEPROM_INDEX))
     {
       sscAssembleString(DISPLAY_MODE_SHOW_DOW);
@@ -2265,7 +2324,7 @@ void _setDisplayForAutoShowData(uint8_t &n)
     }
     break;
   case 1:
-#ifdef USE_TICKER_FOR_DATA
+#if defined(USE_TICKER_FOR_DATA)
     if (read_eeprom_8(TICKER_STATE_VALUE_EEPROM_INDEX))
     {
       sscAssembleString(DISPLAY_MODE_SHOW_DAY_AND_MONTH);
@@ -2273,11 +2332,16 @@ void _setDisplayForAutoShowData(uint8_t &n)
     else
 #endif
     {
-      sscSetTimeString(1, sscClock.getCurTime().day(), sscClock.getCurTime().month(), true, true, false);
+      sscSetTimeString(1,
+                       sscClock.getCurTime().day(),
+                       sscClock.getCurTime().month(),
+                       true,
+                       true,
+                       false);
     }
     break;
   case 2:
-#ifdef USE_TICKER_FOR_DATA
+#if defined(USE_TICKER_FOR_DATA)
     if (read_eeprom_8(TICKER_STATE_VALUE_EEPROM_INDEX))
     {
       sscAssembleString(DISPLAY_MODE_SHOW_YEAR);
@@ -2289,9 +2353,9 @@ void _setDisplayForAutoShowData(uint8_t &n)
     }
     break;
 #endif
-#ifdef USE_TEMP_DATA
+#if defined(USE_TEMP_DATA)
   case 3:
-#ifdef USE_TICKER_FOR_DATA
+#if defined(USE_TICKER_FOR_DATA)
     if (read_eeprom_8(TICKER_STATE_VALUE_EEPROM_INDEX))
     {
       sscAssembleString(DISPLAY_MODE_SHOW_TEMP);
@@ -2305,7 +2369,7 @@ void _setDisplayForAutoShowData(uint8_t &n)
 #endif
   }
 
-#ifdef USE_TICKER_FOR_DATA
+#if defined(USE_TICKER_FOR_DATA)
   if (!read_eeprom_8(TICKER_STATE_VALUE_EEPROM_INDEX))
   {
     sscDisp.show();
@@ -2323,7 +2387,7 @@ void _setDisplayForAutoShowData(uint8_t &n)
 
   switch (n)
   {
-#ifdef USE_CALENDAR
+#if defined(USE_CALENDAR)
   case 0:
     sscDisp.setDispData(0, sscDisp.encodeDigit(0x0d));
     sscDisp.setDispData(1, sscDisp.encodeDigit(0x0a));
@@ -2340,7 +2404,7 @@ void _setDisplayForAutoShowData(uint8_t &n)
     sscDisp.showDate(dt);
     break;
 #endif
-#ifdef USE_TEMP_DATA
+#if defined(USE_TEMP_DATA)
   case 3:
     sscDisp.showTemp(sscGetCurTemp());
     break;
@@ -2357,14 +2421,14 @@ void sscAutoShowData()
 {
   static uint8_t n = 0;
   static uint8_t n_max = 0;
-  static uint32_t timer = millis();
+  static uint32_t timer = 0;
 
   if (!sscTasks.getTaskState(sscTasks.auto_show_mode()))
   {
     _startAutoShowMode(n, n_max);
   }
 
-#ifdef USE_TICKER_FOR_DATA
+#if defined(USE_TICKER_FOR_DATA)
   if (sscTasks.getTaskState(sscTasks.ticker()))
   {
     timer = millis();
@@ -2375,7 +2439,7 @@ void sscAutoShowData()
   if (millis() - timer >= 1000)
   {
     timer = millis();
-#ifdef USE_TICKER_FOR_DATA
+#if defined(USE_TICKER_FOR_DATA)
     if (!read_eeprom_8(TICKER_STATE_VALUE_EEPROM_INDEX))
     {
       sscDisp.clear();
@@ -2435,8 +2499,12 @@ void sscShowOnOffData(clkDataType _type, bool _state, bool blink)
 
 #if USE_MATRIX_DISPLAY
 
-void sscSetTimeString(uint8_t offset, int8_t hour, int8_t minute, bool show_colon,
-                      bool toDate, bool toStringData)
+void sscSetTimeString(uint8_t offset,
+                      int8_t hour,
+                      int8_t minute,
+                      bool show_colon,
+                      bool toDate,
+                      bool toStringData)
 {
   if (hour >= 0)
   {
@@ -2456,7 +2524,9 @@ void sscSetTimeString(uint8_t offset, int8_t hour, int8_t minute, bool show_colo
       for (uint8_t j = 0; j < 3; j++)
       {
         sscSetChar(offset + 14 + j * 6,
-                   pgm_read_byte(&months[(minute - 1) * 3 + j]), 5, toStringData);
+                   pgm_read_byte(&months[(minute - 1) * 3 + j]),
+                   5,
+                   toStringData);
       }
     }
     else
@@ -2478,24 +2548,27 @@ void sscSetTimeString(uint8_t offset, int8_t hour, int8_t minute, bool show_colo
   }
 }
 
-void sscSetOtherDataString(clkDataType _type, uint8_t offset, uint8_t _data, bool blink,
+void sscSetOtherDataString(clkDataType _type,
+                           uint8_t offset,
+                           uint8_t _data,
+                           bool blink,
                            bool toStringData)
 {
   sscDisp.clear();
 
   switch (_type)
   {
-#ifdef USE_SET_BRIGHTNESS_MODE
+#if defined(USE_SET_BRIGHTNESS_MODE)
   case SET_BRIGHTNESS_TAG:
     sscSetTag(offset, DISP_BRIGHTNESS_TAG, 5, toStringData);
-#ifdef USE_LIGHT_SENSOR
+#if defined(USE_LIGHT_SENSOR)
     uint8_t x;
     x = (ssc_display_mode == DISPLAY_MODE_SET_BRIGHTNESS_MIN) ? 0x30 : 0x31;
     sscSetChar(offset + 12, x, 5, toStringData);
 #endif
     break;
 #endif
-#ifdef USE_LIGHT_SENSOR
+#if defined(USE_LIGHT_SENSOR)
   case SET_LIGHT_THRESHOLD_TAG:
     sscSetTag(offset, DISP_LIGHT_THRESHOLD_TAG, 5, toStringData);
     break;
@@ -2505,7 +2578,7 @@ void sscSetOtherDataString(clkDataType _type, uint8_t offset, uint8_t _data, boo
     sscSetTag(offset, DISP_DATE_DISPLAY_INTERVAL_TAG, 5, toStringData);
     break;
 #endif
-#ifdef WS2812_MATRIX_DISPLAY
+#if defined(WS2812_MATRIX_DISPLAY)
   case SET_COLOR_OF_NUMBER_TAG:
     sscSetTag(offset, DISP_COLOR_TAG, 5, toStringData);
     break;
@@ -2548,17 +2621,20 @@ void sscSetTag(uint8_t offset, uint8_t index, uint8_t width, bool toStringData)
   }
 }
 
-void sscSetOnOffDataString(clkDataType _type, uint8_t offset, bool _state, bool _blink,
+void sscSetOnOffDataString(clkDataType _type,
+                           uint8_t offset,
+                           bool _state,
+                           bool _blink,
                            bool toStringData)
 {
   switch (_type)
   {
-#ifdef USE_TICKER_FOR_DATA
+#if defined(USE_TICKER_FOR_DATA)
   case TICKER_TAG:
     sscSetTag(offset, DISP_ANIMATION_TAG, 5, toStringData);
     break;
 #endif
-#ifdef USE_ALARM
+#if defined(USE_ALARM)
   case ALARM_TAG:
     sscSetTag(offset, DISP_ALARM_TAG, 5, toStringData);
     break;
@@ -2582,7 +2658,11 @@ void sscSetOnOffDataString(clkDataType _type, uint8_t offset, bool _state, bool 
   }
 }
 
-void sscSetNumString(uint8_t offset, uint8_t num, uint8_t width, uint8_t space, bool toStringData)
+void sscSetNumString(uint8_t offset,
+                     uint8_t num,
+                     uint8_t width,
+                     uint8_t space,
+                     bool toStringData)
 {
   uint8_t x = (width == 6) ? num / 10 : num / 10 + 0x30;
   sscSetChar(offset, x, width, toStringData);
@@ -2624,7 +2704,7 @@ void sscSetChar(uint8_t offset, uint8_t chr, uint8_t width, bool toStringData)
   }
 }
 
-#ifdef USE_TICKER_FOR_DATA
+#if defined(USE_TICKER_FOR_DATA)
 void sscAssembleString(clkDisplayMode data_type, uint8_t lenght)
 {
   if (!sData.stringInit(lenght))
@@ -2648,13 +2728,13 @@ void sscAssembleString(clkDisplayMode data_type, uint8_t lenght)
                      true);
     break;
 
-#ifdef USE_TEMP_DATA
+#if defined(USE_TEMP_DATA)
   case DISPLAY_MODE_SHOW_TEMP: // температура
     sscSetTempString(lenght - 31, sscGetCurTemp(), true);
     break;
 #endif
 
-#ifdef USE_SET_BRIGHTNESS_MODE
+#if defined(USE_SET_BRIGHTNESS_MODE)
   case DISPLAY_MODE_SET_BRIGHTNESS_MAX: // настройка яркости
 #if defined(USE_LIGHT_SENSOR)
   case DISPLAY_MODE_SET_BRIGHTNESS_MIN:
@@ -2674,7 +2754,7 @@ void sscAssembleString(clkDisplayMode data_type, uint8_t lenght)
     break;
 #endif
 
-#ifdef USE_LIGHT_SENSOR
+#if defined(USE_LIGHT_SENSOR)
   case DISPLAY_MODE_SET_LIGHT_THRESHOLD: // настройка порога переключения яркости
     uint8_t y;
     y = read_eeprom_8(LIGHT_THRESHOLD_EEPROM_INDEX);
@@ -2682,7 +2762,7 @@ void sscAssembleString(clkDisplayMode data_type, uint8_t lenght)
     break;
 #endif
 
-#ifdef USE_ALARM
+#if defined(USE_ALARM)
   case DISPLAY_MODE_SET_ALARM_HOUR: // настройка часа срабатывания будильника
     sscSetTimeString(lenght - 31,
                      sscAlarm.getAlarmPoint() / 60,
@@ -2696,7 +2776,7 @@ void sscAssembleString(clkDisplayMode data_type, uint8_t lenght)
     break;
 #endif
 
-#ifdef USE_CALENDAR
+#if defined(USE_CALENDAR)
   case DISPLAY_MODE_SHOW_DOW: // день недели
     sscSetDayOfWeakString(lenght - 25,
                           getDayOfWeek(sscClock.getCurTime().day(),
@@ -2707,7 +2787,12 @@ void sscAssembleString(clkDisplayMode data_type, uint8_t lenght)
 
   case DISPLAY_MODE_SHOW_DAY_AND_MONTH: // число и месяц
   case DISPLAY_MODE_SET_DAY:            // настройка числа
-    sscSetTimeString(lenght - 31, sscClock.getCurTime().day(), sscClock.getCurTime().month(), true, true, true);
+    sscSetTimeString(lenght - 31,
+                     sscClock.getCurTime().day(),
+                     sscClock.getCurTime().month(),
+                     true,
+                     true,
+                     true);
     break;
 
   case DISPLAY_MODE_SHOW_YEAR: // год
@@ -2715,9 +2800,13 @@ void sscAssembleString(clkDisplayMode data_type, uint8_t lenght)
     sscSetYearString(lenght - 31, sscClock.getCurTime().year(), true);
     break;
 #endif
-#ifdef USE_TICKER_FOR_DATA
+#if defined(USE_TICKER_FOR_DATA)
   case DISPLAY_MODE_SET_TICKER_ON_OFF: // настройка включения/выключения анимации
-    sscSetOnOffDataString(TICKER_TAG, lenght - 31, read_eeprom_8(TICKER_STATE_VALUE_EEPROM_INDEX), false, true);
+    sscSetOnOffDataString(TICKER_TAG,
+                          lenght - 31,
+                          read_eeprom_8(TICKER_STATE_VALUE_EEPROM_INDEX),
+                          false,
+                          true);
     break;
 #endif
 #if USE_AUTO_SHOW_DATA
@@ -2729,7 +2818,7 @@ void sscAssembleString(clkDisplayMode data_type, uint8_t lenght)
                           true);
     break;
 #endif
-#ifdef WS2812_MATRIX_DISPLAY
+#if defined(WS2812_MATRIX_DISPLAY)
   case DISPLAY_MODE_SET_COLOR_OF_NUMBER:
     sscSetOtherDataString(SET_COLOR_OF_NUMBER_TAG,
                           lenght - 31,
@@ -2769,7 +2858,7 @@ void sscRunTicker()
 
 #endif
 
-#ifdef USE_CALENDAR
+#if defined(USE_CALENDAR)
 void sscSetDayOfWeakString(uint8_t offset, uint8_t dow, bool toStringData)
 {
   for (uint8_t j = 0; j < 3; j++)
@@ -2786,7 +2875,7 @@ void sscSetYearString(uint8_t offset, uint16_t _year, bool toStringData)
 }
 #endif
 
-#ifdef USE_TEMP_DATA
+#if defined(USE_TEMP_DATA)
 void sscSetTempString(uint8_t offset, int16_t temp, bool toStringData)
 {
   // если температура выходит за диапазон, сформировать строку минусов
@@ -2826,7 +2915,7 @@ void sscSetTempString(uint8_t offset, int16_t temp, bool toStringData)
 
 #endif
 
-#ifdef WS2812_MATRIX_DISPLAY
+#if defined(WS2812_MATRIX_DISPLAY)
 uint8_t sscGetIndexOfCurrentColorOfNumber()
 {
   uint8_t result = 1;
@@ -2876,7 +2965,7 @@ void sscSetTag(clkDataType _type)
 #endif
     break;
 #endif
-#ifdef USE_ALARM
+#if defined(USE_ALARM)
   case ALARM_TAG: // AL
     sscDisp.setDispData(0, sscDisp.encodeDigit(0x0A));
 #if defined(TM1637_DISPLAY)

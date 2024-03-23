@@ -336,7 +336,7 @@ public:
       setColon(false);
     }
 
-#ifdef SHOW_SECOND_COLUMN
+#if defined(SHOW_SECOND_COLUMN)
     // формирование секундного столбца
     uint8_t col_sec = 0;
     uint8_t x = second / 5;
@@ -357,11 +357,11 @@ public:
 #endif
   }
 
-/**
- * @brief вывод года на экран; если _year < 0, то вторая часть года стирается, что позволяет организовать мигание значения при его настройке
- * 
- * @param _year значение для вывода (вторая часть)
- */
+  /**
+   * @brief вывод года на экран; если _year < 0, то вторая часть года стирается, что позволяет организовать мигание значения при его настройке
+   *
+   * @param _year значение для вывода (вторая часть)
+   */
   void showYear(int8_t _year)
   {
     clear();
@@ -426,45 +426,6 @@ public:
     result = (n++ >= 3);
 
     return (result);
-  }
-
-  /**
-   * @brief вывод на экран данных по настройке яркости экрана
-   *
-   * @param br величина яркости
-   * @param blink используется для мигания изменяемого значения
-   * @param toSensor используется или нет датчик освещенности
-   * @param toMin если true, то настраивается минимальный уровень яркости, иначе - максимальный
-   */
-  void showBrightnessData(uint8_t br, bool blink, bool toSensor = false, bool toMin = false)
-  {
-    clear();
-
-#ifdef USE_RU_LANGUAGE
-    setChar(0, 0xDF, 5); // Я
-    setChar(6, 0xF0, 5); // р
-    uint8_t x = 0xEA;    // к
-    if (toSensor)
-    {
-      x = (toMin) ? 0 + 0x30 : 1 + 0x30;
-    }
-    setChar(12, x, 5);
-#else
-    setChar(0, 0x42, 5); // B
-    setChar(6, 0x72, 5); // r
-    if (toSensor)
-    {
-      uint8_t x = (toMin) ? 0 : 1;
-      x += 0x30;
-      setChar(12, x, 5);
-    }
-#endif
-    setColumn(18, 0b00100100);
-    if (!blink)
-    {
-      setChar(20, br / 10 + 0x30, 5);
-      setChar(26, br % 10 + 0x30, 5);
-    }
   }
 
   /**
@@ -534,7 +495,7 @@ void setESpiLedsData(CRGB *data, uint16_t leds_count)
   ESPIChipsets const chip = DOTSTAR;
 #endif
 
-#ifdef USE_HARDWARE_SPI
+#if defined(USE_HARDWARE_SPI)
   FastLED.addLeds<chip, EORDER>(data, leds_count);
 #else
   FastLED.addLeds<chip, DISPLAY_DIN_PIN, DISPLAY_CLK_PIN, EORDER>(data, leds_count);

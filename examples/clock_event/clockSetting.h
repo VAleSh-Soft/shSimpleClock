@@ -112,7 +112,7 @@
 // ---- анимация ---------------------------
 #define USE_TICKER_FOR_DATA // использовать вывод информации в виде бегущей строки
 
-#ifdef USE_TICKER_FOR_DATA
+#if defined(USE_TICKER_FOR_DATA)
 
 // ---- скорость анимации, fps -------------
 #define TICKER_SPEED 100 // скорость бегущей строки в кадрах в секунду; 
@@ -149,9 +149,9 @@
 
 // ---- настройка параметров кнопок -------------
 
-uint16_t constexpr timeout_of_longclick = 1000; // интервал удержания кнопки нажатой, мс
-uint16_t constexpr interval_of_serial = 100;    // интервал выдачи событий BTN_LONGCLICK при удержании кнопки нажатой, мс
-uint16_t constexpr timeout_of_debounce = 50;    // интервал антидребезга, мс
+uint16_t constexpr TIMEOUT_OF_LONGCLICK = 1000; // интервал удержания кнопки нажатой, мс
+uint16_t constexpr INTERVAL_OF_SERIAL = 100;    // интервал выдачи событий BTN_LONGCLICK при удержании кнопки нажатой, мс
+uint16_t constexpr TIMEOUT_OF_DEBOUNCE = 50;    // интервал антидребезга, мс
 
 // ---- использовать пищалку --------------------
 // #define USE_BUZZER_FOR_BUTTON
@@ -178,7 +178,7 @@ uint16_t constexpr timeout_of_debounce = 50;    // интервал антидр
 
 #define USE_ALARM // использовать или нет будильник
 
-#ifdef USE_ALARM
+#if defined(USE_ALARM)
 
 // ---- продолжительность сигнала, секунд --
 uint8_t constexpr ALARM_DURATION = 60;
@@ -224,14 +224,14 @@ uint8_t constexpr ALARM_REPETITION_COUNT = 3;
 
 // #define USE_LIGHT_SENSOR // использовать или нет датчик света на аналоговом входе для регулировки яркости экрана
 
-#ifdef USE_LIGHT_SENSOR
+#if defined(USE_LIGHT_SENSOR)
 
 // ---- датчик освещенности - пин ----------
 #define LIGHT_SENSOR_PIN A3 
 
 #endif
 
-#ifdef USE_TEMP_DATA
+#if defined(USE_TEMP_DATA)
 // ---- датчики температуры ---------------------
 
 // ---- DS18B20 ----------------------------
@@ -243,17 +243,17 @@ uint8_t constexpr ALARM_REPETITION_COUNT = 3;
 // ---- NTC термистор ----------------------
 // #define USE_NTC     // использовать для вывода температуры NTC термистор
 
-#ifdef USE_NTC
+#if defined(USE_NTC)
 
 #if defined(USE_DS18B20)
 
 #elif defined(USE_NTC)
 
 // ---- параметры NTC термистора ----------------
-uint16_t constexpr _resistor_std = 10000;    // сопротивление датчика при комнатной температуре (25 градусов Цельсия) в Омах;
-uint16_t constexpr _balance_resistor = 9850; // точное сопротивление второго резистора делителя напряжения, в Омах;
-uint16_t constexpr _beta = 3950;             // бета-коэффициент датчика, см. данные производителя; если данных производителя нет, коэффициент можно расчитать, исходя из бета-формулы расчета температуры, которую можно легко найти в интернете
-uint8_t constexpr _bit_depth = 10;           // разрядность АЦП используемого микроконтроллера; для Ардуино UNO, Nano, Pro Mini _bit_depth = 10
+uint16_t constexpr RESISTOR_STD = 10000;    // сопротивление датчика при комнатной температуре (25 градусов Цельсия) в Омах;
+uint16_t constexpr BALANCE_RESISTOR = 9850; // точное сопротивление второго резистора делителя напряжения, в Омах;
+uint16_t constexpr BETA_COEFFICIENT = 3950;             // бета-коэффициент датчика, см. данные производителя; если данных производителя нет, коэффициент можно расчитать, исходя из бета-формулы расчета температуры, которую можно легко найти в интернете
+uint8_t constexpr BIT_DEPTH = 10;           // разрядность АЦП используемого микроконтроллера; для Ардуино UNO, Nano, Pro Mini BIT_DEPTH = 10
 
 // ---- NTC термистор - пин---------------
 #define NTC_PIN A0 
@@ -275,18 +275,18 @@ uint8_t constexpr _bit_depth = 10;           // разрядность АЦП и
 #if defined(USE_CALENDAR) || defined(USE_TEMP_DATA)
 #define INTERVAL_FOR_AUTOSHOWDATA_EEPROM_INDEX 96 //  индекс ячейки в EEPROM для сохранения периодичности автопоказа даты и температуры
 #endif
-#ifdef USE_TICKER_FOR_DATA
+#if defined(USE_TICKER_FOR_DATA)
 #define TICKER_STATE_VALUE_EEPROM_INDEX 97 // индекс ячейки в EEPROM для сохранения статуса анимации
 #endif
-#ifdef USE_LIGHT_SENSOR
+#if defined(USE_LIGHT_SENSOR)
 #define LIGHT_THRESHOLD_EEPROM_INDEX 95      // индекс ячейки в EEPROM для сохранения порога переключения яркости (uint8_t)
 #define MIN_BRIGHTNESS_VALUE_EEPROM_INDEX 98 // индекс ячейки в EEPROM для сохранения  минимального значения яркости экрана (uint8_t)
 #endif
 #define MAX_BRIGHTNESS_VALUE_EEPROM_INDEX 99 // индекс ячейки в EEPROM для сохранения  максимального значение яркости экрана (uint8_t)
-#ifdef USE_ALARM
+#if defined(USE_ALARM)
 #define ALARM_DATA_EEPROM_INDEX 100 // индекс ячейки в EEPROM для сохранения настроек будильника (uint8_t + uint16_t)
 #endif
-#ifdef WS2812_MATRIX_DISPLAY
+#if defined(WS2812_MATRIX_DISPLAY)
 #define COLOR_OF_NUMBER_VALUE_EEPROM_INDEX 103 // индекс ячейки в EEPROM для сохранения цвета цифр для экранов на адресных светодиодах (uint8_t x 4)
 #endif
 
@@ -312,7 +312,7 @@ uint8_t constexpr _bit_depth = 10;           // разрядность АЦП и
 
 // ==== служебная информация, НЕ МЕНЯТЬ!!!!! =========
 
-// используется периодический автовывод даты и/или температуры
+// используется или нет периодический автовывод даты и/или температуры
 #if defined(USE_CALENDAR) || defined(USE_TEMP_DATA)
 #define USE_AUTO_SHOW_DATA 1
 #else
