@@ -548,7 +548,7 @@ public:
     setFastLEDData(ssc_leds, 256);
 #elif defined(MAX72XX_MATRIX_DISPLAY) || defined(MAX72XX_7SEGMENT_DISPLAY)
     sscDisp.shutdownAllDevices(false);
-#if defdefined(MAX72XX_MATRIX_DISPLAY)
+#if defined(MAX72XX_MATRIX_DISPLAY)
     sscDisp.setDirection(2);
     sscDisp.setFlip(false);
 #endif
@@ -2263,10 +2263,6 @@ void sscShowOtherSetting()
 
 void _startAutoShowMode(uint8_t &n, uint8_t &n_max)
 {
-#if !USE_MATRIX_DISPLAY
-  // инициализировать переменные в showDate() перед показом
-  sscDisp.showDate(sscClock.getCurTime(), true);
-#endif
   switch (ssc_display_mode)
   {
 #if defined(USE_CALENDAR)

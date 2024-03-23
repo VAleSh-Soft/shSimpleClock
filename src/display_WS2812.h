@@ -386,49 +386,6 @@ public:
   }
 
   /**
-   * @brief вывод на экран даты
-   *
-   * @param date текущая дата
-   * @param upd сбросить параметры и запустить заново
-   * @return true если вывод завершен
-   */
-  bool showDate(DateTime date, bool upd = false)
-  {
-    static uint8_t n = 0;
-    bool result = false;
-
-    if (upd)
-    {
-      n = 0;
-      return (result);
-    }
-    clear();
-
-    // последовательный вывод - день недели, число и месяц, год
-    switch (n)
-    {
-    case 0:
-      setDayOfWeakString(7, date);
-      break;
-    case 1:
-      setNumString(1, date.day());
-      setColon(true); // точка
-      setNumString(17, date.month());
-      break;
-    case 2:
-      setNumString(1, 20, 6, 2);
-      setNumString(17, date.year() % 100, 6, 2);
-      break;
-    }
-
-    FastLED.show();
-
-    result = (n++ >= 3);
-
-    return (result);
-  }
-
-  /**
    * @brief установка цвета символов
    *
    * @param _color новый цвет

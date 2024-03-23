@@ -4,13 +4,13 @@
  * @brief Модуль, реализующий работу часов с экранами, основанными на драйвере TM1637
  * @version 1.0
  * @date 11.03.2024
- * 
+ *
  * @copyright Copyright (c) 2024
- * 
+ *
  */
 #pragma once
 #include <Arduino.h>
-#include "shSimpleRTC.h"        // https://github.com/NorthernWidget/DS3231
+#include "shSimpleRTC.h"   // https://github.com/NorthernWidget/DS3231
 #include <TM1637Display.h> // https://github.com/avishorp/TM1637
 
 // ==== класс для вывода данных на экран =============
@@ -173,19 +173,10 @@ public:
    * @brief вывод на экран даты
    *
    * @param date текущая дата
-   * @param upd сбросить параметры и запустить заново
-   * @return true если вывод завершен
    */
-  bool showDate(DateTime date, bool upd = false)
+  void showDate(DateTime date)
   {
     static uint8_t n = 0;
-    bool result = false;
-
-    if (upd)
-    {
-      n = 0;
-      return (result);
-    }
 
     clear();
 
@@ -199,14 +190,10 @@ public:
       break;
     }
 
-    result = (n++ >= 2);
-    if (result)
+    if (++n >= 2)
     {
       n = 0;
     }
-    
-
-    return (result);
   }
 
   /**
