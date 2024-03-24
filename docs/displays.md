@@ -65,6 +65,10 @@
 - `setColorOfNumber(CRGB _color)` - установить цвет символов;
 - `setColorOfBackground(CRGB _color)` - установить цвет фона;
 
+Получить текущий и задать новый цвет фона позволяют методы:
+- `CRGB getColorOfBackground();`
+- `void setColorOfBackground(CRGB _color);`
+
 Для ограничения потребляемого матрицей тока можно задать параметры блока питания. Для этого используется метод:
 - `void setMaxPSP(uint8_t volts, uint32_t milliamps)` - установить напряжение (В) и максимальный ток блока питания (мА);
 

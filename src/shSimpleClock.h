@@ -499,7 +499,7 @@ public:
 #if defined(WS2812_MATRIX_DISPLAY)
     CRGB c;
     read_eeprom_crgb(COLOR_OF_NUMBER_VALUE_EEPROM_INDEX, c);
-    // если задан черный цвет или не записана ячейка обновления, задать цвет по умолчанию
+    // если задан черный цвет или не записана ячейка обновления, задать цвет вимволов по умолчанию
     if ((c.r == 0x00 && c.g == 0x00 && c.b == 0x00) ||
         read_eeprom_8(COLOR_OF_NUMBER_VALUE_EEPROM_INDEX) != CRGB_UPDATE_DATA)
     {
@@ -507,6 +507,15 @@ public:
       write_eeprom_crgb(COLOR_OF_NUMBER_VALUE_EEPROM_INDEX, c);
     }
     setColorOfNumber(c);
+
+    read_eeprom_crgb(COLOR_OF_BACKGROUND_VALUE_EEPROM_INDEX, c);
+    // если не записана ячейка обновления, задать цвет фона по умолчанию
+    if (read_eeprom_8(COLOR_OF_BACKGROUND_VALUE_EEPROM_INDEX) != CRGB_UPDATE_DATA)
+    {
+      c = COLOR_OF_BACKGROUND;
+      write_eeprom_crgb(COLOR_OF_BACKGROUND_VALUE_EEPROM_INDEX, COLOR_OF_BACKGROUND);
+    }
+    setColorOfBackground(c);
 #endif
 
 // ==== датчики ====================================
@@ -746,6 +755,17 @@ public:
   void setColorOfBackground(CRGB _color)
   {
     sscDisp.setColorOfBackground(_color);
+    write_eeprom_crgb(COLOR_OF_BACKGROUND_VALUE_EEPROM_INDEX, _color);
+  }
+
+  /**
+   * @brief получение текущего цвета фона экрана из адресных светдиодов
+   *
+   * @return CRGB
+   */
+  CRGB getColorOfBackground()
+  {
+    return (sscDisp.getColorOfBackground());
   }
 
   /**

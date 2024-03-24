@@ -41,6 +41,7 @@ buzzerStop	KEYWORD2
 setColorOfNumber	KEYWORD2
 getColorOfNumber	KEYWORD2
 setColorOfBackground	KEYWORD2
+getColorOfBackground	KEYWORD2
 setMaxPSP	KEYWORD2
 getBrightnessMax	KEYWORD2
 setBrightnessMax	KEYWORD2
