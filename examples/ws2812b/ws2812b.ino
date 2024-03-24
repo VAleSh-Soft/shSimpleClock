@@ -35,6 +35,7 @@ void setup()
   clock.setColorOfNumber(CRGB::Blue);
   // устанавливаем параметры блока питания - 5В, 2000мА
   clock.setMaxPSP(5, 2000);
+  
   // инициализируем часы
   clock.init();
 }

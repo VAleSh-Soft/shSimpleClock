@@ -64,7 +64,7 @@ private:
   uint8_t row_count = 8;
   uint8_t col_count = 32;
   CRGB color = CRGB::Red;
-  CRGB bg_color = COLOR_OF_BACKGROUND;
+  CRGB bg_color = CRGB::Black;
 
   uint8_t getLedIndexOfStrip(uint8_t row, uint8_t col)
   {
@@ -185,6 +185,7 @@ public:
   {
     leds = _leds;
     color = _color;
+    bg_color = COLOR_OF_BACKGROUND;
     matrix_type = _type;
     clear(true);
     setMaxPSP(POWER_SUPPLY_VOLTAGE, POWER_SUPPLY_CURRENT);
@@ -413,6 +414,16 @@ public:
   void setColorOfBackground(CRGB _color)
   {
     bg_color = _color;
+  }
+
+  /**
+   * @brief получение текущего цвета фона
+   *
+   * @return CRGB
+   */
+  CRGB getColorOfBackground()
+  {
+    return(bg_color);
   }
 
   /**
