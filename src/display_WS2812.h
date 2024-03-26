@@ -223,9 +223,11 @@ public:
       for (uint8_t i = 0; i < 8; i++)
       {
         CRGB x = leds[getLedIndexOfStrip(i, col)];
-        CRGB y = COLOR_OF_BACKGROUND;
-        ((x.r != y.r || x.g != y.g || x.b != y.b)) ? (result) |= (1UL << (7 - i))
-                                                   : (result) &= ~(1UL << (7 - i));
+        (x.r != bg_color.r ||
+         x.g != bg_color.g ||
+         x.b != bg_color.b)
+            ? (result) |= (1UL << (7 - i))
+            : (result) &= ~(1UL << (7 - i));
       }
     }
     return (result);
@@ -423,7 +425,7 @@ public:
    */
   CRGB getColorOfBackground()
   {
-    return(bg_color);
+    return (bg_color);
   }
 
   /**

@@ -205,14 +205,14 @@ bool sscBlinkFlag = false; // флаг блинка, используется в
 
 // ---- экраны -----------------------------
 #if defined(TM1637_DISPLAY)
-DisplayTM1637 sscDisp(DISPLAY_CLK_PIN, DISPLAY_DAT_PIN);
+DisplayTM1637 clkDisp(DISPLAY_CLK_PIN, DISPLAY_DAT_PIN);
 #elif defined(MAX72XX_7SEGMENT_DISPLAY)
-DisplayMAX72xx7segment<DISPLAY_CS_PIN> sscDisp;
+DisplayMAX72xx7segment<DISPLAY_CS_PIN> clkDisp;
 #elif defined(MAX72XX_MATRIX_DISPLAY)
-DisplayMAX72xxMatrix<DISPLAY_CS_PIN> sscDisp;
+DisplayMAX72xxMatrix<DISPLAY_CS_PIN> clkDisp;
 #elif defined(WS2812_MATRIX_DISPLAY)
 CRGB ssc_leds[256];
-DisplayWS2812Matrix sscDisp(ssc_leds, COLOR_OF_NUMBER, MX_TYPE);
+DisplayWS2812Matrix clkDisp(ssc_leds, COLOR_OF_NUMBER, MX_TYPE);
 #endif
 
 // ---- модуль RTC -------------------------
@@ -560,17 +560,17 @@ public:
 #endif
     write_eeprom_8(MIN_BRIGHTNESS_VALUE_EEPROM_INDEX, x);
 #else
-    sscDisp.setBrightness(read_eeprom_8(MAX_BRIGHTNESS_VALUE_EEPROM_INDEX));
+    clkDisp.setBrightness(read_eeprom_8(MAX_BRIGHTNESS_VALUE_EEPROM_INDEX));
 #endif
 
 // ==== экраны =======================================
 #if defined(WS2812_MATRIX_DISPLAY)
     setFastLEDData(ssc_leds, 256);
 #elif defined(MAX72XX_MATRIX_DISPLAY) || defined(MAX72XX_7SEGMENT_DISPLAY)
-    sscDisp.shutdownAllDevices(false);
+    clkDisp.shutdownAllDevices(false);
 #if defined(MAX72XX_MATRIX_DISPLAY)
-    sscDisp.setDirection(2);
-    sscDisp.setFlip(false);
+    clkDisp.setDirection(2);
+    clkDisp.setFlip(false);
 #endif
 #endif
 
@@ -578,9 +578,9 @@ public:
 #if defined(WS2812_MATRIX_DISPLAY)
     FastLED.setBrightness(0);
 #elif defined(MAX72XX_MATRIX_DISPLAY) || defined(MAX72XX_7SEGMENT_DISPLAY)
-    sscDisp.setBrightness(0);
+    clkDisp.setBrightness(0);
 #else
-    sscDisp.setBrightness(1);
+    clkDisp.setBrightness(1);
 #endif
 
     // ==== задачи ===================================
@@ -625,7 +625,7 @@ public:
 #if defined(USE_LIGHT_SENSOR)
     sscTasks.light_sensor_guard(sscTasks.addTask(100ul, sscSetBrightness));
 #else
-    sscDisp.setBrightness(read_eeprom_8(MAX_BRIGHTNESS_VALUE_EEPROM_INDEX));
+    clkDisp.setBrightness(read_eeprom_8(MAX_BRIGHTNESS_VALUE_EEPROM_INDEX));
 #endif
 #if USE_OTHER_SETTING
     sscTasks.other_setting_mode(sscTasks.addTask(100ul, sscShowOtherSetting, false));
@@ -696,7 +696,7 @@ public:
    * @brief получить флаг кнопки
    *
    * @param _btn идентификатор кнопки, может иметь значение: CLK_BTN_SET, CLK_BTN_UP, CLK_BTN_DOWN;
-   * @param _clear если  true, то флаг кнопки после считывания будет очищен (установлено значение CLK_BTN_FLAG_NONE);
+   * @param _clear если true, то флаг кнопки после считывания будет очищен (установлено значение CLK_BTN_FLAG_NONE);
    * @return clkButtonFlag возможные варианты: CLK_BTN_FLAG_NONE, CLK_BTN_FLAG_NEXT, CLK_BTN_FLAG_EXIT
    */
   clkButtonFlag getButtonFlag(clkButtonType _btn, bool _clear = false)
@@ -723,7 +723,7 @@ public:
    */
   void setMatrixDirection(uint8_t _dir)
   {
-    sscDisp.setDirection(_dir);
+    clkDisp.setDirection(_dir);
   }
 
   /**
@@ -733,7 +733,7 @@ public:
    */
   void setMatrixFlipMode(bool _mode)
   {
-    sscDisp.setFlip(_mode);
+    clkDisp.setFlip(_mode);
   }
 #endif
 
@@ -745,7 +745,7 @@ public:
    */
   void setColorOfNumber(CRGB _color)
   {
-    sscDisp.setColorOfNumber(_color);
+    clkDisp.setColorOfNumber(_color);
     write_eeprom_crgb(COLOR_OF_NUMBER_VALUE_EEPROM_INDEX, _color);
   }
 
@@ -756,7 +756,7 @@ public:
    */
   CRGB getColorOfNumber()
   {
-    return (sscDisp.getColorOfNumber());
+    return (clkDisp.getColorOfNumber());
   }
 
   /**
@@ -766,7 +766,7 @@ public:
    */
   void setColorOfBackground(CRGB _color)
   {
-    sscDisp.setColorOfBackground(_color);
+    clkDisp.setColorOfBackground(_color);
     write_eeprom_crgb(COLOR_OF_BACKGROUND_VALUE_EEPROM_INDEX, _color);
   }
 
@@ -777,7 +777,7 @@ public:
    */
   CRGB getColorOfBackground()
   {
-    return (sscDisp.getColorOfBackground());
+    return (clkDisp.getColorOfBackground());
   }
 
   /**
@@ -788,7 +788,7 @@ public:
    */
   void setMaxPSP(uint8_t volts, uint32_t milliamps)
   {
-    sscDisp.setMaxPSP(volts, milliamps);
+    clkDisp.setMaxPSP(volts, milliamps);
   }
 #endif
 
@@ -947,7 +947,7 @@ public:
 #if defined(WS2812_MATRIX_DISPLAY)
     _br *= 10;
 #endif
-    sscDisp.setBrightness(_br);
+    clkDisp.setBrightness(_br);
   }
 
 #if defined(USE_LIGHT_SENSOR)
@@ -972,7 +972,7 @@ public:
 #if defined(WS2812_MATRIX_DISPLAY)
     _br *= 10;
 #endif
-    sscDisp.setBrightness(_br);
+    clkDisp.setBrightness(_br);
   }
 #endif
 #endif
@@ -1083,12 +1083,12 @@ void sscRtcNow()
 #endif
     {
 #if USE_MATRIX_DISPLAY
-      sscDisp.showTime(sscClock.getCurTime().hour(),
+      clkDisp.showTime(sscClock.getCurTime().hour(),
                        sscClock.getCurTime().minute(),
                        sscClock.getCurTime().second(),
                        sscBlinkFlag);
 #else
-      sscDisp.showTime(sscClock.getCurTime().hour(),
+      clkDisp.showTime(sscClock.getCurTime().hour(),
                        sscClock.getCurTime().minute(),
                        sscBlinkFlag);
 #endif
@@ -1223,15 +1223,15 @@ void sscShowTimeData(uint8_t hour, uint8_t minute)
 #if defined(USE_CALENDAR)
   if (ssc_display_mode == DISPLAY_MODE_SET_YEAR)
   {
-    sscDisp.showYear(minute);
+    clkDisp.showYear(minute);
   }
   else
 #endif
   {
-    sscDisp.showTime(hour, minute, 0, toColon, toDate);
+    clkDisp.showTime(hour, minute, 0, toColon, toDate);
   }
 #else
-  sscDisp.showTime(hour, minute, toColon);
+  clkDisp.showTime(hour, minute, toColon);
 #endif
 }
 
@@ -1274,6 +1274,7 @@ void _startTimeSettingMode(uint8_t &curHour, uint8_t &curMinute)
 {
   sscTasks.startTask(sscTasks.set_time_mode());
   sscTasks.startTask(sscTasks.return_to_default_mode());
+  sscClearButtonFlag();
   switch (ssc_display_mode)
   {
 #if defined(USE_ALARM)
@@ -1533,7 +1534,7 @@ void sscShowTimeSetting()
     _startTimeSettingMode(curHour, curMinute);
     time_checked = false;
 #if !USE_MATRIX_DISPLAY
-    sscDisp.sleep(); // слегка мигнуть экраном при входе в настройки
+    clkDisp.sleep(); // слегка мигнуть экраном при входе в настройки
     return;
 #endif
   }
@@ -1587,7 +1588,7 @@ void sscSetDisp()
   // обновление экрана делать только если в данный момент не работает бегущая строка, она сама обновляет экран, когда ей это нужно
   if (!sscTasks.getTaskState(sscTasks.ticker()))
 #endif
-    sscDisp.show();
+    clkDisp.show();
 }
 
 void sscCheckSetButton()
@@ -2015,7 +2016,7 @@ void sscSetBrightness()
   {
     x = read_eeprom_8(MAX_BRIGHTNESS_VALUE_EEPROM_INDEX);
   }
-  sscDisp.setBrightness(x);
+  clkDisp.setBrightness(x);
 }
 
 #endif
@@ -2049,6 +2050,7 @@ void _startOtherSettingMode(uint8_t &x)
 {
   sscTasks.startTask(sscTasks.other_setting_mode());
   sscTasks.startTask(sscTasks.return_to_default_mode());
+  sscClearButtonFlag();
   switch (ssc_display_mode)
   {
 #if defined(USE_LIGHT_SENSOR)
@@ -2151,7 +2153,7 @@ void _checkBtnSetForOthSet(uint8_t &x)
     case DISPLAY_MODE_SET_COLOR_OF_NUMBER:
       write_eeprom_crgb(COLOR_OF_NUMBER_VALUE_EEPROM_INDEX,
                         pgm_read_dword(&color_of_number[x]));
-      sscDisp.setColorOfNumber(pgm_read_dword(&color_of_number[x]));
+      clkDisp.setColorOfNumber(pgm_read_dword(&color_of_number[x]));
       ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
       sscStopSetting(sscTasks.other_setting_mode());
       break;
@@ -2197,7 +2199,7 @@ void _checkBtnUpDownForOthSet(uint8_t &x)
 #if defined(WS2812_MATRIX_DISPLAY)
     case DISPLAY_MODE_SET_COLOR_OF_NUMBER:
       sscCheckData(x, 7, dir, 0, true);
-      sscDisp.setColorOfNumber(pgm_read_dword(&color_of_number[x]));
+      clkDisp.setColorOfNumber(pgm_read_dword(&color_of_number[x]));
       break;
 #endif
     default:
@@ -2238,7 +2240,7 @@ void _setDisplayDataForOthSet(uint8_t &x)
     case DISPLAY_MODE_SET_BRIGHTNESS_MIN:
 #endif
     case DISPLAY_MODE_SET_BRIGHTNESS_MAX:
-      sscDisp.setBrightness(x);
+      clkDisp.setBrightness(x);
 #if USE_MATRIX_DISPLAY
       sscSetOtherDataString(SET_BRIGHTNESS_TAG, 1, x, blink);
 #else
@@ -2280,7 +2282,7 @@ void sscShowOtherSetting()
   {
     _startOtherSettingMode(x);
 #if !USE_MATRIX_DISPLAY
-    sscDisp.sleep(); // слегка мигнуть экраном при входе в настройки
+    clkDisp.sleep(); // слегка мигнуть экраном при входе в настройки
     return;
 #endif
   }
@@ -2414,10 +2416,10 @@ void _setDisplayForAutoShowData(uint8_t &n)
 #if defined(USE_TICKER_FOR_DATA)
   if (!read_eeprom_8(TICKER_STATE_VALUE_EEPROM_INDEX))
   {
-    sscDisp.show();
+    clkDisp.show();
   }
 #else
-  sscDisp.show();
+  clkDisp.show();
 #endif
 }
 
@@ -2431,30 +2433,30 @@ void _setDisplayForAutoShowData(uint8_t &n)
   {
 #if defined(USE_CALENDAR)
   case 0:
-    sscDisp.setDispData(0, sscDisp.encodeDigit(0x0d));
-    sscDisp.setDispData(1, sscDisp.encodeDigit(0x0a));
+    clkDisp.setDispData(0, clkDisp.encodeDigit(0x0d));
+    clkDisp.setDispData(1, clkDisp.encodeDigit(0x0a));
 #if defined(TM1637_DISPLAY)
-    sscDisp.setDispData(2, 0b01111000);
+    clkDisp.setDispData(2, 0b01111000);
 #elif defined(MAX72XX_7SEGMENT_DISPLAY)
-    sscDisp.setDispData(2, 0b00001111);
+    clkDisp.setDispData(2, 0b00001111);
 #endif
-    sscDisp.setDispData(3, sscDisp.encodeDigit(0x0e));
-    sscDisp.show();
+    clkDisp.setDispData(3, clkDisp.encodeDigit(0x0e));
+    clkDisp.show();
     break;
   case 1:
   case 2:
-    sscDisp.showDate(dt);
+    clkDisp.showDate(dt);
     break;
 #endif
 #if defined(USE_TEMP_DATA)
   case 3:
-    sscDisp.showTemp(sscGetCurTemp());
+    clkDisp.showTemp(sscGetCurTemp());
     break;
 #endif
   default:
     break;
   }
-  sscDisp.show();
+  clkDisp.show();
 }
 
 #endif
@@ -2484,10 +2486,10 @@ void sscAutoShowData()
 #if defined(USE_TICKER_FOR_DATA)
     if (!read_eeprom_8(TICKER_STATE_VALUE_EEPROM_INDEX))
     {
-      sscDisp.clear();
+      clkDisp.clear();
     }
 #else
-    sscDisp.clear();
+    clkDisp.clear();
 #endif
     _setDisplayForAutoShowData(n);
 
@@ -2520,7 +2522,7 @@ uint8_t sscGetPeriodForAutoShow(uint8_t index)
 
 void sscShowOnOffData(clkDataType _type, bool _state, bool blink)
 {
-  sscDisp.clear();
+  clkDisp.clear();
 #if USE_MATRIX_DISPLAY
   sscSetOnOffDataString(_type, 1, _state, blink);
 #else
@@ -2574,7 +2576,7 @@ void sscSetTimeString(uint8_t offset,
     }
     else
     {
-      sscDisp.setColumn(offset + 14, colon);
+      clkDisp.setColumn(offset + 14, colon);
     }
   }
 }
@@ -2585,7 +2587,7 @@ void sscSetOtherDataString(clkDataType _type,
                            bool blink,
                            bool toStringData)
 {
-  sscDisp.clear();
+  clkDisp.clear();
 
   switch (_type)
   {
@@ -2623,7 +2625,7 @@ void sscSetOtherDataString(clkDataType _type,
   }
   else
   {
-    sscDisp.setColumn(offset + 18, 0x24); // ":"
+    clkDisp.setColumn(offset + 18, 0x24); // ":"
   }
 
   if (!blink)
@@ -2680,7 +2682,7 @@ void sscSetOnOffDataString(clkDataType _type,
   }
   else
   {
-    sscDisp.setColumn(offset + 20, 0x24); // ":"
+    clkDisp.setColumn(offset + 20, 0x24); // ":"
   }
 
   if (!_blink)
@@ -2729,7 +2731,7 @@ void sscSetChar(uint8_t offset, uint8_t chr, uint8_t width, bool toStringData)
     {
       if (j < 32)
       {
-        sscDisp.setColumn(j, chr_data);
+        clkDisp.setColumn(j, chr_data);
       }
     }
   }
@@ -2744,7 +2746,7 @@ void sscAssembleString(clkDisplayMode data_type, uint8_t lenght)
   // скопировать в начало строки содержимое экрана
   for (uint8_t i = 0; i < 32; i++)
   {
-    sData.setData(i, sscDisp.getColumn(i));
+    sData.setData(i, clkDisp.getColumn(i));
   }
 
   // сформировать вторую часть строки
@@ -2876,9 +2878,9 @@ void sscRunTicker()
 
   for (uint8_t i = 0; i < 32; i++)
   {
-    sscDisp.setColumn(i, sData.getData(i + n));
+    clkDisp.setColumn(i, sData.getData(i + n));
   }
-  sscDisp.show();
+  clkDisp.show();
 
   if (n++ >= sData.getDataLenght() - 32)
   {
@@ -2951,7 +2953,7 @@ uint8_t sscGetIndexOfCurrentColorOfNumber()
 {
   uint8_t result = 1;
   CRGB col;
-  col = sscDisp.getColorOfNumber();
+  col = clkDisp.getColorOfNumber();
   for (uint8_t i = 0; i < 8; i++)
   {
     CRGB t_col = pgm_read_dword(&color_of_number[i]);
@@ -2974,12 +2976,12 @@ void sscSetOtherData(clkDataType _type, uint8_t _data, bool blink)
 
   sscSetTag(_type);
 
-  sscDisp.setDispData(2, ((_data / 10 == 0 || blink) ? 0x00
-                                                     : sscDisp.encodeDigit(_data / 10)));
-  sscDisp.setDispData(3, ((blink) ? 0x00
-                                  : sscDisp.encodeDigit(_data % 10)));
+  clkDisp.setDispData(2, ((_data / 10 == 0 || blink) ? 0x00
+                                                     : clkDisp.encodeDigit(_data / 10)));
+  clkDisp.setDispData(3, ((blink) ? 0x00
+                                  : clkDisp.encodeDigit(_data % 10)));
 
-  sscDisp.show();
+  clkDisp.show();
 }
 
 void sscSetTag(clkDataType _type)
@@ -2988,49 +2990,49 @@ void sscSetTag(clkDataType _type)
   {
 #if USE_AUTO_SHOW_DATA
   case AUTO_SHOW_PERIOD_TAG: // Au
-    sscDisp.setDispData(0, sscDisp.encodeDigit(0x0A));
+    clkDisp.setDispData(0, clkDisp.encodeDigit(0x0A));
 #if defined(TM1637_DISPLAY)
-    sscDisp.setDispData(1, 0b10011100);
+    clkDisp.setDispData(1, 0b10011100);
 #elif defined(MAX72XX_7SEGMENT_DISPLAY)
-    sscDisp.setDispData(1, 0b10011100);
+    clkDisp.setDispData(1, 0b10011100);
 #endif
     break;
 #endif
 #if defined(USE_ALARM)
   case ALARM_TAG: // AL
-    sscDisp.setDispData(0, sscDisp.encodeDigit(0x0A));
+    clkDisp.setDispData(0, clkDisp.encodeDigit(0x0A));
 #if defined(TM1637_DISPLAY)
-    sscDisp.setDispData(1, 0b10111000);
+    clkDisp.setDispData(1, 0b10111000);
 #elif defined(MAX72XX_7SEGMENT_DISPLAY)
-    sscDisp.setDispData(1, 0b10001110);
+    clkDisp.setDispData(1, 0b10001110);
 #endif
     break;
 #endif
 #if defined(USE_LIGHT_SENSOR)
   case SET_LIGHT_THRESHOLD_TAG: // th
 #if defined(TM1637_DISPLAY)
-    sscDisp.setDispData(0, 0b01111000);
-    sscDisp.setDispData(1, 0b11110100);
+    clkDisp.setDispData(0, 0b01111000);
+    clkDisp.setDispData(1, 0b11110100);
 #elif defined(MAX72XX_7SEGMENT_DISPLAY)
-    sscDisp.setDispData(0, 0b00001111);
-    sscDisp.setDispData(1, 0b10010111);
+    clkDisp.setDispData(0, 0b00001111);
+    clkDisp.setDispData(1, 0b10010111);
 #endif
     break;
 #endif
 #if defined(USE_SET_BRIGHTNESS_MODE)
   case SET_BRIGHTNESS_TAG: // br, b0, b1
-    sscDisp.setDispData(0, sscDisp.encodeDigit(0x0B));
+    clkDisp.setDispData(0, clkDisp.encodeDigit(0x0B));
 #if defined(TM1637_DISPLAY)
-    sscDisp.setDispData(1, 0b11010000);
+    clkDisp.setDispData(1, 0b11010000);
 #elif defined(MAX72XX_7SEGMENT_DISPLAY)
-    sscDisp.setDispData(1, 0b10000101);
+    clkDisp.setDispData(1, 0b10000101);
 #endif
 #if defined(USE_LIGHT_SENSOR)
     uint8_t x;
-    x = (ssc_display_mode == DISPLAY_MODE_SET_BRIGHTNESS_MIN) ? sscDisp.encodeDigit(0)
-                                                                      : sscDisp.encodeDigit(1);
+    x = (ssc_display_mode == DISPLAY_MODE_SET_BRIGHTNESS_MIN) ? clkDisp.encodeDigit(0)
+                                                                      : clkDisp.encodeDigit(1);
     x |= 0x80;
-    sscDisp.setDispData(1, x);
+    clkDisp.setDispData(1, x);
 #endif
     break;
 #endif
@@ -3043,7 +3045,7 @@ void sscSetOnOffData(clkDataType _type, bool _state, bool _blink)
 {
   sscSetTag(_type);
 
-  sscDisp.setDispData(2, 0x00);
+  clkDisp.setDispData(2, 0x00);
   uint8_t x = 0x00;
   if (!_blink)
   {
@@ -3053,9 +3055,9 @@ void sscSetOnOffData(clkDataType _type, bool _state, bool _blink)
     x = (_state) ? 0b00011101 : 0b00001000;
 #endif
   }
-  sscDisp.setDispData(3, x);
+  clkDisp.setDispData(3, x);
 
-  sscDisp.show();
+  clkDisp.show();
 }
 
 #endif

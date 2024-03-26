@@ -3,7 +3,7 @@
  * @author Vladimir Shatalov (valesh-soft@yandex.ru)
  * @brief Пример вывода пользовательской информации на экран часов;
  *
- * Вывод данных по двойному клику кнопкой Up;
+ * Вывод данных по двойному клику кнопкой Up на примере часов с семисегментным индикатором на драйвере TM1637;
  * Так же показано использование флагов кнопок управления часами для управления
  * пользовательским экраном;
  *
@@ -34,7 +34,7 @@ void setCustomDisplay()
       static uint8_t data = 0x00;
       for (uint8_t i = 0; i < 4; i++)
       {
-        sscDisp.setDispData(i, sscDisp.encodeDigit(data));
+        clkDisp.setDispData(i, clkDisp.encodeDigit(data));
       }
       // после завершения автоматически вернуть экран в режим отображения текущего времени
       if (data++ > 0x0F)
