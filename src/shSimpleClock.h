@@ -262,9 +262,14 @@ public:
     }
   }
 
-  clkButtonFlag getButtonFlag()
+  clkButtonFlag getButtonFlag(bool _clear = false)
   {
-    return (_flag);
+    clkButtonFlag result = _flag;
+    if (_clear)
+    {
+      _flag = CLK_BTN_FLAG_NONE;
+    }
+    return (result);
   }
 
   void setButtonFlag(clkButtonFlag flag)
@@ -386,12 +391,12 @@ public:
     }
   }
 
-  clkButtonFlag getButtonFlag(clkButtonType _btn)
+  clkButtonFlag getButtonFlag(clkButtonType _btn, bool _clear = false)
   {
     clkButtonFlag result = CLK_BTN_FLAG_NONE;
     if (isValid(_btn))
     {
-      result = buttons[(byte)_btn]->getButtonFlag();
+      result = buttons[(byte)_btn]->getButtonFlag(_clear);
     }
     return result;
   }
@@ -690,11 +695,12 @@ public:
    * @brief получить флаг кнопки
    *
    * @param _btn идентификатор кнопки, может иметь значение: CLK_BTN_SET, CLK_BTN_UP, CLK_BTN_DOWN;
+   * @param _clear если  true, то флаг кнопки после считывания будет очищен (установлено значение CLK_BTN_FLAG_NONE);
    * @return clkButtonFlag возможные варианты: CLK_BTN_FLAG_NONE, CLK_BTN_FLAG_NEXT, CLK_BTN_FLAG_EXIT
    */
-  clkButtonFlag getButtonFlag(clkButtonType _btn)
+  clkButtonFlag getButtonFlag(clkButtonType _btn, bool _clear = false)
   {
-    buttons.getButtonFlag(_btn);
+    buttons.getButtonFlag(_btn, _clear);
   }
 
   /**
@@ -1352,7 +1358,7 @@ void _checkBtnSetForTmSet(uint8_t &curHour,
       }
       time_checked = false;
     }
-    if (buttons.getButtonFlag(CLK_BTN_SET) == CLK_BTN_FLAG_NEXT)
+    if (buttons.getButtonFlag(CLK_BTN_SET, true) == CLK_BTN_FLAG_NEXT)
     {
       switch (ssc_display_mode)
       {
@@ -1404,7 +1410,6 @@ void _checkBtnSetForTmSet(uint8_t &curHour,
       ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
       sscStopSetting(sscTasks.set_time_mode());
     }
-    buttons.setButtonFlag(CLK_BTN_SET, CLK_BTN_FLAG_NONE);
   }
 }
 
@@ -1417,9 +1422,9 @@ void _checkBtnUpDownForTmSet(uint8_t &curHour,
       {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 #endif
   if ((buttons.getButtonFlag(CLK_BTN_UP) == CLK_BTN_FLAG_NEXT) ||
-      (buttons.getButtonFlag(CLK_BTN_DOWN) == CLK_BTN_FLAG_NEXT))
+      (buttons.getButtonFlag(CLK_BTN_DOWN, true) == CLK_BTN_FLAG_NEXT))
   {
-    bool dir = buttons.getButtonFlag(CLK_BTN_UP) == CLK_BTN_FLAG_NEXT;
+    bool dir = buttons.getButtonFlag(CLK_BTN_UP, true) == CLK_BTN_FLAG_NEXT;
     switch (ssc_display_mode)
     {
     case DISPLAY_MODE_SET_HOUR:
@@ -1465,8 +1470,6 @@ void _checkBtnUpDownForTmSet(uint8_t &curHour,
       break;
     }
     time_checked = true;
-    buttons.setButtonFlag(CLK_BTN_UP, CLK_BTN_FLAG_NONE);
-    buttons.setButtonFlag(CLK_BTN_DOWN, CLK_BTN_FLAG_NONE);
   }
 }
 
@@ -1615,6 +1618,10 @@ void sscCheckSetButton()
 #if defined(WS2812_MATRIX_DISPLAY)
     case DISPLAY_MODE_SET_COLOR_OF_NUMBER:
 #endif
+    case DISPLAY_MODE_CUSTOM_1:
+    case DISPLAY_MODE_CUSTOM_2:
+    case DISPLAY_MODE_CUSTOM_3:
+    case DISPLAY_MODE_CUSTOM_4:
       buttons.setButtonFlag(CLK_BTN_SET, CLK_BTN_FLAG_NEXT);
       break;
     case DISPLAY_MODE_SHOW_TIME:
@@ -1680,6 +1687,10 @@ void sscCheckSetButton()
 #if defined(WS2812_MATRIX_DISPLAY)
     case DISPLAY_MODE_SET_COLOR_OF_NUMBER:
 #endif
+    case DISPLAY_MODE_CUSTOM_1:
+    case DISPLAY_MODE_CUSTOM_2:
+    case DISPLAY_MODE_CUSTOM_3:
+    case DISPLAY_MODE_CUSTOM_4:
       buttons.setButtonFlag(CLK_BTN_SET, CLK_BTN_FLAG_EXIT);
       break;
     default:
@@ -1795,6 +1806,10 @@ void sscCheckUpDownButton()
 #if defined(WS2812_MATRIX_DISPLAY)
   case DISPLAY_MODE_SET_COLOR_OF_NUMBER:
 #endif
+  case DISPLAY_MODE_CUSTOM_1:
+  case DISPLAY_MODE_CUSTOM_2:
+  case DISPLAY_MODE_CUSTOM_3:
+  case DISPLAY_MODE_CUSTOM_4:
     if (!buttons.isButtonClosed(CLK_BTN_DOWN))
     {
       sscCheckUDbtn(CLK_BTN_UP);
@@ -2067,6 +2082,7 @@ void _checkBtnSetForOthSet(uint8_t &x)
 {
   if (buttons.getButtonFlag(CLK_BTN_SET) > CLK_BTN_FLAG_NONE)
   {
+    bool _next = buttons.getButtonFlag(CLK_BTN_SET, true) == CLK_BTN_FLAG_NEXT;
     switch (ssc_display_mode)
     {
 #if defined(USE_LIGHT_SENSOR)
@@ -2080,7 +2096,7 @@ void _checkBtnSetForOthSet(uint8_t &x)
     case DISPLAY_MODE_SET_BRIGHTNESS_MAX:
       write_eeprom_8(MAX_BRIGHTNESS_VALUE_EEPROM_INDEX, x);
 #if defined(USE_LIGHT_SENSOR)
-      if (buttons.getButtonFlag(CLK_BTN_SET) == CLK_BTN_FLAG_NEXT)
+      if (_next)
       {
         ssc_display_mode = DISPLAY_MODE_SET_LIGHT_THRESHOLD;
       }
@@ -2094,7 +2110,7 @@ void _checkBtnSetForOthSet(uint8_t &x)
 #if defined(USE_LIGHT_SENSOR)
     case DISPLAY_MODE_SET_BRIGHTNESS_MIN:
       write_eeprom_8(MIN_BRIGHTNESS_VALUE_EEPROM_INDEX, x);
-      if (buttons.getButtonFlag(CLK_BTN_SET) == CLK_BTN_FLAG_NEXT)
+      if (_next)
       {
         ssc_display_mode = DISPLAY_MODE_SET_BRIGHTNESS_MAX;
       }
@@ -2110,7 +2126,7 @@ void _checkBtnSetForOthSet(uint8_t &x)
     case DISPLAY_MODE_SET_AUTO_SHOW_PERIOD:
       write_eeprom_8(INTERVAL_FOR_AUTOSHOWDATA_EEPROM_INDEX, x);
 #if defined(WS2812_MATRIX_DISPLAY)
-      if (buttons.getButtonFlag(CLK_BTN_SET) == CLK_BTN_FLAG_NEXT)
+      if (_next)
       {
         ssc_display_mode = DISPLAY_MODE_SET_COLOR_OF_NUMBER;
       }
@@ -2134,16 +2150,15 @@ void _checkBtnSetForOthSet(uint8_t &x)
     default:
       break;
     }
-    buttons.setButtonFlag(CLK_BTN_SET, CLK_BTN_FLAG_NONE);
   }
 }
 
 void _checkBtnUpDownForOthSet(uint8_t &x)
 {
   if ((buttons.getButtonFlag(CLK_BTN_UP) == CLK_BTN_FLAG_NEXT) ||
-      (buttons.getButtonFlag(CLK_BTN_DOWN) == CLK_BTN_FLAG_NEXT))
+      (buttons.getButtonFlag(CLK_BTN_DOWN, true) == CLK_BTN_FLAG_NEXT))
   {
-    bool dir = (buttons.getButtonFlag(CLK_BTN_UP) == CLK_BTN_FLAG_NEXT);
+    bool dir = (buttons.getButtonFlag(CLK_BTN_UP, true) == CLK_BTN_FLAG_NEXT);
     switch (ssc_display_mode)
     {
 #if defined(USE_LIGHT_SENSOR)
@@ -2179,9 +2194,6 @@ void _checkBtnUpDownForOthSet(uint8_t &x)
     default:
       break;
     }
-
-    buttons.setButtonFlag(CLK_BTN_UP, CLK_BTN_FLAG_NONE);
-    buttons.setButtonFlag(CLK_BTN_DOWN, CLK_BTN_FLAG_NONE);
   }
 }
 

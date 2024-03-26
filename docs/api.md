@@ -249,10 +249,12 @@ uint8_t getButtonState(clkButtonType _btn);
 возвращает текущее состояние или событие кнопки, заданной параметром `_btn`;
 
 ```
-clkButtonFlag getButtonFlag(clkButtonType _btn);
+clkButtonFlag getButtonFlag(clkButtonType _btn, bool _clear = false);
 void setButtonFlag(clkButtonType _btn, clkButtonFlag _flag);
 ```
-позволяют соответственно получить и установить текущие флаги кнопок;
+позволяют соответственно получить и установить текущие флаги кнопок; 
+
+Если параметр `_clear` в методе `getButtonFlag()` задать равным **true**, то флаг кнопки после считывания будет очищен (установлено значение **CLK_BTN_FLAG_NONE**);
 
 Параметры `_btn` могут принимать следующие значения:
  - `CLK_BTN_SET` - кнопка **Set**;

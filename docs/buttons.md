@@ -64,17 +64,19 @@ uint8_t getButtonState(clkButtonType _btn);
  - `CLK_BTN_UP` - кнопка **Up**;
  - `CLK_BTN_DOWN` - кнопка **Down**;
  
-Возвращаемые данные соответствуют состояниям и событиям кнопки, используемым в библиотете **shButton**.
+Возвращаемые данные соответствуют состояниям и событиям кнопки, используемым в библиотеке **shButton**.
 
 Методы
 ```
-clkButtonFlag getButtonFlag(clkButtonType _btn);
+clkButtonFlag getButtonFlag(clkButtonType _btnб bool _clear = false);
 void setButtonFlag(clkButtonType _btn, clkButtonFlag _flag);
 ```
 позволяют получить и установить соответственно текущие флаги кнопок; флаги могут принимать значения:
  - `CLK_BTN_FLAG_NONE` - флаг кнопки - ничего не делать;
  - `CLK_BTN_FLAG_NEXT` - флаг кнопки - изменить значение;
  - `CLK_BTN_FLAG_EXIT` - флаг кнопки - возврат в режим показа текущего времени;
+
+Если параметр `_clear` в методе `getButtonFlag()` задать равным **true**, то флаг кнопки после считывания будет очищен (установлено значение **CLK_BTN_FLAG_NONE**);
 
 Флаги используются для работы с интерфейсами настроек - времени, даты, будильника и всех доступных опций.
  
