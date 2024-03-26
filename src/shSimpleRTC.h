@@ -355,4 +355,45 @@ public:
     }
   }
 #endif
+
+  /**
+   * @brief проверяем, запущен ли генератор
+   * 
+   * @return true 
+   * @return false 
+   */
+  bool isRunning()
+  {
+    if (isClockPresent())
+    {
+      Wire.beginTransmission(CLOCK_ADDRESS);
+#if defined(RTC_DS1307)
+      Wire.write(0x00);
+#elif defined(RTC_DS3231)
+      Wire.write(0x0f);
+#endif
+      Wire.endTransmission();
+
+      Wire.requestFrom(CLOCK_ADDRESS, 1);
+
+      return (!(Wire.read() >> 7));
+    }
+  }
+
+#if defined(RTC_DS3231)
+  /**
+   * @brief запускаем генератор, в том числе включаем работу от батареи
+   * 
+   */
+  void startRTC()
+  {
+    uint8_t temp_buffer = readControlByte(0) & 0b11100111;
+    // поднимаем флаг BBSQW - работа от батареи
+    temp_buffer = temp_buffer | 0b01000000;
+    // устанавливаем ~EOSC и INTCN в 0 - запускаем генератор
+    temp_buffer = temp_buffer & 0b01111011;
+    // записываем контрольный бит
+    writeControlByte(temp_buffer, 0);
+  }
+#endif
 };

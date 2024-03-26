@@ -488,8 +488,15 @@ public:
     Wire.begin();
 #if defined(RTC_DS3231)
     sscClock.setClockMode(false);
+    sscClock.startRTC();
 #endif
     sscRtcNow();
+
+    // если часовой модуль не запущен, запустить его
+    if (!sscClock.isRunning())
+    {
+      sscClock.setCurTime(0, 0, 1);
+    }
 
     // ==== валидация EEPROM =========================
 #if USE_AUTO_SHOW_DATA
@@ -3030,7 +3037,7 @@ void sscSetTag(clkDataType _type)
 #if defined(USE_LIGHT_SENSOR)
     uint8_t x;
     x = (ssc_display_mode == DISPLAY_MODE_SET_BRIGHTNESS_MIN) ? clkDisp.encodeDigit(0)
-                                                                      : clkDisp.encodeDigit(1);
+                                                              : clkDisp.encodeDigit(1);
     x |= 0x80;
     clkDisp.setDispData(1, x);
 #endif
