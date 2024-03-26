@@ -125,6 +125,8 @@ int8_t sscGetCurTemp();
 void sscCheckDS18b20();
 #endif
 #endif
+void sscClearButtonFlag();
+void sscStopSetting(clkHandle task);
 #if USE_OTHER_SETTING
 void sscShowOtherSetting();
 #endif
@@ -700,7 +702,7 @@ public:
    */
   clkButtonFlag getButtonFlag(clkButtonType _btn, bool _clear = false)
   {
-    buttons.getButtonFlag(_btn, _clear);
+    return buttons.getButtonFlag(_btn, _clear);
   }
 
   /**
@@ -1254,10 +1256,18 @@ void sscCheckData(uint8_t &dt,
   }
 }
 
+void sscClearButtonFlag()
+{
+  buttons.setButtonFlag(CLK_BTN_SET, CLK_BTN_FLAG_NONE);
+  buttons.setButtonFlag(CLK_BTN_UP, CLK_BTN_FLAG_NONE);
+  buttons.setButtonFlag(CLK_BTN_DOWN, CLK_BTN_FLAG_NONE);
+}
+
 void sscStopSetting(clkHandle task)
 {
   sscTasks.stopTask(task);
   sscTasks.stopTask(sscTasks.return_to_default_mode());
+  sscClearButtonFlag();
 }
 
 // ==== sscShowTimeSetting ===========================
