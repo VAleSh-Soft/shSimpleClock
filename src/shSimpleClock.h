@@ -132,7 +132,6 @@ void sscShowOtherSetting();
 #endif
 #if USE_AUTO_SHOW_DATA
 void sscAutoShowData();
-void sscShowAutoShowPeriodData(uint8_t _data, bool blink);
 uint8_t sscGetPeriodForAutoShow(uint8_t index);
 #endif
 void sscShowOnOffData(clkDataType _type, bool _state, bool blink);
@@ -2499,17 +2498,6 @@ void sscAutoShowData()
   }
 }
 
-void sscShowAutoShowPeriodData(uint8_t _data, bool blink)
-{
-  sscDisp.clear();
-  _data = sscGetPeriodForAutoShow(_data);
-#if USE_MATRIX_DISPLAY
-  sscSetOtherDataString(AUTO_SHOW_PERIOD_TAG, 0, _data, blink);
-#else
-
-#endif
-}
-
 uint8_t sscGetPeriodForAutoShow(uint8_t index)
 {
   uint8_t result = index;
@@ -3038,7 +3026,8 @@ void sscSetTag(clkDataType _type)
     sscDisp.setDispData(1, 0b10000101);
 #endif
 #if defined(USE_LIGHT_SENSOR)
-    uint8_t x = (ssc_display_mode == DISPLAY_MODE_SET_BRIGHTNESS_MIN) ? sscDisp.encodeDigit(0)
+    uint8_t x;
+    x = (ssc_display_mode == DISPLAY_MODE_SET_BRIGHTNESS_MIN) ? sscDisp.encodeDigit(0)
                                                                       : sscDisp.encodeDigit(1);
     x |= 0x80;
     sscDisp.setDispData(1, x);

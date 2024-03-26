@@ -291,10 +291,10 @@ public:
       {
         tMSB = Wire.read();
         tLSB = Wire.read();
-      }
 
-      uint16_t x = ((((short)tMSB << 8) | (short)tLSB) >> 6);
-      temp3231 = (x % 4 > 2) ? x / 4 + 1 : x / 4;
+        uint16_t x = ((((short)tMSB << 8) | (short)tLSB) >> 6);
+        temp3231 = (x % 4 > 2) ? x / 4 + 1 : x / 4;
+      }
     }
 
     return (temp3231);
