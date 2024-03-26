@@ -96,6 +96,11 @@ enum clkDisplayMode : uint8_t
   ,
   DISPLAY_MODE_SET_COLOR_OF_NUMBER // режим настройки цвета символов для адресных светодиодов
 #endif
+  ,
+  DISPLAY_MODE_CUSTOM_1,
+  DISPLAY_MODE_CUSTOM_2,
+  DISPLAY_MODE_CUSTOM_3,
+  DISPLAY_MODE_CUSTOM_4
 };
 
 // ===================================================
