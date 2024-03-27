@@ -325,10 +325,6 @@ class clkButtonGroup
 private:
   clkButton *buttons[3] = {NULL, NULL, NULL};
 
-  clkButton *btn_set = NULL;
-  clkButton *btn_up = NULL;
-  clkButton *btn_down = NULL;
-
   bool isValid(clkButtonType _btn)
   {
     bool result = false;
@@ -344,44 +340,17 @@ private:
 public:
   clkButtonGroup() {}
 
-  void addButton(clkButtonType _btn)
+  void init()
   {
-    switch (_btn)
-    {
-    case CLK_BTN_SET:
-      if (BTN_SET_PIN >= 0)
-      {
-        btn_set = (clkButton *)calloc(1, sizeof(clkButton));
-      }
-      if (btn_set != NULL)
-      {
-        btn_set = &(clkButton){BTN_SET_PIN};
-        buttons[0] = btn_set;
-      }
-      break;
-    case CLK_BTN_UP:
-      if (BTN_UP_PIN >= 0)
-      {
-        btn_up = (clkButton *)calloc(1, sizeof(clkButton));
-      }
-      if (btn_up != NULL)
-      {
-        btn_up = &(clkButton){BTN_UP_PIN, true};
-        buttons[1] = btn_up;
-      }
-      break;
-    case CLK_BTN_DOWN:
-      if (BTN_DOWN_PIN >= 0)
-      {
-        btn_down = (clkButton *)calloc(1, sizeof(clkButton));
-      }
-      if (btn_down != NULL)
-      {
-        btn_down = &(clkButton){BTN_DOWN_PIN, true};
-        buttons[2] = btn_down;
-      }
-      break;
-    }
+#if (BTN_SET_PIN >= 0)
+    buttons[0] = new clkButton(BTN_SET_PIN);
+#endif
+#if (BTN_UP_PIN >= 0)
+    buttons[1] = new clkButton(BTN_UP_PIN, true);
+#endif
+#if (BTN_DOWN_PIN >= 0)
+    buttons[2] = new clkButton(BTN_DOWN_PIN, true);
+#endif
   }
 
   void setButtonFlag(clkButtonType _btn, clkButtonFlag _flag)
@@ -480,9 +449,7 @@ public:
   void init()
   {
     // ==== кнопки ===================================
-    buttons.addButton(CLK_BTN_SET);
-    buttons.addButton(CLK_BTN_UP);
-    buttons.addButton(CLK_BTN_DOWN);
+    buttons.init();
 
     // ==== RTC ======================================
     Wire.begin();
