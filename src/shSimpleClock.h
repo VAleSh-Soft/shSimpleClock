@@ -325,7 +325,7 @@ class clkButtonGroup
 private:
   clkButton *buttons[3] = {NULL, NULL, NULL};
 
-  bool isValid(clkButtonType _btn)
+  bool isValidButton(clkButtonType _btn)
   {
     bool result = false;
 
@@ -355,7 +355,7 @@ public:
 
   void setButtonFlag(clkButtonType _btn, clkButtonFlag _flag)
   {
-    if (isValid(_btn))
+    if (isValidButton(_btn))
     {
       buttons[(byte)_btn]->setButtonFlag(_flag);
     }
@@ -364,7 +364,7 @@ public:
   clkButtonFlag getButtonFlag(clkButtonType _btn, bool _clear = false)
   {
     clkButtonFlag result = CLK_BTN_FLAG_NONE;
-    if (isValid(_btn))
+    if (isValidButton(_btn))
     {
       result = buttons[(byte)_btn]->getButtonFlag(_clear);
     }
@@ -374,7 +374,7 @@ public:
   uint8_t getButtonState(clkButtonType _btn)
   {
     uint8_t result = BTN_RELEASED;
-    if (isValid(_btn))
+    if (isValidButton(_btn))
     {
       result = buttons[(byte)_btn]->getButtonState();
     }
@@ -384,7 +384,7 @@ public:
   uint8_t getLastState(clkButtonType _btn)
   {
     uint8_t result = BTN_RELEASED;
-    if (isValid(_btn))
+    if (isValidButton(_btn))
     {
       result = buttons[(byte)_btn]->getLastState();
     }
@@ -393,7 +393,7 @@ public:
 
   void resetButtonState(clkButtonType _btn)
   {
-    if (isValid(_btn))
+    if (isValidButton(_btn))
     {
       buttons[(byte)_btn]->resetButtonState();
     }
@@ -402,7 +402,7 @@ public:
   bool isButtonClosed(clkButtonType _btn)
   {
     bool result = false;
-    if (isValid(_btn))
+    if (isValidButton(_btn))
     {
       result = buttons[(byte)_btn]->isButtonClosed();
     }
@@ -415,7 +415,7 @@ public:
   {
     bool result = false;
 
-    if (isValid(_btn1) && isValid(_btn2))
+    if (isValidButton(_btn1) && isValidButton(_btn2))
     {
       result = buttons[(byte)_btn1]->isSecondButtonPressed(*buttons[(byte)_btn2],
                                                            _state);
@@ -584,7 +584,7 @@ public:
     sscTasks.return_to_default_mode = sscTasks.addTask(AUTO_EXIT_TIMEOUT * 1000ul,
                                                      sscReturnToDefMode,
                                                      false);
-    sscTasks.set_time_mode = sscTasks.addTask(100ul, sscShowTimeSetting, false);
+    sscTasks.set_time_mode = sscTasks.addTask(50ul, sscShowTimeSetting, false);
 #if defined(USE_TEMP_DATA) && defined(USE_DS18B20)
     sscTasks.ds18b20_guard = sscTasks.addTask(3000ul, sscCheckDS18b20);
 #endif
@@ -602,7 +602,7 @@ public:
     clkDisp.setBrightness(read_eeprom_8(MAX_BRIGHTNESS_VALUE_EEPROM_INDEX));
 #endif
 #if USE_OTHER_SETTING
-    sscTasks.other_setting_mode = sscTasks.addTask(100ul, sscShowOtherSetting, false);
+    sscTasks.other_setting_mode = sscTasks.addTask(50ul, sscShowOtherSetting, false);
 #endif
 #if defined(USE_TICKER_FOR_DATA)
     sscTasks.ticker = sscTasks.addTask(1000ul / TICKER_SPEED, sscRunTicker, false);
