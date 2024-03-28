@@ -150,7 +150,7 @@
 // ---- настройка параметров кнопок -------------
 
 uint16_t constexpr TIMEOUT_OF_LONGCLICK = 1000; // интервал удержания кнопки нажатой, мс
-uint16_t constexpr INTERVAL_OF_SERIAL = 100;    // интервал выдачи событий BTN_LONGCLICK при удержании кнопки нажатой, мс
+uint16_t constexpr INTERVAL_OF_SERIAL = 100;    // интервал выдачи событий BTN_LONGCLICK при удержании кнопки нажатой, мс; задавать значение, кратное 50
 uint16_t constexpr TIMEOUT_OF_DEBOUNCE = 50;    // интервал антидребезга, мс
 
 // ---- использовать пищалку --------------------
