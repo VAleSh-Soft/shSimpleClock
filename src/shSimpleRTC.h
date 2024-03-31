@@ -364,6 +364,8 @@ public:
    */
   bool isRunning()
   {
+    bool result = false;
+
     if (isClockPresent())
     {
       Wire.beginTransmission(CLOCK_ADDRESS);
@@ -376,8 +378,10 @@ public:
 
       Wire.requestFrom(CLOCK_ADDRESS, 1);
 
-      return (!(Wire.read() >> 7));
+      result = !(Wire.read() >> 7);
     }
+
+    return result;
   }
 
 #if defined(RTC_DS3231)

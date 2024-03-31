@@ -1,5 +1,15 @@
 #pragma once
 
+// ===================================================
+
+#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)
+#define __ARDUINO_ESP__ 1
+#else
+#define __ARDUINO_ESP__ 0
+#endif
+
+// ===================================================
+
 #include <Arduino.h>
 #include <Wire.h>
 #include <avr/pgmspace.h>
@@ -435,23 +445,8 @@ clkButtonGroup buttons;
 class shSimpleClock
 {
 private:
-public:
-  /**
-   * @brief конструктор объекта часов
-   *
-   */
-  shSimpleClock() {}
-
-  /**
-   * @brief инициализация часов
-   *
-   */
-  void init()
+  void rtc_init()
   {
-    // ==== кнопки ===================================
-    buttons.init();
-
-    // ==== RTC ======================================
     Wire.begin();
 #if defined(RTC_DS3231)
     sscClock.setClockMode(false);
@@ -464,8 +459,10 @@ public:
     {
       sscClock.setCurTime(0, 0, 1);
     }
+  }
 
-    // ==== валидация EEPROM =========================
+  void eeprom_validate()
+  {
 #if USE_AUTO_SHOW_DATA
     if (read_eeprom_8(INTERVAL_FOR_AUTOSHOWDATA_EEPROM_INDEX) > 7)
     {
@@ -502,8 +499,10 @@ public:
     }
     setColorOfBackground(c);
 #endif
+  }
 
-// ==== датчики ====================================
+  void sensor_init()
+  {
 #if defined(USE_NTC)
     sscTempSensor.setADCbitDepth(BIT_DEPTH); // установить разрядность АЦП вашего МК, для AVR обычно равна 10 бит
 #endif
@@ -536,8 +535,10 @@ public:
 #else
     clkDisp.setBrightness(read_eeprom_8(MAX_BRIGHTNESS_VALUE_EEPROM_INDEX));
 #endif
+  }
 
-// ==== экраны =======================================
+  void display_init()
+  {
 #if defined(WS2812_MATRIX_DISPLAY)
     setFastLEDData(ssc_leds, 256);
 #elif defined(MAX72XX_MATRIX_DISPLAY) || defined(MAX72XX_7SEGMENT_DISPLAY)
@@ -556,8 +557,10 @@ public:
 #else
     clkDisp.setBrightness(1);
 #endif
+  }
 
-    // ==== задачи ===================================
+  void task_list_init()
+  {
     uint8_t task_count = 5; // базовое количество задач
 #if defined(USE_ALARM)
     task_count += 2;
@@ -582,8 +585,8 @@ public:
     sscTasks.rtc_guard = sscTasks.addTask(50ul, sscRtcNow);
     sscTasks.blink_timer = sscTasks.addTask(50ul, sscBlink);
     sscTasks.return_to_default_mode = sscTasks.addTask(AUTO_EXIT_TIMEOUT * 1000ul,
-                                                     sscReturnToDefMode,
-                                                     false);
+                                                       sscReturnToDefMode,
+                                                       false);
     sscTasks.set_time_mode = sscTasks.addTask(50ul, sscShowTimeSetting, false);
 #if defined(USE_TEMP_DATA) && defined(USE_DS18B20)
     sscTasks.ds18b20_guard = sscTasks.addTask(3000ul, sscCheckDS18b20);
@@ -607,6 +610,38 @@ public:
 #if defined(USE_TICKER_FOR_DATA)
     sscTasks.ticker = sscTasks.addTask(1000ul / TICKER_SPEED, sscRunTicker, false);
 #endif
+  }
+
+public:
+  /**
+   * @brief конструктор объекта часов
+   *
+   */
+  shSimpleClock() {}
+
+  /**
+   * @brief инициализация часов
+   *
+   */
+  void init()
+  {
+    // ==== кнопки ===================================
+    buttons.init();
+
+    // ==== RTC ======================================
+    rtc_init();
+
+    // ==== валидация EEPROM =========================
+    eeprom_validate();
+
+    // ==== датчики ==================================
+    sensor_init();
+
+    // ==== экраны ===================================
+    display_init();
+
+    // ==== задачи ===================================
+    task_list_init();
   }
 
   /**
