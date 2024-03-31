@@ -298,28 +298,3 @@ uint8_t constexpr BIT_DEPTH = 10;           // разрядность АЦП и�
 // ==== конец настроек часов =========================
 
 
-
-
-// ==== служебная информация, НЕ МЕНЯТЬ!!!!! =========
-
-// используется или нет периодический автовывод даты и/или температуры
-#if defined(USE_CALENDAR) || defined(USE_TEMP_DATA)
-#define USE_AUTO_SHOW_DATA 1
-#else
-#define USE_AUTO_SHOW_DATA 0
-#endif
-
-// дополнительные настройки; настраиваются: уровни яркости, порог переключения яркости, период автовывода и включение/отключение анимации
-#if defined(USE_SET_BRIGHTNESS_MODE) || defined(USE_LIGHT_SENSOR) || defined(USE_TICKER_FOR_DATA) || USE_AUTO_SHOW_DATA
-#define USE_OTHER_SETTING 1
-#else
-#define USE_OTHER_SETTING 0
-#endif
-
-// используются матричные экраны
-#if defined(MAX72XX_MATRIX_DISPLAY) || defined(WS2812_MATRIX_DISPLAY)
-#define USE_MATRIX_DISPLAY 1
-#else
-#define USE_MATRIX_DISPLAY 0
-#endif
-

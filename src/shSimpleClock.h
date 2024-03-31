@@ -2,10 +2,36 @@
 
 // ===================================================
 
+// флаг работы с esp8266 или esp32
 #if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)
 #define __ARDUINO_ESP__ 1
 #else
 #define __ARDUINO_ESP__ 0
+#endif
+
+// используется или нет периодический автовывод даты и/или температуры
+#if defined(USE_CALENDAR) || defined(USE_TEMP_DATA)
+#define USE_AUTO_SHOW_DATA 1
+#else
+#define USE_AUTO_SHOW_DATA 0
+#endif
+
+// дополнительные настройки; здесь настраиваются:
+//   - уровни яркости;
+//   - порог переключения яркости;
+//   - период автовывода;
+//   - выбор цвета символов для адресных светдиодов;
+#if defined(USE_SET_BRIGHTNESS_MODE) || defined(USE_LIGHT_SENSOR) || defined(WS2812_MATRIX_DISPLAY) || USE_AUTO_SHOW_DATA
+#define USE_OTHER_SETTING 1
+#else
+#define USE_OTHER_SETTING 0
+#endif
+
+// используются матричные экраны
+#if defined(MAX72XX_MATRIX_DISPLAY) || defined(WS2812_MATRIX_DISPLAY)
+#define USE_MATRIX_DISPLAY 1
+#else
+#define USE_MATRIX_DISPLAY 0
 #endif
 
 // ===================================================
@@ -446,6 +472,23 @@ clkButtonGroup buttons;
 class shSimpleClock
 {
 private:
+  uint8_t adc_bit_depth = 10;
+#if defined(USE_LIGHT_SENSOR)
+  uint16_t light_threshold_step = 102;
+
+  void getLightThresholdStep()
+  {
+    uint16_t x = 1;
+
+    for (uint8_t i = 0; i < adc_bit_depth; i++)
+    {
+      x *= 2;
+    }
+
+    light_threshold_step = x / 10;
+  }
+#endif
+
   void rtc_init()
   {
     Wire.begin();
@@ -506,6 +549,10 @@ private:
   {
 #if defined(USE_NTC)
     sscTempSensor.setADCbitDepth(BIT_DEPTH); // установить разрядность АЦП вашего МК, для AVR обычно равна 10 бит
+    adc_bit_depth = BIT_DEPTH;
+#endif
+#if defined(USE_LIGHT_SENSOR)
+    getLightThresholdStep();
 #endif
     // проверить корректность заданных уровней яркости
     uint8_t x = read_eeprom_8(MAX_BRIGHTNESS_VALUE_EEPROM_INDEX);
@@ -619,6 +666,22 @@ public:
    *
    */
   shSimpleClock() {}
+
+  /**
+   * @brief задать действующее разрешение АЦП микроконтроллера;
+   *
+   * @param bit_depth разрешение; для AVR - обычно 10, для ESP - 12
+   */
+  void setADCbitDepth(uint8_t bit_depth)
+  {
+    adc_bit_depth = bit_depth;
+#if defined(USE_NTC)
+    sscTempSensor.setADCbitDepth(bit_depth);
+#endif
+#if defined(USE_LIGHT_SENSOR)
+    getLightThresholdStep();
+#endif
+  }
 
   /**
    * @brief инициализация часов
@@ -1094,13 +1157,13 @@ void sscRtcNow()
     {
 #if USE_MATRIX_DISPLAY
       clkDisplay.showTime(sscClock.getCurTime().hour(),
-                       sscClock.getCurTime().minute(),
-                       sscClock.getCurTime().second(),
-                       sscBlinkFlag);
+                          sscClock.getCurTime().minute(),
+                          sscClock.getCurTime().second(),
+                          sscBlinkFlag);
 #else
       clkDisplay.showTime(sscClock.getCurTime().hour(),
-                       sscClock.getCurTime().minute(),
-                       sscBlinkFlag);
+                          sscClock.getCurTime().minute(),
+                          sscBlinkFlag);
 #endif
     }
   }
@@ -2017,11 +2080,11 @@ void sscSetBrightness()
 #if defined(USE_LIGHT_SENSOR)
   static uint16_t b;
   b = (b * 2 + analogRead(LIGHT_SENSOR_PIN)) / 3;
-  if (b < read_eeprom_8(LIGHT_THRESHOLD_EEPROM_INDEX) * 100)
+  if (b < read_eeprom_8(LIGHT_THRESHOLD_EEPROM_INDEX) * light_threshold_step)
   {
     x = read_eeprom_8(MIN_BRIGHTNESS_VALUE_EEPROM_INDEX);
   }
-  else if (b > (read_eeprom_8(LIGHT_THRESHOLD_EEPROM_INDEX) * 100u + 50))
+  else if (b > (read_eeprom_8(LIGHT_THRESHOLD_EEPROM_INDEX) * light_threshold_step + light_threshold_step / 2))
 #endif
   {
     x = read_eeprom_8(MAX_BRIGHTNESS_VALUE_EEPROM_INDEX);
@@ -2987,9 +3050,9 @@ void sscSetOtherData(clkDataType _type, uint8_t _data, bool blink)
   sscSetTag(_type);
 
   clkDisplay.setDispData(2, ((_data / 10 == 0 || blink) ? 0x00
-                                                     : clkDisplay.encodeDigit(_data / 10)));
+                                                        : clkDisplay.encodeDigit(_data / 10)));
   clkDisplay.setDispData(3, ((blink) ? 0x00
-                                  : clkDisplay.encodeDigit(_data % 10)));
+                                     : clkDisplay.encodeDigit(_data % 10)));
 
   clkDisplay.show();
 }
