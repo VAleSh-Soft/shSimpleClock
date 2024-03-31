@@ -206,8 +206,9 @@ void sscSetOnOffData(clkDataType _type, bool _state, bool _blink);
 #endif
 
 shClockEvent sscClockEvent;
+#if defined(USE_ALARM)
 shClockEvent sscAlarmEvent;
-
+#endif
 clkTaskManager sscTasks;
 
 // -----------------------------------------

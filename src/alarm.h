@@ -16,7 +16,7 @@
 #define MAX_DATA 1439 // максимальное количество минут для установки будильника (23 ч, 59 мин)
 
 /*смещение от стартового индекса в EEPROM для хранения настроек
- * общий размер настроек - 3 байта 
+ * общий размер настроек - 3 байта
  */
 
 uint8_t constexpr ALARM_STATE = 0; // состояние будильника, включен/нет, uint8_t
@@ -32,9 +32,11 @@ enum AlarmState : uint8_t // состояние будильника
 class Alarm
 {
 private:
-  uint8_t led_pin;
   uint16_t eeprom_index;
   AlarmState state;
+
+#if ALARM_LED_PIN >= 0
+  uint8_t led_pin;
 
   void setLed()
   {
@@ -58,12 +60,15 @@ private:
     }
     digitalWrite(led_pin, led_state);
   }
-
+#endif
 public:
-  Alarm(uint8_t _led_pin, uint16_t _eeprom_index)
+  Alarm(int8_t _led_pin, uint16_t _eeprom_index)
   {
+#if ALARM_LED_PIN >= 0
     led_pin = _led_pin;
     pinMode(led_pin, OUTPUT);
+#endif
+
     eeprom_index = _eeprom_index;
     if (read_eeprom_8(eeprom_index + ALARM_STATE) > 1)
     {
@@ -130,7 +135,9 @@ public:
    */
   void tick(DateTime _time)
   {
+#if ALARM_LED_PIN >= 0
     setLed();
+#endif
     switch (state)
     {
     case ALARM_ON:
