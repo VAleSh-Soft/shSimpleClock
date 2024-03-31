@@ -57,6 +57,7 @@ setClockEventState	KEYWORD2
 getAlarmEventState	KEYWORD2
 setAnimationState	KEYWORD2
 getAnimationState	KEYWORD2
+setADCbitDepth	KEYWORD2
 
 #######################################
 # Constants (LITERAL1)

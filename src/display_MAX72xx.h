@@ -11,7 +11,11 @@
 #pragma once
 #include "matrix_data.h"
 #include <Arduino.h>
+#if defined(ARDUINO_ARCH_ESP32)
+#include <pgmspace.h>
+#else
 #include <avr/pgmspace.h>
+#endif
 #include "shSimpleRTC.h"
 #include <shMAX72xxMini.h> // https://github.com/VAleSh-Soft/shMAX72xxMini
 

@@ -11,7 +11,11 @@
 #pragma once
 #include "matrix_data.h"
 #include <Arduino.h>
+#if defined(ARDUINO_ARCH_ESP32)
+#include <pgmspace.h>
+#else
 #include <avr/pgmspace.h>
+#endif
 #include <FastLED.h> // https://github.com/FastLED/FastLED
 #include "shSimpleRTC.h"
 

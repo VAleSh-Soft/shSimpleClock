@@ -10,7 +10,11 @@
  */
 #pragma once
 
+#if defined(ARDUINO_ARCH_ESP32)
+#include <pgmspace.h>
+#else
 #include <avr/pgmspace.h>
+#endif
 
 // цифры 6x8
 static const uint8_t PROGMEM font_digit[] = {

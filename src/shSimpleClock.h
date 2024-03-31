@@ -20,7 +20,7 @@
 //   - уровни яркости;
 //   - порог переключения яркости;
 //   - период автовывода;
-//   - выбор цвета символов для адресных светдиодов;
+//   - выбор цвета символов для адресных светодиодов;
 #if defined(USE_SET_BRIGHTNESS_MODE) || defined(USE_LIGHT_SENSOR) || defined(WS2812_MATRIX_DISPLAY) || USE_AUTO_SHOW_DATA
 #define USE_OTHER_SETTING 1
 #else
@@ -38,7 +38,11 @@
 
 #include <Arduino.h>
 #include <Wire.h>
+#if defined(ARDUINO_ARCH_ESP32)
+#include <pgmspace.h>
+#else
 #include <avr/pgmspace.h>
+#endif
 #include <shButton.h> // https://github.com/VAleSh-Soft/shButton
 #include "_eeprom.h"
 #include "shSimpleRTC.h"
@@ -467,27 +471,28 @@ clkDisplayMode ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
 
 clkButtonGroup buttons;
 
+#if defined(USE_LIGHT_SENSOR)
+uint16_t light_threshold_step = 102;
+
+void sscGetLightThresholdStep(uint8_t adc_bit_depth)
+{
+  uint16_t x = 1;
+
+  for (uint8_t i = 0; i < adc_bit_depth; i++)
+  {
+    x *= 2;
+  }
+
+  light_threshold_step = x / 10;
+}
+#endif
+
 // ==== shSimpleClock ================================
 
 class shSimpleClock
 {
 private:
   uint8_t adc_bit_depth = 10;
-#if defined(USE_LIGHT_SENSOR)
-  uint16_t light_threshold_step = 102;
-
-  void getLightThresholdStep()
-  {
-    uint16_t x = 1;
-
-    for (uint8_t i = 0; i < adc_bit_depth; i++)
-    {
-      x *= 2;
-    }
-
-    light_threshold_step = x / 10;
-  }
-#endif
 
   void rtc_init()
   {
@@ -552,7 +557,7 @@ private:
     adc_bit_depth = BIT_DEPTH;
 #endif
 #if defined(USE_LIGHT_SENSOR)
-    getLightThresholdStep();
+    sscGetLightThresholdStep(adc_bit_depth);
 #endif
     // проверить корректность заданных уровней яркости
     uint8_t x = read_eeprom_8(MAX_BRIGHTNESS_VALUE_EEPROM_INDEX);
@@ -679,7 +684,7 @@ public:
     sscTempSensor.setADCbitDepth(bit_depth);
 #endif
 #if defined(USE_LIGHT_SENSOR)
-    getLightThresholdStep();
+    sscGetLightThresholdStep(adc_bit_depth);
 #endif
   }
 
@@ -1433,7 +1438,7 @@ void _checkBtnSetForTmSet(uint8_t &curHour,
 #endif
 #if defined(USE_TICKER_FOR_DATA)
       case DISPLAY_MODE_SET_TICKER_ON_OFF:
-        EEPROM.write(TICKER_STATE_VALUE_EEPROM_INDEX, curHour);
+        write_eeprom_8(TICKER_STATE_VALUE_EEPROM_INDEX, curHour);
         break;
 #endif
       default:
@@ -1829,7 +1834,7 @@ void sscCheckUpDownButton()
       ssc_display_mode = DISPLAY_MODE_SET_AUTO_SHOW_PERIOD;
       buttons.resetButtonState(CLK_BTN_DOWN);
 #elif defined(WS2812_MATRIX_DISPLAY)
-      disp = DISPLAY_MODE_SET_COLOR_OF_NUMBER;
+      ssc_display_mode = DISPLAY_MODE_SET_COLOR_OF_NUMBER;
       buttons.resetButtonState(CLK_BTN_DOWN);
 #endif
     }
@@ -2485,23 +2490,12 @@ void _setDisplayForAutoShowData(uint8_t &n)
     break;
 #endif
   }
-
-#if defined(USE_TICKER_FOR_DATA)
-  if (!read_eeprom_8(TICKER_STATE_VALUE_EEPROM_INDEX))
-  {
-    clkDisplay.show();
-  }
-#else
-  clkDisplay.show();
-#endif
 }
 
 #else
 
 void _setDisplayForAutoShowData(uint8_t &n)
 {
-  DateTime dt = sscClock.getCurTime();
-
   switch (n)
   {
 #if defined(USE_CALENDAR)
@@ -2514,12 +2508,15 @@ void _setDisplayForAutoShowData(uint8_t &n)
     clkDisplay.setDispData(2, 0b00001111);
 #endif
     clkDisplay.setDispData(3, clkDisplay.encodeDigit(0x0e));
-    clkDisplay.show();
     break;
   case 1:
   case 2:
+  {
+    DateTime dt;
+    dt = sscClock.getCurTime();
     clkDisplay.showDate(dt);
-    break;
+  }
+  break;
 #endif
 #if defined(USE_TEMP_DATA)
   case 3:
@@ -2529,7 +2526,6 @@ void _setDisplayForAutoShowData(uint8_t &n)
   default:
     break;
   }
-  clkDisplay.show();
 }
 
 #endif
@@ -2569,6 +2565,7 @@ void sscAutoShowData()
     if (++n > n_max)
     {
       sscReturnToDefMode();
+      // TODO: иногда при ручном выводе даты в конце промаргивает температура; бывает на любых экранах при отключенной анимации
     }
   }
 }
@@ -3053,8 +3050,6 @@ void sscSetOtherData(clkDataType _type, uint8_t _data, bool blink)
                                                         : clkDisplay.encodeDigit(_data / 10)));
   clkDisplay.setDispData(3, ((blink) ? 0x00
                                      : clkDisplay.encodeDigit(_data % 10)));
-
-  clkDisplay.show();
 }
 
 void sscSetTag(clkDataType _type)
@@ -3129,8 +3124,6 @@ void sscSetOnOffData(clkDataType _type, bool _state, bool _blink)
 #endif
   }
   clkDisplay.setDispData(3, x);
-
-  clkDisplay.show();
 }
 
 #endif
