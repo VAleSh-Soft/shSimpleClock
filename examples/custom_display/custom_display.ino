@@ -39,7 +39,7 @@ void setCustomDisplay()
       static uint8_t data = 0x00;
       for (uint8_t i = 0; i < 4; i++)
       {
-        clkDisp.setDispData(i, clkDisp.encodeDigit(data));
+        clkDisplay.setDispData(i, clkDisplay.encodeDigit(data));
       }
       // после завершения автоматически вернуть экран в режим отображения текущего времени
       if (data++ > 0x0F)

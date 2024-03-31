@@ -435,9 +435,13 @@ public:
     stringFree();
 
     {
-      data = (uint8_t *)calloc(_data_count, sizeof(uint8_t));
+      data = new uint8_t[_data_count];
       if (data != NULL)
       {
+        for(uint8_t i; i < _data_count; i++)
+        {
+          data[i] = 0x00;
+        }
         result = true;
         data_count = _data_count;
       }
@@ -449,17 +453,16 @@ public:
   /**
    * @brief освобождение памяти, занимаемой строкой
    *
-   * @return возвращает true, если память успешно освобождена
    */
-  bool stringFree()
+  void stringFree()
   {
     if (data != NULL)
     {
-      free(data);
+
+      delete[] data;
+      data = NULL;
       data_count = 0;
     }
-
-    return (data == NULL);
   }
 
   /**
