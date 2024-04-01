@@ -1299,7 +1299,7 @@ void sscShowTimeData(int8_t hour, int8_t minute)
   clkDisplay.clear();
 
   bool toDate = false;
-  bool toColon = false;
+  bool toColon = ssc_display_mode <= DISPLAY_MODE_SET_MINUTE;
 #if defined(USE_CALENDAR)
   toDate = (ssc_display_mode >= DISPLAY_MODE_SET_DAY &&
             ssc_display_mode <= DISPLAY_MODE_SET_YEAR);
