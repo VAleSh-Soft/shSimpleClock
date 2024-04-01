@@ -524,6 +524,13 @@ private:
 
   void eeprom_validate()
   {
+#if defined(SHOW_SECOND_COLUMN)
+    if (read_eeprom_8(SECOND_COLUMN_ON_OF_DATA_EEPROM_INDEX) > 1)
+    {
+      write_eeprom_8(SECOND_COLUMN_ON_OF_DATA_EEPROM_INDEX, 0);
+    }
+#endif
+
 #if USE_AUTO_SHOW_DATA
     if (read_eeprom_8(INTERVAL_FOR_AUTOSHOWDATA_EEPROM_INDEX) > 7)
     {
@@ -1175,8 +1182,13 @@ void sscRtcNow()
 #if USE_MATRIX_DISPLAY
       sscShowTimeData(sscClock.getCurTime().hour(),
                       sscClock.getCurTime().minute());
+
 #if defined(SHOW_SECOND_COLUMN)
-      sscShowSecondColumn(sscClock.getCurTime().second());
+      if (ssc_display_mode == DISPLAY_MODE_SHOW_TIME &&
+          read_eeprom_8(SECOND_COLUMN_ON_OF_DATA_EEPROM_INDEX))
+      {
+        sscShowSecondColumn(sscClock.getCurTime().second());
+      }
 #endif
 
 #else
@@ -1243,6 +1255,9 @@ void sscReturnToDefMode()
 #endif
 #if defined(WS2812_MATRIX_DISPLAY)
   case DISPLAY_MODE_SET_COLOR_OF_NUMBER:
+#endif
+#if defined(SHOW_SECOND_COLUMN)
+  case DISPLAY_MODE_SET_SECOND_COLUMN_ON_OFF:
 #endif
     buttons.setButtonFlag(CLK_BTN_SET, CLK_BTN_FLAG_EXIT);
     break;
@@ -1403,6 +1418,11 @@ void _startTimeSettingMode(uint8_t &curHour, uint8_t &curMinute)
     curHour = (uint8_t)sscAlarm.getOnOffAlarm();
     break;
 #endif
+#if defined(SHOW_SECOND_COLUMN)
+  case DISPLAY_MODE_SET_SECOND_COLUMN_ON_OFF:
+    curHour = (uint8_t)read_eeprom_8(SECOND_COLUMN_ON_OF_DATA_EEPROM_INDEX);
+    break;
+#endif
 #if defined(USE_TICKER_FOR_DATA)
   case DISPLAY_MODE_SET_TICKER_ON_OFF:
     curHour = read_eeprom_8(TICKER_STATE_VALUE_EEPROM_INDEX);
@@ -1423,6 +1443,9 @@ void _startTimeSettingMode(uint8_t &curHour, uint8_t &curMinute)
 #if defined(USE_CALENDAR)
     case DISPLAY_MODE_SET_DAY:
     case DISPLAY_MODE_SET_YEAR:
+#endif
+#if defined(SHOW_SECOND_COLUMN)
+    case DISPLAY_MODE_SET_SECOND_COLUMN_ON_OFF:
 #endif
 #if defined(USE_TICKER_FOR_DATA)
     case DISPLAY_MODE_SET_TICKER_ON_OFF:
@@ -1479,6 +1502,11 @@ void _checkBtnSetForTmSet(uint8_t &curHour,
         write_eeprom_8(TICKER_STATE_VALUE_EEPROM_INDEX, curHour);
         break;
 #endif
+#if defined(SHOW_SECOND_COLUMN)
+      case DISPLAY_MODE_SET_SECOND_COLUMN_ON_OFF:
+        write_eeprom_8(SECOND_COLUMN_ON_OF_DATA_EEPROM_INDEX, curHour);
+        break;
+#endif
       default:
         break;
       }
@@ -1519,8 +1547,13 @@ void _checkBtnSetForTmSet(uint8_t &curHour,
         sscStopSetting(sscTasks.set_time_mode);
         break;
 #endif
+#if defined(SHOW_SECOND_COLUMN) || USE_AUTO_SHOW_DATA
 #if USE_AUTO_SHOW_DATA
       case DISPLAY_MODE_SET_AUTO_SHOW_PERIOD:
+#endif
+#if defined(SHOW_SECOND_COLUMN)
+      case DISPLAY_MODE_SET_SECOND_COLUMN_ON_OFF:
+#endif
         ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
         sscStopSetting(sscTasks.set_time_mode);
         break;
@@ -1565,8 +1598,16 @@ void _checkBtnUpDownForTmSet(uint8_t &curHour,
 #endif
       sscCheckData(curMinute, 59, dir);
       break;
+#if defined(USE_ALARM) || defined(USE_TICKER_FOR_DATA) || defined(SHOW_SECOND_COLUMN)
 #if defined(USE_ALARM)
     case DISPLAY_MODE_ALARM_ON_OFF:
+#endif
+#if defined(USE_TICKER_FOR_DATA)
+    case DISPLAY_MODE_SET_TICKER_ON_OFF:
+#endif
+#if defined(SHOW_SECOND_COLUMN)
+    case DISPLAY_MODE_SET_SECOND_COLUMN_ON_OFF:
+#endif
       sscCheckData(curHour, 1, true);
       break;
 #endif
@@ -1585,11 +1626,6 @@ void _checkBtnUpDownForTmSet(uint8_t &curHour,
       break;
     case DISPLAY_MODE_SET_YEAR:
       sscCheckData(curMinute, 99, dir);
-      break;
-#endif
-#if defined(USE_TICKER_FOR_DATA)
-    case DISPLAY_MODE_SET_TICKER_ON_OFF:
-      sscCheckData(curHour, 1, true);
       break;
 #endif
     default:
@@ -1612,24 +1648,31 @@ void _setDisplayForTmSet(uint8_t &curHour, uint8_t &curMinute)
   }
   else if (sscTasks.getTaskState(sscTasks.set_time_mode))
   {
+    bool _blink = !sscBlinkFlag &&
+                  !buttons.isButtonClosed(CLK_BTN_UP) &&
+                  !buttons.isButtonClosed(CLK_BTN_DOWN);
+
     switch (ssc_display_mode)
     {
 #if defined(USE_ALARM)
     case DISPLAY_MODE_ALARM_ON_OFF:
       sscShowOnOffData(SET_ALARM_TAG,
                        curHour,
-                       (!sscBlinkFlag &&
-                        !buttons.isButtonClosed(CLK_BTN_UP) &&
-                        !buttons.isButtonClosed(CLK_BTN_DOWN)));
+                       _blink);
       break;
 #endif
 #if defined(USE_TICKER_FOR_DATA)
     case DISPLAY_MODE_SET_TICKER_ON_OFF:
       sscShowOnOffData(SET_TICKER_TAG,
                        curHour,
-                       (!sscBlinkFlag &&
-                        !buttons.isButtonClosed(CLK_BTN_UP) &&
-                        !buttons.isButtonClosed(CLK_BTN_DOWN)));
+                       _blink);
+      break;
+#endif
+#if defined(SHOW_SECOND_COLUMN)
+    case DISPLAY_MODE_SET_SECOND_COLUMN_ON_OFF:
+      sscShowOnOffData(SET_SECOND_COLUMN_TAG,
+                       curHour,
+                       _blink);
       break;
 #endif
     default:
@@ -1744,6 +1787,9 @@ void sscCheckSetButton()
 #if defined(WS2812_MATRIX_DISPLAY)
     case DISPLAY_MODE_SET_COLOR_OF_NUMBER:
 #endif
+#if defined(SHOW_SECOND_COLUMN)
+    case DISPLAY_MODE_SET_SECOND_COLUMN_ON_OFF:
+#endif
     case DISPLAY_MODE_CUSTOM_1:
     case DISPLAY_MODE_CUSTOM_2:
     case DISPLAY_MODE_CUSTOM_3:
@@ -1813,6 +1859,9 @@ void sscCheckSetButton()
 #if defined(WS2812_MATRIX_DISPLAY)
     case DISPLAY_MODE_SET_COLOR_OF_NUMBER:
 #endif
+#if defined(SHOW_SECOND_COLUMN)
+    case DISPLAY_MODE_SET_SECOND_COLUMN_ON_OFF:
+#endif
     case DISPLAY_MODE_CUSTOM_1:
     case DISPLAY_MODE_CUSTOM_2:
     case DISPLAY_MODE_CUSTOM_3:
@@ -1874,6 +1923,10 @@ void sscCheckUpDownButton()
 #elif defined(WS2812_MATRIX_DISPLAY)
       ssc_display_mode = DISPLAY_MODE_SET_COLOR_OF_NUMBER;
       buttons.resetButtonState(CLK_BTN_DOWN);
+#elif defined(SHOW_SECOND_COLUMN)
+      // вход в настройки секундного столбца
+      ssc_display_mode = DISPLAY_MODE_SET_SECOND_COLUMN_ON_OFF;
+      buttons.resetButtonState(CLK_BTN_DOWN);
 #endif
     }
 #if defined(USE_TEMP_DATA)
@@ -1931,6 +1984,9 @@ void sscCheckUpDownButton()
 #endif
 #if defined(WS2812_MATRIX_DISPLAY)
   case DISPLAY_MODE_SET_COLOR_OF_NUMBER:
+#endif
+#if defined(SHOW_SECOND_COLUMN)
+  case DISPLAY_MODE_SET_SECOND_COLUMN_ON_OFF:
 #endif
   case DISPLAY_MODE_CUSTOM_1:
   case DISPLAY_MODE_CUSTOM_2:
@@ -1990,6 +2046,9 @@ void sscSetDisplay()
 #endif
 #if defined(USE_TICKER_FOR_DATA)
   case DISPLAY_MODE_SET_TICKER_ON_OFF:
+#endif
+#if defined(SHOW_SECOND_COLUMN)
+  case DISPLAY_MODE_SET_SECOND_COLUMN_ON_OFF:
 #endif
     if (!sscTasks.getTaskState(sscTasks.set_time_mode))
     {
@@ -2270,7 +2329,16 @@ void _checkBtnSetForOthSet(uint8_t &x)
       write_eeprom_crgb(COLOR_OF_NUMBER_VALUE_EEPROM_INDEX,
                         pgm_read_dword(&color_of_number[x]));
       clkDisplay.setColorOfNumber(pgm_read_dword(&color_of_number[x]));
-      ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
+#if defined(SHOW_SECOND_COLUMN)
+      if (_next)
+      {
+        ssc_display_mode = DISPLAY_MODE_SET_SECOND_COLUMN_ON_OFF;
+      }
+      else
+#endif
+      {
+        ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
+      }
       sscStopSetting(sscTasks.other_setting_mode);
       break;
 #endif
@@ -2779,6 +2847,11 @@ void sscSetOnOffDataString(clkDataType _type,
     sscSetTag(offset, DISP_ALARM_TAG, 5, toStringData);
     break;
 #endif
+#if defined(SHOW_SECOND_COLUMN)
+  case SET_SECOND_COLUMN_TAG:
+    sscSetTag(offset, DISP_SECOND_COLUMN_TAG, 5, toStringData);
+    break;
+#endif
   default:
     break;
   }
@@ -2922,6 +2995,16 @@ void sscAssembleString(clkDisplayMode data_type, uint8_t lenght)
     break;
   case DISPLAY_MODE_ALARM_ON_OFF: // настройка включения/выключения будильника
     sscSetOnOffDataString(SET_ALARM_TAG, lenght - 31, sscAlarm.getOnOffAlarm(), false, true);
+    break;
+#endif
+
+#if defined(SHOW_SECOND_COLUMN)
+  case DISPLAY_MODE_SET_SECOND_COLUMN_ON_OFF: // настройка включения/выключения секундного столбца
+    sscSetOnOffDataString(SET_SECOND_COLUMN_TAG,
+                          lenght - 31,
+                          (bool)read_eeprom_8(SECOND_COLUMN_ON_OF_DATA_EEPROM_INDEX),
+                          false,
+                          true);
     break;
 #endif
 
