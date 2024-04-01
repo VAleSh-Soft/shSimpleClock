@@ -2904,7 +2904,7 @@ void sscSetNumString(uint8_t offset,
   if (firstSpace && num < 10)
   {
     uint8_t x = (width == 6) ? num % 10 : num % 10 + 0x30;
-    sscSetChar(offset + 3, x, width, toStringData);
+    sscSetChar(offset + 5, x, width, toStringData);
   }
   else
   {
