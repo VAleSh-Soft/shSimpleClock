@@ -299,6 +299,7 @@ static const uint8_t PROGMEM font_5_7[] = {
 #define DISP_BRIGHTNESS_TAG 3
 #define DISP_LIGHT_THRESHOLD_TAG 4
 #define DISP_COLOR_TAG 5
+#define DISP_SECOND_COLUMN_TAG 6
 
 #if defined(USE_RU_LANGUAGE)
 static const uint8_t PROGMEM day_of_week[] = {
@@ -317,7 +318,8 @@ static const uint8_t PROGMEM tags[] = {
     0xC1, 0xE4, 0xEA, // Бдк - будильник
     0xDF, 0xF0, 0xEA, // Ярк - яркость
     0xCF, 0xF0, 0xE3, // Прг - порог переключения яркости
-    0xD6, 0xE2, 0xF2  // Цвт - цвет символов
+    0xD6, 0xE2, 0xF2, // Цвт - цвет символов
+    0xD1, 0xE5, 0xEA  // Сек - секундный столбец
 };
 
 static const uint8_t PROGMEM months[] = {
@@ -352,7 +354,8 @@ static const uint8_t PROGMEM tags[] = {
     0x41, 0x6C, 0x6D, // Alm - Alarm
     0x42, 0x72, 0x73, // Brs - Brightness
     0x54, 0x68, 0x72, // Thr - Threshold
-    0x43, 0x6C, 0x72  // Clr - Color
+    0x43, 0x6C, 0x72, // Clr - Color
+    0x53, 0x65, 0x63  // Sec - second column
 };
 
 static const uint8_t PROGMEM months[] = {
@@ -442,7 +445,7 @@ public:
       data = new uint8_t[_data_count];
       if (data != NULL)
       {
-        for(uint8_t i; i < _data_count; i++)
+        for (uint8_t i; i < _data_count; i++)
         {
           data[i] = 0x00;
         }

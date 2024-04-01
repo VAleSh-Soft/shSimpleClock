@@ -56,15 +56,15 @@ enum clkDataType : uint8_t
   NO_TAG
 #if defined(USE_TICKER_FOR_DATA)
   ,
-  TICKER_TAG
+  SET_TICKER_TAG
 #endif
 #if defined(USE_ALARM)
   ,
-  ALARM_TAG
+  SET_ALARM_TAG
 #endif
 #if USE_AUTO_SHOW_DATA
   ,
-  AUTO_SHOW_PERIOD_TAG
+  SET_AUTO_SHOW_PERIOD_TAG
 #endif
 #if defined(USE_SET_BRIGHTNESS_MODE)
   ,
@@ -77,6 +77,10 @@ enum clkDataType : uint8_t
 #if defined(WS2812_MATRIX_DISPLAY)
   ,
   SET_COLOR_OF_NUMBER_TAG
+#endif
+#if defined(SHOW_SECOND_COLUMN)
+  ,
+  SET_SECOND_COLUMN_TAG
 #endif
 };
 
@@ -135,6 +139,10 @@ enum clkDisplayMode : uint8_t
 #if defined(WS2812_MATRIX_DISPLAY)
   ,
   DISPLAY_MODE_SET_COLOR_OF_NUMBER // режим настройки цвета символов для адресных светодиодов
+#endif
+#if defined(SHOW_SECOND_COLUMN)
+  ,
+  DISPLAY_MODE_SET_SECOND_COLUMN_ON_OFF // режим включения/выключения отображения секундного столбца
 #endif
   ,
   DISPLAY_MODE_CUSTOM_1,
@@ -1608,7 +1616,7 @@ void _setDisplayForTmSet(uint8_t &curHour, uint8_t &curMinute)
     {
 #if defined(USE_ALARM)
     case DISPLAY_MODE_ALARM_ON_OFF:
-      sscShowOnOffData(ALARM_TAG,
+      sscShowOnOffData(SET_ALARM_TAG,
                        curHour,
                        (!sscBlinkFlag &&
                         !buttons.isButtonClosed(CLK_BTN_UP) &&
@@ -1617,7 +1625,7 @@ void _setDisplayForTmSet(uint8_t &curHour, uint8_t &curMinute)
 #endif
 #if defined(USE_TICKER_FOR_DATA)
     case DISPLAY_MODE_SET_TICKER_ON_OFF:
-      sscShowOnOffData(TICKER_TAG,
+      sscShowOnOffData(SET_TICKER_TAG,
                        curHour,
                        (!sscBlinkFlag &&
                         !buttons.isButtonClosed(CLK_BTN_UP) &&
@@ -2359,12 +2367,12 @@ void _setDisplayDataForOthSet(uint8_t &x)
 #if USE_AUTO_SHOW_DATA
     case DISPLAY_MODE_SET_AUTO_SHOW_PERIOD:
 #if USE_MATRIX_DISPLAY
-      sscSetOtherDataString(AUTO_SHOW_PERIOD_TAG,
+      sscSetOtherDataString(SET_AUTO_SHOW_PERIOD_TAG,
                             1,
                             sscGetPeriodForAutoShow(x),
                             blink);
 #else
-      sscSetOtherData(AUTO_SHOW_PERIOD_TAG,
+      sscSetOtherData(SET_AUTO_SHOW_PERIOD_TAG,
                       sscGetPeriodForAutoShow(x),
                       blink);
 #endif
@@ -2706,7 +2714,7 @@ void sscSetOtherDataString(clkDataType _type,
     break;
 #endif
 #if USE_AUTO_SHOW_DATA
-  case AUTO_SHOW_PERIOD_TAG:
+  case SET_AUTO_SHOW_PERIOD_TAG:
     sscSetTag(offset, DISP_DATE_DISPLAY_INTERVAL_TAG, 5, toStringData);
     break;
 #endif
@@ -2762,12 +2770,12 @@ void sscSetOnOffDataString(clkDataType _type,
   switch (_type)
   {
 #if defined(USE_TICKER_FOR_DATA)
-  case TICKER_TAG:
+  case SET_TICKER_TAG:
     sscSetTag(offset, DISP_ANIMATION_TAG, 5, toStringData);
     break;
 #endif
 #if defined(USE_ALARM)
-  case ALARM_TAG:
+  case SET_ALARM_TAG:
     sscSetTag(offset, DISP_ALARM_TAG, 5, toStringData);
     break;
 #endif
@@ -2913,7 +2921,7 @@ void sscAssembleString(clkDisplayMode data_type, uint8_t lenght)
                      true);
     break;
   case DISPLAY_MODE_ALARM_ON_OFF: // настройка включения/выключения будильника
-    sscSetOnOffDataString(ALARM_TAG, lenght - 31, sscAlarm.getOnOffAlarm(), false, true);
+    sscSetOnOffDataString(SET_ALARM_TAG, lenght - 31, sscAlarm.getOnOffAlarm(), false, true);
     break;
 #endif
 
@@ -2943,7 +2951,7 @@ void sscAssembleString(clkDisplayMode data_type, uint8_t lenght)
 #endif
 #if defined(USE_TICKER_FOR_DATA)
   case DISPLAY_MODE_SET_TICKER_ON_OFF: // настройка включения/выключения анимации
-    sscSetOnOffDataString(TICKER_TAG,
+    sscSetOnOffDataString(SET_TICKER_TAG,
                           lenght - 31,
                           read_eeprom_8(TICKER_STATE_VALUE_EEPROM_INDEX),
                           false,
@@ -2952,7 +2960,7 @@ void sscAssembleString(clkDisplayMode data_type, uint8_t lenght)
 #endif
 #if USE_AUTO_SHOW_DATA
   case DISPLAY_MODE_SET_AUTO_SHOW_PERIOD:
-    sscSetOtherDataString(AUTO_SHOW_PERIOD_TAG,
+    sscSetOtherDataString(SET_AUTO_SHOW_PERIOD_TAG,
                           lenght - 31,
                           sscGetPeriodForAutoShow(read_eeprom_8(INTERVAL_FOR_AUTOSHOWDATA_EEPROM_INDEX)),
                           false,
@@ -3098,7 +3106,7 @@ void sscSetTag(clkDataType _type)
   switch (_type)
   {
 #if USE_AUTO_SHOW_DATA
-  case AUTO_SHOW_PERIOD_TAG: // Au
+  case SET_AUTO_SHOW_PERIOD_TAG: // Au
     clkDisplay.setDispData(0, clkDisplay.encodeDigit(0x0A));
 #if defined(TM1637_DISPLAY)
     clkDisplay.setDispData(1, 0b10011100);
@@ -3108,7 +3116,7 @@ void sscSetTag(clkDataType _type)
     break;
 #endif
 #if defined(USE_ALARM)
-  case ALARM_TAG: // AL
+  case SET_ALARM_TAG: // AL
     clkDisplay.setDispData(0, clkDisplay.encodeDigit(0x0A));
 #if defined(TM1637_DISPLAY)
     clkDisplay.setDispData(1, 0b10111000);
