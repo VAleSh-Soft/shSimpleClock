@@ -2340,6 +2340,12 @@ void _checkBtnSetForOthSet(uint8_t &x)
         ssc_display_mode = DISPLAY_MODE_SET_COLOR_OF_NUMBER;
       }
       else
+#elif  defined(SHOW_SECOND_COLUMN)
+      if (_next)
+      {
+        ssc_display_mode = DISPLAY_MODE_SET_SECOND_COLUMN_ON_OFF;
+      }
+      else
 #endif
       {
         ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
