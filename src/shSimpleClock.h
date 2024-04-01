@@ -148,6 +148,10 @@ enum clkDisplayMode : uint8_t
 void sscRtcNow();
 void sscBlink();
 void sscReturnToDefMode();
+void sscShowTimeData(int8_t hour, int8_t minute);
+#if defined(SHOW_SECOND_COLUMN)
+void sscShowSecondColumn(int8_t second);
+#endif
 void sscShowTimeSetting();
 void sscSetDisp();
 void sscCheckButton();
@@ -186,7 +190,7 @@ void sscSetTag(uint8_t offset, uint8_t index, uint8_t width, bool toStringData);
 void sscSetOnOffDataString(clkDataType _type, uint8_t offset, bool _state, bool _blink,
                            bool toStringData = false);
 void sscSetNumString(uint8_t offset, uint8_t num,
-                     uint8_t width = 6, uint8_t space = 1, bool toStringData = false);
+                     uint8_t width = 6, uint8_t space = 1, bool toStringData = false, bool firstSpace = false);
 void sscSetChar(uint8_t offset, uint8_t chr, uint8_t width, bool toStringData = false);
 
 #if defined(USE_TICKER_FOR_DATA)
@@ -196,7 +200,7 @@ void sscRunTicker();
 
 #if defined(USE_CALENDAR)
 void sscSetDayOfWeakString(uint8_t offset, uint8_t dow, bool toStringData = false);
-void sscSetYearString(uint8_t offset, uint16_t _year, bool toStringData = false);
+void sscSetYearString(uint8_t offset, int16_t _year, bool toStringData = false);
 #endif
 
 #if defined(USE_TEMP_DATA)
@@ -1161,10 +1165,12 @@ void sscRtcNow()
 #endif
     {
 #if USE_MATRIX_DISPLAY
-      clkDisplay.showTime(sscClock.getCurTime().hour(),
-                          sscClock.getCurTime().minute(),
-                          sscClock.getCurTime().second(),
-                          sscBlinkFlag);
+      sscShowTimeData(sscClock.getCurTime().hour(),
+                      sscClock.getCurTime().minute());
+#if defined(SHOW_SECOND_COLUMN)
+      sscShowSecondColumn(sscClock.getCurTime().second());
+#endif
+
 #else
       clkDisplay.showTime(sscClock.getCurTime().hour(),
                           sscClock.getCurTime().minute(),
@@ -1257,7 +1263,7 @@ void sscReturnToDefMode()
   sscTasks.stopTask(sscTasks.return_to_default_mode);
 }
 
-void sscShowTimeData(uint8_t hour, uint8_t minute)
+void sscShowTimeData(int8_t hour, int8_t minute)
 {
   // если наступило время блинка и кнопки Up/Down не нажаты, то стереть соответствующие разряды; при нажатых кнопках Up/Down во время изменения данных ничего не мигает
   if (!sscBlinkFlag &&
@@ -1290,6 +1296,8 @@ void sscShowTimeData(uint8_t hour, uint8_t minute)
     }
   }
 
+  clkDisplay.clear();
+
   bool toDate = false;
   bool toColon = false;
 #if defined(USE_CALENDAR)
@@ -1301,17 +1309,39 @@ void sscShowTimeData(uint8_t hour, uint8_t minute)
 #if defined(USE_CALENDAR)
   if (ssc_display_mode == DISPLAY_MODE_SET_YEAR)
   {
-    clkDisplay.showYear(minute);
+    sscSetYearString(1, minute);
   }
   else
 #endif
   {
-    clkDisplay.showTime(hour, minute, 0, toColon, toDate);
+    sscSetTimeString(1, hour, minute, toColon, toDate);
   }
 #else
   clkDisplay.showTime(hour, minute, toColon);
 #endif
 }
+
+#if defined(SHOW_SECOND_COLUMN)
+void sscShowSecondColumn(int8_t second)
+{ // формирование секундного столбца
+  uint8_t col_sec = 0;
+  uint8_t x = second / 5;
+  for (uint8_t i = 0; i < x; i++)
+  {
+    if (i < 6)
+    { // нарастание снизу вверх
+      col_sec += 1;
+      col_sec = col_sec << 1;
+    }
+    else
+    { // убывание снизу вверх
+      col_sec = col_sec << 1;
+      col_sec &= ~(1 << 7);
+    }
+  }
+  clkDisplay.setColumn(31, col_sec);
+}
+#endif
 
 void sscCheckData(uint8_t &dt,
                   uint8_t max,
@@ -2613,7 +2643,7 @@ void sscSetTimeString(uint8_t offset,
   {
     if (toDate)
     {
-      sscSetNumString(offset, hour, 5, 1, toStringData);
+      sscSetNumString(offset, hour, 5, 1, toStringData, true);
     }
     else
     {
@@ -2626,7 +2656,7 @@ void sscSetTimeString(uint8_t offset,
     {
       for (uint8_t j = 0; j < 3; j++)
       {
-        sscSetChar(offset + 14 + j * 6,
+        sscSetChar(offset + 13 + j * 6,
                    pgm_read_byte(&months[(minute - 1) * 3 + j]),
                    5,
                    toStringData);
@@ -2639,14 +2669,13 @@ void sscSetTimeString(uint8_t offset,
   }
   if (show_colon && !toDate)
   {
-    uint8_t colon = /*(toDate) ? 0x01 : */ 0x24;
     if (toStringData)
     {
-      sData.setData(offset + 14, colon);
+      sData.setData(offset + 14, 0b00100100);
     }
-    else
+    else if (!sscBlinkFlag || ssc_display_mode != DISPLAY_MODE_SHOW_TIME)
     {
-      clkDisplay.setColumn(offset + 14, colon);
+      clkDisplay.setColumn(offset + 14, 0b00100100);
     }
   }
 }
@@ -2765,12 +2794,21 @@ void sscSetNumString(uint8_t offset,
                      uint8_t num,
                      uint8_t width,
                      uint8_t space,
-                     bool toStringData)
+                     bool toStringData,
+                     bool firstSpace)
 {
-  uint8_t x = (width == 6) ? num / 10 : num / 10 + 0x30;
-  sscSetChar(offset, x, width, toStringData);
-  x = (width == 6) ? num % 10 : num % 10 + 0x30;
-  sscSetChar(offset + width + space, x, width, toStringData);
+  if (firstSpace && num < 10)
+  {
+    uint8_t x = (width == 6) ? num % 10 : num % 10 + 0x30;
+    sscSetChar(offset + 3, x, width, toStringData);
+  }
+  else
+  {
+    uint8_t x = (width == 6) ? num / 10 : num / 10 + 0x30;
+    sscSetChar(offset, x, width, toStringData);
+    x = (width == 6) ? num % 10 : num % 10 + 0x30;
+    sscSetChar(offset + width + space, x, width, toStringData);
+  }
 }
 
 void sscSetChar(uint8_t offset, uint8_t chr, uint8_t width, bool toStringData)
@@ -2971,10 +3009,13 @@ void sscSetDayOfWeakString(uint8_t offset, uint8_t dow, bool toStringData)
   }
 }
 
-void sscSetYearString(uint8_t offset, uint16_t _year, bool toStringData)
+void sscSetYearString(uint8_t offset, int16_t _year, bool toStringData)
 {
   sscSetNumString(offset, 20, 6, 2, toStringData);
-  sscSetNumString(offset + 16, _year % 2000, 6, 2, toStringData);
+  if (_year >= 0)
+  {
+    sscSetNumString(offset + 16, _year % 2000, 6, 2, toStringData);
+  }
 }
 #endif
 
