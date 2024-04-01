@@ -261,6 +261,9 @@ uint8_t constexpr BIT_DEPTH = 10;           // разрядность АЦП и�
 
 // ==== настройки EEPROM =============================
 
+#if defined (SHOW_SECOND_COLUMN)
+#define SECOND_COLUMN_ON_OF_DATA_EEPROM_INDEX 94 // индекс ячейки в EEPROM для сохранения статуса секундного столбца
+#endif
 #if defined(USE_CALENDAR) || defined(USE_TEMP_DATA)
 #define INTERVAL_FOR_AUTOSHOWDATA_EEPROM_INDEX 96 //  индекс ячейки в EEPROM для сохранения периодичности автопоказа даты и температуры
 #endif
