@@ -304,6 +304,11 @@ uint8_t constexpr BIT_DEPTH = 10;
 ### Блок "настройки EEPROM"
 
 ```
+#define SECOND_COLUMN_ON_OF_DATA_EEPROM_INDEX 94  
+```
+индекс ячейки в **EEPROM** для сохранения статуса секундного столбца; имеет смысл только для матричных экранов при использовании опции `SHOW_SECOND_COLUMN`;
+
+```
 #define INTERVAL_FOR_AUTOSHOWDATA_EEPROM_INDEX 96
 ```
 индекс ячейки в **EEPROM** для сохранения интервала автовывода даты и/или температуры на экран (uint8_t); имеет смысл только при использовании одной из опций `USE_CALENDAR` или `USE_TEMP_DATA`.

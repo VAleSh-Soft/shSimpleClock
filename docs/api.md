@@ -13,6 +13,7 @@
   - [Будильник](#будильник)
   - [Анимация](#анимация)
   - [Автовывод даты и/или температуры](#автовывод-даты-иили-температуры)
+  - [Секундный столбец](#секундный-столбец)
   - [Порог переключения яркости](#порог-переключения-яркости)
 - [Кнопки](#кнопки)
 - [События](#события)
@@ -29,18 +30,18 @@
 #include <shSimpleClock.h>
 
 // объявляем экземпляр часов
-shSimpleClock clock;
+shSimpleClock simple_clock;
 
 void setup()
 {
   // инициализируем часы
-  clock.init();
+  simple_clock.init();
 }
 
 void loop()
 {
   // обработка событий часов
-  clock.tick();
+  simple_clock.tick();
 
 }
 ```
@@ -63,7 +64,7 @@ void setDisplayMode(clkDisplayMode _mode);
 
 Например, код
 ```
-clock.setDisplayMode(DISPLAY_MODE_SHOW_TEMP);
+simple_clock.setDisplayMode(DISPLAY_MODE_SHOW_TEMP);
 ```
 на пару секунд выведет на экран часов текущую температуру (если эта опция используется).
 
@@ -132,7 +133,7 @@ void setMaxPSP(uint8_t volts, uint32_t milliamps);
 ```
 Если установить любой из них, например
 ```
-clock.setDisplayMode(DISPLAY_MODE_CUSTOM_1);
+simple_clock.setDisplayMode(DISPLAY_MODE_CUSTOM_1);
 ```
 то вывод на экран будет полностью зависеть от пользователя. 
 
@@ -286,7 +287,7 @@ void setIntervalForAutoShowData(uint8_t _index);
 
 Т.е. код
 ```
-clock.setIntervalForAutoShowData(2);
+simple_clock.setIntervalForAutoShowData(2);
 ```
 задаст интервал автовывода в 5 минут.
 
@@ -297,6 +298,17 @@ uint8_t getIntervalForAutoShowData();
 возвращает индекс текущего значения интервала автовывода информации.
 
 Методы доступны для матричных экранов при использовании опций `USE_CALENDAR` или `USE_TEMP_DATA`.
+
+#### Секундный столбец
+
+Методы 
+```
+bool getsetSecondColumnState();
+void setSecondColumnState(bool _state);
+```
+Позволяют получить и установить текущий статус секундного столбца.
+
+Методы доступны для матричных экранов при использовании опции `SHOW_SECOND_COLUMN`.
 
 
 #### Порог переключения яркости

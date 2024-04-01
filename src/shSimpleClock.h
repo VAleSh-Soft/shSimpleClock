@@ -1146,6 +1146,29 @@ public:
   }
 #endif
 
+#if defined(SHOW_SECOND_COLUMN)
+  /**
+   * @brief установка  статуса секундного столбца - включен или выключен
+   *
+   * @param _state true - отображается, false - отключен
+   */
+  void setSecondColumnState(bool _state)
+  {
+    write_eeprom_8(SECOND_COLUMN_ON_OF_DATA_EEPROM_INDEX, (uint8_t)_state);
+  }
+
+  /**
+   * @brief получение статуса секундного столбца - включен или выключен
+   *
+   * @return true отображается
+   * @return false отключен
+   */
+  bool getsetSecondColumnState()
+  {
+    return ((bool)read_eeprom_8(SECOND_COLUMN_ON_OF_DATA_EEPROM_INDEX));
+  }
+#endif
+
 #endif
 };
 
@@ -1213,12 +1236,12 @@ void sscBlink()
   {
     sscClockEvent.run();
     cur_sec = sscClock.getCurTime().second();
-    sscBlinkFlag = true;
+    sscBlinkFlag = false;
     tmr = millis();
   }
-  else if (sscBlinkFlag && millis() - tmr >= 500)
+  else if (!sscBlinkFlag && millis() - tmr >= 500)
   {
-    sscBlinkFlag = false;
+    sscBlinkFlag = true;
   }
 }
 

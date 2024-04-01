@@ -21,7 +21,7 @@
 #include <shSimpleClock.h> // https://github.com/VAleSh-Soft/shSimpleClock
 
 // объявляем экземпляр часов
-shSimpleClock clock;
+shSimpleClock simple_clock;
 
 void clockEventExample()
 {
@@ -42,17 +42,17 @@ void setup()
   Serial.begin(9600);
 
   // подключаем событие часов - вызывается через каждые пять секунд
-  clock.setClockEvent(5, clockEventExample);
+  simple_clock.setClockEvent(5, clockEventExample);
 
   // подключаем событие будильника
-  clock.setAlarmEvent(alarmEventExample);
+  simple_clock.setAlarmEvent(alarmEventExample);
 
   // инициализируем часы
-  clock.init();
+  simple_clock.init();
 }
 
 void loop()
 {
   // обработка событий часов
-  clock.tick();
+  simple_clock.tick();
 }

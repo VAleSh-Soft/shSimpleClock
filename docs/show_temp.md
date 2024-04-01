@@ -18,11 +18,11 @@
 
 Если нужно вывести температуру на экран с помощью внешнего кода, достаточно установить соответствующий режим экрана:
 ```
-shSimpleClock clock;
+shSimpleClock simple_clock;
 
 .........
 
-clock.setDisplayMode(DISPLAY_MODE_SHOW_TEMP);
+simple_clock.setDisplayMode(DISPLAY_MODE_SHOW_TEMP);
 ```
 
 

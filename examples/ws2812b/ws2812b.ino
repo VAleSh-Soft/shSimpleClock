@@ -25,28 +25,28 @@
 #include <shButton.h>      // https://github.com/VAleSh-Soft/shButton
 
 // объявляем экземпляр часов
-shSimpleClock clock;
+shSimpleClock simple_clock;
 
 void setup()
 {
   Serial.begin(9600);
 
   // устанавливаем синий цвет для цифр
-  clock.setColorOfNumber(CRGB::Blue);
+  simple_clock.setColorOfNumber(CRGB::Blue);
   // устанавливаем параметры блока питания - 5В, 2000мА
-  clock.setMaxPSP(5, 2000);
+  simple_clock.setMaxPSP(5, 2000);
   
   // инициализируем часы
-  clock.init();
+  simple_clock.init();
 }
 
 void loop()
 {
   // обработка событий часов
-  clock.tick();
+  simple_clock.tick();
 
   // пример использования событий кнопок управления часами в своих целях
-  if (clock.getButtonState(CLK_BTN_UP) == BTN_DBLCLICK)
+  if (simple_clock.getButtonState(CLK_BTN_UP) == BTN_DBLCLICK)
   {
     // например, обрабатываем событие двойного клика кнопкой Up
     Serial.println("Double click of button Up");

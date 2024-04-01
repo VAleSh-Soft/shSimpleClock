@@ -24,11 +24,11 @@
 #include <shButton.h>      // https://github.com/VAleSh-Soft/shButton
 
 // объявляем экземпляр часов
-shSimpleClock clock;
+shSimpleClock simple_clock;
 
 void setCustomDisplay()
 {
-  if (clock.getDisplayMode() == DISPLAY_MODE_CUSTOM_1)
+  if (simple_clock.getDisplayMode() == DISPLAY_MODE_CUSTOM_1)
   {
     // выводим наборы символов на экран от "0000" до "FFFF"; смена символов - каждые 500 милисекунд
     static uint32_t timer = 0;
@@ -45,14 +45,14 @@ void setCustomDisplay()
       if (data++ > 0x0F)
       {
         data = 0x00;
-        clock.setDisplayMode(DISPLAY_MODE_SHOW_TIME);
+        simple_clock.setDisplayMode(DISPLAY_MODE_SHOW_TIME);
       }
     }
 
     // или немедленно вернуться в режим отображения текущего времени при удержании нажатой кнопки Set
-    if (clock.getButtonFlag(CLK_BTN_SET, true) == CLK_BTN_FLAG_EXIT)
+    if (simple_clock.getButtonFlag(CLK_BTN_SET, true) == CLK_BTN_FLAG_EXIT)
     {
-      clock.setDisplayMode(DISPLAY_MODE_SHOW_TIME);
+      simple_clock.setDisplayMode(DISPLAY_MODE_SHOW_TIME);
     }
   }
 }
@@ -61,18 +61,18 @@ void setup()
 {
   Serial.begin(9600);
   // инициализируем часы
-  clock.init();
+  simple_clock.init();
 }
 
 void loop()
 {
   // обработка событий часов
-  clock.tick();
+  simple_clock.tick();
 
   // переключаем режим экрана по двойному клику кнопкой Up
-  if (clock.getButtonState(CLK_BTN_UP) == BTN_DBLCLICK)
+  if (simple_clock.getButtonState(CLK_BTN_UP) == BTN_DBLCLICK)
   {
-    clock.setDisplayMode(DISPLAY_MODE_CUSTOM_1);
+    simple_clock.setDisplayMode(DISPLAY_MODE_CUSTOM_1);
   }
 
   // работа с пользовательским экраном

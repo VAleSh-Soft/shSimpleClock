@@ -26,27 +26,27 @@
 #include <shButton.h>      // https://github.com/VAleSh-Soft/shButton
 
 // объявляем экземпляр часов
-shSimpleClock clock;
+shSimpleClock simple_clock;
 
 void setup()
 {
   Serial.begin(9600);
 
   // устанавливаем, если нужно, поворот изображения на матрице (значение 0..3)
-  clock.setMatrixDirection(2);
+  simple_clock.setMatrixDirection(2);
   // при необходимости включаем отражение картинки по горизонтали для матрицы
-  // clock.setMatrixFlipMode(true);
+  // simple_clock.setMatrixFlipMode(true);
   // инициализируем часы
-  clock.init();
+  simple_clock.init();
 }
 
 void loop()
 {
   // обработка событий часов
-  clock.tick();
+  simple_clock.tick();
 
   // пример использования событий кнопок управления часами в своих целях
-  if (clock.getButtonState(CLK_BTN_UP) == BTN_DBLCLICK)
+  if (simple_clock.getButtonState(CLK_BTN_UP) == BTN_DBLCLICK)
   {
     // например, обрабатываем событие двойного клика кнопкой Up
     Serial.println("Double click of button Up");
