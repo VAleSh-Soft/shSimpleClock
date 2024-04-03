@@ -12,11 +12,14 @@
 #include <Arduino.h>
 #include <Wire.h>
 
+#if defined(RTC_PFC8563)
+#define CLOCK_ADDRESS 0x51
+#else
 #define CLOCK_ADDRESS 0x68
+#endif
+
 #define SECONDS_FROM_1970_TO_2000 946684800
 
-// DS3231 is smart enough to know this, but keeping it for now so I don't have
-// to rewrite their code. -ADW
 static const uint8_t daysInMonth[] PROGMEM = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
 // DateTime (get everything at once) from JeeLabs / Adafruit
@@ -184,18 +187,36 @@ public:
     if (isClockPresent())
     {
       Wire.beginTransmission(CLOCK_ADDRESS);
-      Wire.write(0);
+#if defined(RTC_PCF8563)
+      Wire.write(0x02);
+#elif defined(RTC_PCF8523)
+      Wire.write(0x03);
+#else
+      Wire.write(0x00);
+#endif
       Wire.endTransmission();
 
       Wire.requestFrom(CLOCK_ADDRESS, 7);
-      uint8_t ss = bcdToDec(Wire.read() & 0x7F);
-      uint8_t mm = bcdToDec(Wire.read());
-      uint8_t hh = bcdToDec(Wire.read());
-      Wire.read();
-      uint8_t d = bcdToDec(Wire.read());
-      uint8_t m = bcdToDec(Wire.read());
-      uint16_t y = bcdToDec(Wire.read());
-      cur_time = DateTime(y, m, d, hh, mm, ss);
+      uint8_t b0 = bcdToDec(Wire.read() & 0x7F);
+      uint8_t b1 = bcdToDec(Wire.read());
+      uint8_t b2 = bcdToDec(Wire.read());
+      uint8_t b3 = bcdToDec(Wire.read());
+      uint8_t b4 = bcdToDec(Wire.read());
+      uint8_t b5 = bcdToDec(Wire.read());
+      uint16_t b6 = bcdToDec(Wire.read());
+
+#if defined(RTC_DS3231)
+      cur_time = DateTime(b6, (b5 & 0x7F), b4, b2, b1, (b0 & 0x7F));
+#elif defined(RTC_DS1307)
+      cur_time = DateTime(b6, b5, b4, b2, b1, (b0 & 0x7F));
+#elif defined(RTC_PCF8563)
+      cur_time = DateTime(b6, (b5 & 0x1F), (b3 & 0x3F), (b2 & 0x3F),
+                          (b1 & 0x7F), (b0 & 0x7F));
+#elif defined(RTC_PCF8523)
+      cur_time = DateTime(b6, b5, b3, b2, b1, (b0 & 0x7F));
+#else
+      cur_time = DateTime(0, 1, 1, 0, 0, 0);
+#endif
     }
     else
     {
@@ -204,7 +225,7 @@ public:
   }
 
   /**
-   * @brief получение текущего времени и даты
+   * @brief получение текущего времени и даты из внутреннего буфера
    *
    * @return DateTime
    */
@@ -222,7 +243,13 @@ public:
     if (isClockPresent())
     {
       Wire.beginTransmission(CLOCK_ADDRESS);
-      Wire.write(0);
+#if defined(RTC_PCF8563)
+      Wire.write(0x02);
+#elif defined(RTC_PCF8523)
+      Wire.write(0x03);
+#else
+      Wire.write(0x00);
+#endif
       Wire.write(decToBcd(_second));
       Wire.write(decToBcd(_minute));
       Wire.write(decToBcd(_hour));
@@ -230,7 +257,13 @@ public:
 #if defined(RTC_DS3231)
       // Очищаем флаг OSF
       uint8_t temp_buffer = readControlByte(1);
-      writeControlByte((temp_buffer & 0b01111111), 1);
+      writeControlByte((temp_buffer & 0x7F), 1);
+#elif defined(RTC_PCF8523)
+      // установить режим работы от батареи
+      Wire.beginTransmission(CLOCK_ADDRESS);
+      Wire.write(0x02);
+      Wire.write(0x00);
+      Wire.endTransmission();
 #endif
     }
   }
@@ -245,9 +278,23 @@ public:
   {
     if (isClockPresent())
     {
+#if defined(RTC_DS3231)
+      // устанавливаем режим 24 часа
+      setClockMode(false);
+#endif
       Wire.beginTransmission(CLOCK_ADDRESS);
+#if defined(RTC_PCF8563)
+      Wire.write(0x05);
+      Wire.write(decToBcd(_date));
+      Wire.write(0x00);
+#elif defined(RTC_PCF8523)
+      Wire.write(0x06);
+      Wire.write(decToBcd(_date));
+      Wire.write(0x00);
+#else
       Wire.write(0x04);
       Wire.write(decToBcd(_date));
+#endif
       Wire.write(decToBcd(_month));
       Wire.endTransmission();
     }
@@ -263,8 +310,14 @@ public:
     if (isClockPresent())
     {
       Wire.beginTransmission(CLOCK_ADDRESS);
+#if defined(RTC_PCF8563)
+      Wire.write(0x08);
+#elif defined(RTC_PCF8523)
+      Wire.write(0x09);
+#else
       Wire.write(0x06);
-      Wire.write(decToBcd(_year));
+#endif
+      Wire.write(decToBcd(_year % 100));
       Wire.endTransmission();
     }
   }
@@ -358,9 +411,9 @@ public:
 
   /**
    * @brief проверяем, запущен ли генератор
-   * 
-   * @return true 
-   * @return false 
+   *
+   * @return true
+   * @return false
    */
   bool isRunning()
   {
@@ -373,6 +426,10 @@ public:
       Wire.write(0x00);
 #elif defined(RTC_DS3231)
       Wire.write(0x0f);
+#elif defined(RTC_PCF8563)
+      Wire.write(0x02);
+#elif defined(RTC_PCF8563)
+      Wire.write(0x03);
 #endif
       Wire.endTransmission();
 
@@ -384,13 +441,14 @@ public:
     return result;
   }
 
-#if defined(RTC_DS3231)
+#if !defined(RTC_DS1307)
   /**
    * @brief запускаем генератор, в том числе включаем работу от батареи
-   * 
+   *
    */
   void startRTC()
   {
+#if defined(RTC_DS3231)
     uint8_t temp_buffer = readControlByte(0) & 0b11100111;
     // поднимаем флаг BBSQW - работа от батареи
     temp_buffer = temp_buffer | 0b01000000;
@@ -398,6 +456,21 @@ public:
     temp_buffer = temp_buffer & 0b01111011;
     // записываем контрольный бит
     writeControlByte(temp_buffer, 0);
+#else
+    Wire.beginTransmission(CLOCK_ADDRESS);
+    Wire.write(0x00);
+    Wire.endTransmission();
+    Wire.requestFrom(CLOCK_ADDRESS, 1);
+    uint8_t ctlreg = Wire.read();
+
+    if (ctlreg & (1 << 5))
+    {
+      Wire.beginTransmission(CLOCK_ADDRESS);
+      Wire.write(0x02);
+      Wire.write(ctlreg & ~(1 << 5));
+      Wire.endTransmission();
+    }
+#endif
   }
 #endif
 };

@@ -509,16 +509,16 @@ private:
   void rtc_init()
   {
     Wire.begin();
-#if defined(RTC_DS3231)
-    sscClock.setClockMode(false);
+#if !defined(RTC_DS1307)
     sscClock.startRTC();
 #endif
     sscRtcNow();
 
-    // если часовой модуль не запущен, запустить его
+    // если часовой модуль не запущен, запустить его, для чего установить время
     if (!sscClock.isRunning())
     {
-      sscClock.setCurTime(0, 0, 1);
+      DateTime dt = sscClock.getCurTime();
+      sscClock.setCurTime(dt.hour(), dt.minute(), dt.second());
     }
   }
 
@@ -1599,10 +1599,6 @@ void _checkBtnUpDownForTmSet(uint8_t &curHour,
                              uint8_t &curMinute,
                              bool &time_checked)
 {
-#if defined(USE_CALENDAR)
-  static const uint8_t PROGMEM days_of_month[] =
-      {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-#endif
   if ((buttons.getButtonFlag(CLK_BTN_UP) == CLK_BTN_FLAG_NEXT) ||
       (buttons.getButtonFlag(CLK_BTN_DOWN, true) == CLK_BTN_FLAG_NEXT))
   {
@@ -1637,7 +1633,7 @@ void _checkBtnUpDownForTmSet(uint8_t &curHour,
 #if defined(USE_CALENDAR)
     case DISPLAY_MODE_SET_DAY:
       uint8_t i;
-      i = pgm_read_byte(&days_of_month[curMinute - 1]);
+      i = pgm_read_byte(&daysInMonth[curMinute - 1]);
       if (curMinute == 2 && (sscClock.getCurTime().year() % 4 == 0))
       {
         i++;
