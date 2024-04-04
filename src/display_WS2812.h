@@ -399,7 +399,7 @@ void setLedsData(CRGB *data, uint16_t leds_count)
 }
 #endif
 
-void setFastLEDData(CRGB *data, uint16_t leds_count)
+void setFastLEDData(CRGB *data, uint16_t leds_count)// TODO: перенести в класс
 {
 #if __ESPICHIPSET__
   setESpiLedsData(data, leds_count);

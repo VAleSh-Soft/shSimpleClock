@@ -224,6 +224,9 @@ uint8_t sscGetIndexOfCurrentColorOfNumber();
 void sscSetOtherData(clkDataType _type, uint8_t _data, bool blink);
 void sscSetTag(clkDataType _type);
 void sscSetOnOffData(clkDataType _type, bool _state, bool _blink);
+void sscShowTime(int8_t hour, int8_t minute, bool show_colon);
+void sscShowDate(DateTime date);
+void sscShowTemp(int temp);
 #endif
 
 // ===================================================
@@ -1215,9 +1218,9 @@ void sscRtcNow()
 #endif
 
 #else
-      clkDisplay.showTime(sscClock.getCurTime().hour(),
-                          sscClock.getCurTime().minute(),
-                          sscBlinkFlag);
+      sscShowTime(sscClock.getCurTime().hour(),
+                  sscClock.getCurTime().minute(),
+                  sscBlinkFlag);
 #endif
     }
   }
@@ -1363,7 +1366,7 @@ void sscShowTimeData(int8_t hour, int8_t minute)
     sscSetTimeString(1, hour, minute, toColon, toDate);
   }
 #else
-  clkDisplay.showTime(hour, minute, toColon);
+  sscShowTime(hour, minute, toColon);
 #endif
 }
 
@@ -2336,7 +2339,7 @@ void _checkBtnSetForOthSet(uint8_t &x)
         ssc_display_mode = DISPLAY_MODE_SET_COLOR_OF_NUMBER;
       }
       else
-#elif  defined(SHOW_SECOND_COLUMN)
+#elif defined(SHOW_SECOND_COLUMN)
       if (_next)
       {
         ssc_display_mode = DISPLAY_MODE_SET_SECOND_COLUMN_ON_OFF;
@@ -2645,13 +2648,13 @@ void _setDisplayForAutoShowData(uint8_t &n)
   {
     DateTime dt;
     dt = sscClock.getCurTime();
-    clkDisplay.showDate(dt);
+    sscShowDate(dt);
   }
   break;
 #endif
 #if defined(USE_TEMP_DATA)
   case 3:
-    clkDisplay.showTemp(sscGetCurTemp());
+    sscShowTemp(sscGetCurTemp());
     break;
 #endif
   default:
@@ -3281,6 +3284,83 @@ void sscSetOnOffData(clkDataType _type, bool _state, bool _blink)
 #endif
   }
   clkDisplay.setDispData(3, x);
+}
+
+void sscShowTime(int8_t hour, int8_t minute, bool show_colon)
+{
+  clkDisplay.clear();
+
+  if (hour >= 0)
+  {
+    clkDisplay.setDispData(0, clkDisplay.encodeDigit(hour / 10));
+    uint8_t x = clkDisplay.encodeDigit(hour % 10);
+    if (show_colon)
+    {
+      x |= 0x80; // для показа двоеточия установить старший бит во второй цифре
+    }
+    clkDisplay.setDispData(1, x);
+  }
+  if (minute >= 0)
+  {
+    clkDisplay.setDispData(0, clkDisplay.encodeDigit(minute / 10));
+    clkDisplay.setDispData(0, clkDisplay.encodeDigit(minute % 10));
+  }
+}
+
+void sscShowDate(DateTime date)
+{
+  static uint8_t n = 0;
+
+  clkDisplay.clear();
+
+  switch (n)
+  {
+  case 0:
+    sscShowTime(date.day(), date.month(), true);
+    break;
+  case 1:
+    sscShowTime(20, date.year() % 100, false);
+    break;
+  }
+
+  if (++n >= 2)
+  {
+    n = 0;
+  }
+}
+
+void sscShowTemp(int temp)
+{
+  clkDisplay.clear();
+
+  clkDisplay.setDispData(3, 0x63);
+
+  // если температура отрицательная, сформировать минус впереди
+  if (temp < 0)
+  {
+    temp = -temp;
+    clkDisplay.setDispData(1, 0x40);
+  }
+  // если температура выходит за диапазон, сформировать строку минусов
+  if (temp > 99)
+  {
+    for (uint8_t i = 0; i < 4; i++)
+    {
+      clkDisplay.setDispData(i, 0x40);
+    }
+  }
+  else
+  {
+    if (temp > 9)
+    {
+      if (clkDisplay.getDispData(1) == 0x40)
+      { // если температура ниже -9, переместить минус на крайнюю левую позицию
+        clkDisplay.setDispData(0, 0x40);
+      }
+      clkDisplay.setDispData(1, clkDisplay.encodeDigit(temp / 10));
+    }
+    clkDisplay.setDispData(2, clkDisplay.encodeDigit(temp % 10));
+  }
 }
 
 #endif
