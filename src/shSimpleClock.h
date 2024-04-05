@@ -615,7 +615,7 @@ private:
   void display_init()
   {
 #if defined(WS2812_MATRIX_DISPLAY)
-    setFastLEDData(ssc_leds, 256);
+    clkDisplay.init(ssc_leds, 256);
 #elif defined(MAX72XX_MATRIX_DISPLAY) || defined(MAX72XX_7SEGMENT_DISPLAY)
     clkDisplay.shutdownAllDevices(false);
 #if defined(MAX72XX_MATRIX_DISPLAY)
@@ -3302,8 +3302,8 @@ void sscShowTime(int8_t hour, int8_t minute, bool show_colon)
   }
   if (minute >= 0)
   {
-    clkDisplay.setDispData(0, clkDisplay.encodeDigit(minute / 10));
-    clkDisplay.setDispData(0, clkDisplay.encodeDigit(minute % 10));
+    clkDisplay.setDispData(2, clkDisplay.encodeDigit(minute / 10));
+    clkDisplay.setDispData(3, clkDisplay.encodeDigit(minute % 10));
   }
 }
 

@@ -130,6 +130,99 @@ private:
     }
   }
 
+#if __ESPICHIPSET__
+void setESpiLedsData(CRGB *data, uint16_t leds_count)
+{
+#if defined CHIPSET_LPD6803
+  ESPIChipsets const chip = LPD6803;
+#elif defined CHIPSET_LPD8806
+  ESPIChipsets const chip = LPD8806;
+#elif defined CHIPSET_WS2801
+  ESPIChipsets const chip = WS2801;
+#elif defined CHIPSET_WS2803
+  ESPIChipsets const chip = WS2803;
+#elif defined CHIPSET_SM16716
+  ESPIChipsets const chip = SM16716;
+#elif defined CHIPSET_P9813
+  ESPIChipsets const chip = P9813;
+#elif defined CHIPSET_APA102
+  ESPIChipsets const chip = APA102;
+#elif defined CHIPSET_SK9822
+  ESPIChipsets const chip = SK9822;
+#elif defined CHIPSET_DOTSTAR
+  ESPIChipsets const chip = DOTSTAR;
+#endif
+
+#if defined(USE_HARDWARE_SPI)
+  FastLED.addLeds<chip, EORDER>(data, leds_count);
+#else
+  FastLED.addLeds<chip, DISPLAY_DIN_PIN, DISPLAY_CLK_PIN, EORDER>(data, leds_count);
+#endif
+}
+#else
+
+void setLedsData(CRGB *data, uint16_t leds_count)
+{
+#if defined CHIPSET_NEOPIXEL
+  FastLED.addLeds<NEOPIXEL, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
+#elif defined CHIPSET_SM16703
+  FastLED.addLeds<SM16703, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
+#elif defined CHIPSET_TM1829
+  FastLED.addLeds<TM1829, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
+#elif defined CHIPSET_TM1812
+  FastLED.addLeds<TM1812, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
+#elif defined CHIPSET_TM1809
+  FastLED.addLeds<TM1809, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
+#elif defined CHIPSET_TM1804
+  FastLED.addLeds<TM1804, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
+#elif defined CHIPSET_TM1803
+  FastLED.addLeds<M1803, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
+#elif defined CHIPSET_UCS1903
+  FastLED.addLeds<UCS1903, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
+#elif defined CHIPSET_UCS1903B
+  FastLED.addLeds<UCS1903B, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
+#elif defined CHIPSET_UCS1904
+  FastLED.addLeds<UCS1904, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
+#elif defined CHIPSET_UCS2903
+  FastLED.addLeds<UCS2903, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
+#elif defined CHIPSET_WS2812
+  FastLED.addLeds<WS2812, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
+#elif defined CHIPSET_WS2852
+  FastLED.addLeds<WS2852, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
+#elif defined CHIPSET_WS2812B
+  FastLED.addLeds<WS2812B, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
+#elif defined CHIPSET_GS1903
+  FastLED.addLeds<GS1903, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
+#elif defined CHIPSET_SK6812
+  FastLED.addLeds<SK6812, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
+#elif defined CHIPSET_SK6822
+  FastLED.addLeds<SK6822, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
+#elif defined CHIPSET_APA106
+  FastLED.addLeds<APA106, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
+#elif defined CHIPSET_PL9823
+  FastLED.addLeds<PL9823, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
+#elif defined CHIPSET_WS2811
+  FastLED.addLeds<WS2811, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
+#elif defined CHIPSET_WS2813
+  FastLED.addLeds<WS2813, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
+#elif defined CHIPSET_APA104
+  FastLED.addLeds<APA104, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
+#elif defined CHIPSET_WS2811_400
+  FastLED.addLeds<WS2811_400, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
+#elif defined CHIPSET_GE8822
+  FastLED.addLeds<GE8822, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
+#elif defined CHIPSET_GW6205
+  FastLED.addLeds<GW6205, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
+#elif defined CHIPSET_GW6205_400
+  FastLED.addLeds<GW6205_400, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
+#elif defined CHIPSET_LPD1886
+  FastLED.addLeds<LPD1886, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
+#elif defined CHIPSET_LPD1886_8BIT
+  FastLED.addLeds<LPD1886_8BIT, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
+#endif
+}
+#endif
+
 public:
   /**
    * @brief конструктор
@@ -160,8 +253,42 @@ public:
     {
       for (uint8_t i = 0; i < 8; i++)
       {
-        leds[getLedIndexOfStrip(i, col)] =
-            (((_data) >> (7 - i)) & 0x01) ? color : bg_color;
+        uint8_t grd = 0;
+        grd = (grd > 7) ? 0 : grd;
+
+        if (grd > 0)
+        {
+          // Варианты градиента для вывода символов; grd - выбор градиента
+          uint8_t j;
+
+          switch (grd)
+          {
+          case 1: // градиент по диагонали 1
+            j = (i + col) % 7 + 1;
+            break;
+          case 2: // градиент по диагонали 2
+            j = (i + (7 - col % 7)) % 7 + 1;
+            break;
+          case 3: // градиент по вертикали - красный -- красный
+          case 4: // градиент по вертикали - желтый -- желтый
+          case 5: // градиент по вертикали - голубой -- голубой
+          case 6: // градиент по вертикали - фиолетовый -- фиолетовый
+            j = (i + (grd - 3) * 2) % 7 + 1;
+            break;
+          case 7: // градиент по горизонтали
+            j = col % 7 + 1;
+            break;
+          }
+
+          leds[getLedIndexOfStrip(i, col)] =
+              (((_data) >> (7 - i)) & 0x01) ? pgm_read_dword(&color_of_number[j])
+                                            : bg_color;
+        }
+        else
+        {
+          leds[getLedIndexOfStrip(i, col)] =
+              (((_data) >> (7 - i)) & 0x01) ? color : bg_color;
+        }
       }
     }
   }
@@ -302,108 +429,19 @@ public:
   {
     FastLED.setMaxPowerInVoltsAndMilliamps(volts, milliamps);
   }
+
+  /**
+   * @brief инициализация матрицы
+   *
+   * @param data
+   * @param leds_count
+   */
+  void init(CRGB *data, uint16_t leds_count)
+  {
+#if __ESPICHIPSET__
+    setESpiLedsData(data, leds_count);
+#else
+    setLedsData(data, leds_count);
+#endif
+  }
 };
-
-// ==== инициализация матрицы ========================
-
-#if __ESPICHIPSET__
-void setESpiLedsData(CRGB *data, uint16_t leds_count)
-{
-#if defined CHIPSET_LPD6803
-  ESPIChipsets const chip = LPD6803;
-#elif defined CHIPSET_LPD8806
-  ESPIChipsets const chip = LPD8806;
-#elif defined CHIPSET_WS2801
-  ESPIChipsets const chip = WS2801;
-#elif defined CHIPSET_WS2803
-  ESPIChipsets const chip = WS2803;
-#elif defined CHIPSET_SM16716
-  ESPIChipsets const chip = SM16716;
-#elif defined CHIPSET_P9813
-  ESPIChipsets const chip = P9813;
-#elif defined CHIPSET_APA102
-  ESPIChipsets const chip = APA102;
-#elif defined CHIPSET_SK9822
-  ESPIChipsets const chip = SK9822;
-#elif defined CHIPSET_DOTSTAR
-  ESPIChipsets const chip = DOTSTAR;
-#endif
-
-#if defined(USE_HARDWARE_SPI)
-  FastLED.addLeds<chip, EORDER>(data, leds_count);
-#else
-  FastLED.addLeds<chip, DISPLAY_DIN_PIN, DISPLAY_CLK_PIN, EORDER>(data, leds_count);
-#endif
-}
-#else
-
-void setLedsData(CRGB *data, uint16_t leds_count)
-{
-#if defined CHIPSET_NEOPIXEL
-  FastLED.addLeds<NEOPIXEL, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
-#elif defined CHIPSET_SM16703
-  FastLED.addLeds<SM16703, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
-#elif defined CHIPSET_TM1829
-  FastLED.addLeds<TM1829, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
-#elif defined CHIPSET_TM1812
-  FastLED.addLeds<TM1812, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
-#elif defined CHIPSET_TM1809
-  FastLED.addLeds<TM1809, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
-#elif defined CHIPSET_TM1804
-  FastLED.addLeds<TM1804, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
-#elif defined CHIPSET_TM1803
-  FastLED.addLeds<M1803, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
-#elif defined CHIPSET_UCS1903
-  FastLED.addLeds<UCS1903, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
-#elif defined CHIPSET_UCS1903B
-  FastLED.addLeds<UCS1903B, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
-#elif defined CHIPSET_UCS1904
-  FastLED.addLeds<UCS1904, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
-#elif defined CHIPSET_UCS2903
-  FastLED.addLeds<UCS2903, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
-#elif defined CHIPSET_WS2812
-  FastLED.addLeds<WS2812, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
-#elif defined CHIPSET_WS2852
-  FastLED.addLeds<WS2852, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
-#elif defined CHIPSET_WS2812B
-  FastLED.addLeds<WS2812B, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
-#elif defined CHIPSET_GS1903
-  FastLED.addLeds<GS1903, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
-#elif defined CHIPSET_SK6812
-  FastLED.addLeds<SK6812, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
-#elif defined CHIPSET_SK6822
-  FastLED.addLeds<SK6822, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
-#elif defined CHIPSET_APA106
-  FastLED.addLeds<APA106, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
-#elif defined CHIPSET_PL9823
-  FastLED.addLeds<PL9823, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
-#elif defined CHIPSET_WS2811
-  FastLED.addLeds<WS2811, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
-#elif defined CHIPSET_WS2813
-  FastLED.addLeds<WS2813, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
-#elif defined CHIPSET_APA104
-  FastLED.addLeds<APA104, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
-#elif defined CHIPSET_WS2811_400
-  FastLED.addLeds<WS2811_400, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
-#elif defined CHIPSET_GE8822
-  FastLED.addLeds<GE8822, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
-#elif defined CHIPSET_GW6205
-  FastLED.addLeds<GW6205, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
-#elif defined CHIPSET_GW6205_400
-  FastLED.addLeds<GW6205_400, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
-#elif defined CHIPSET_LPD1886
-  FastLED.addLeds<LPD1886, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
-#elif defined CHIPSET_LPD1886_8BIT
-  FastLED.addLeds<LPD1886_8BIT, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
-#endif
-}
-#endif
-
-void setFastLEDData(CRGB *data, uint16_t leds_count)// TODO: перенести в класс
-{
-#if __ESPICHIPSET__
-  setESpiLedsData(data, leds_count);
-#else
-  setLedsData(data, leds_count);
-#endif
-}
