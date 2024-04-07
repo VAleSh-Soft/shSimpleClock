@@ -30,7 +30,7 @@
 #include <shSimpleClock.h>
 ```
 
-Образец файла **clockSetting.h** идет вместе с библиотекой.
+Образец файла [**clockSetting.h**](clockSetting.h) идет вместе с библиотекой.
 
 ### История версий
 
