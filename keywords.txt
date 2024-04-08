@@ -50,7 +50,9 @@ setBrightnessMin	KEYWORD2
 setClockEvent	KEYWORD2
 setAlarmEvent	KEYWORD2
 setClockEventState	KEYWORD2
+getClockEventState	KEYWORD2
 setAlarmEventState	KEYWORD2
+getAlarmEventState	KEYWORD2
 getLightThresholdValue	KEYWORD2
 setLightThresholdValue	KEYWORD2
 setClockEventState	KEYWORD2

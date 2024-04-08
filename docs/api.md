@@ -243,9 +243,9 @@ void setOnOffAlarm(bool _state);
 AlarmState getAlarmState()
 ```
 получает текущий статус будильника, что позволяет отслеживать срабатывание; возвращает 
-- **ALARM_OFF(0)** - будильник выключен, 
-- **ALARM_ON(1)** - будильник включен, 
-- **ALARM_YES(2)** - будильник сработал;
+- **ALARM_OFF (0)** - будильник выключен, 
+- **ALARM_ON (1)** - будильник включен, 
+- **ALARM_YES (2)** - будильник сработал;
 
 Метод
 ```
@@ -345,14 +345,14 @@ void setButtonFlag(clkButtonType _btn, clkButtonFlag _flag);
 Если параметр `_clear` в методе `getButtonFlag()` задать равным **true**, то флаг кнопки после считывания будет очищен (установлено значение **CLK_BTN_FLAG_NONE**);
 
 Параметры `_btn` могут принимать следующие значения:
- - `CLK_BTN_SET` - кнопка **Set**;
- - `CLK_BTN_UP` - кнопка **Up**;
- - `CLK_BTN_DOWN` - кнопка **Down**;
+ - **CLK_BTN_SET (0)** - кнопка **Set**;
+ - **CLK_BTN_UP (1)** - кнопка **Up**;
+ - **CLK_BTN_DOWN (2)** - кнопка **Down**;
 
 флаги кнопок могут принимать следующие значения:
- - `CLK_BTN_FLAG_NONE` - флаг кнопки - ничего не делать;
- - `CLK_BTN_FLAG_NEXT` - флаг кнопки - изменить значение;
- - `CLK_BTN_FLAG_EXIT` - флаг кнопки - возврат в режим показа текущего времени;
+ - **CLK_BTN_FLAG_NONE (0)** - флаг кнопки - ничего не делать;
+ - **CLK_BTN_FLAG_NEXT (1)** - флаг кнопки - изменить значение;
+ - **CLK_BTN_FLAG_EXIT (2)** - флаг кнопки - возврат в режим показа текущего времени;
 
 Флаги используются для работы с интерфейсами настроек - времени, даты, будильника и всех доступных опций.
 
@@ -370,8 +370,9 @@ void setClockEvent(uint16_t _interval, sceCallback _callback, bool _active = tru
 
 ```
 void setClockEventState(bool _state);
+void getClockEventState();
 ```
-задает текущий статус события - при `false` функция вызываться не будет.
+задает и возвращают текущий статус события соответственно - при `_state = false` callback-функция вызываться не будет.
 
 
 #### Событие будильника
@@ -385,8 +386,9 @@ void setAlarmEvent(sceCallback _callback, bool _active = true);
 
 ```
 void setAlarmEventState(bool _state);
+bool getAlarmEventState();
 ```
-задает текущий статус события - при `false` функция вызываться не будет.
+задает и возвращает текущий статус события соответственно - при `_state = false` callback-функция вызываться не будет.
 
 Образец использования событий см. в [примерах](../examples/clock_event/clock_event.ino).
 

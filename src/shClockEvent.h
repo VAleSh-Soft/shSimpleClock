@@ -50,4 +50,9 @@ public:
   {
     state = _state;
   }
+
+  bool getState()
+  {
+    return state;
+  }
 };

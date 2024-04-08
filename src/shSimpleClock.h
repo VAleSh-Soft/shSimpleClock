@@ -782,6 +782,14 @@ public:
   void setClockEventState(bool _state) { sscClockEvent.setState(_state); }
 
   /**
+   * @brief получить текущий статус ежесекундного события
+   *
+   * @return true
+   * @return false
+   */
+  bool getClockEventState() { return sscClockEvent.getState(); }
+
+  /**
    * @brief получить текущее состояние или событие кнопки
    *
    * @param _btn идентификатор кнопки, может иметь значение: CLK_BTN_SET, CLK_BTN_UP, CLK_BTN_DOWN;
@@ -967,6 +975,14 @@ public:
    * @param _state true - событие активно; flase - событие не активно
    */
   void setAlarmEventState(bool _state) { sscAlarmEvent.setState(_state); }
+
+  /**
+   * @brief получить текущий статус события будильника
+   * 
+   * @return true 
+   * @return false 
+   */
+  bool getAlarmEventState() { sscAlarmEvent.getState(); }
 
   /**
    * @brief получение времени срабатывания будильника
