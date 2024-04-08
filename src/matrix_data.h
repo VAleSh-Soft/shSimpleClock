@@ -319,7 +319,7 @@ static const uint8_t PROGMEM tags[] = {
     0xDF, 0xF0, 0xEA, // Ярк - яркость
     0xCF, 0xF0, 0xE3, // Прг - порог переключения яркости
     0xD6, 0xE2, 0xF2, // Цвт - цвет символов
-    0xD1, 0xE5, 0xEA  // Сек - секундный столбец
+    0xD1, 0xE5, 0xEA  // Сек - секундный столбик
 };
 
 static const uint8_t PROGMEM months[] = {

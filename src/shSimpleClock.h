@@ -142,7 +142,7 @@ enum clkDisplayMode : uint8_t
 #endif
 #if defined(SHOW_SECOND_COLUMN)
   ,
-  DISPLAY_MODE_SET_SECOND_COLUMN_ON_OFF // режим включения/выключения отображения секундного столбца
+  DISPLAY_MODE_SET_SECOND_COLUMN_ON_OFF // режим включения/выключения отображения секундного столбика
 #endif
   ,
   DISPLAY_MODE_CUSTOM_1,
@@ -1151,7 +1151,7 @@ public:
 
 #if defined(SHOW_SECOND_COLUMN)
   /**
-   * @brief установка  статуса секундного столбца - включен или выключен
+   * @brief установка  статуса секундного столбика - включен или выключен
    *
    * @param _state true - отображается, false - отключен
    */
@@ -1161,7 +1161,7 @@ public:
   }
 
   /**
-   * @brief получение статуса секундного столбца - включен или выключен
+   * @brief получение статуса секундного столбика - включен или выключен
    *
    * @return true отображается
    * @return false отключен
@@ -1372,7 +1372,7 @@ void sscShowTimeData(int8_t hour, int8_t minute)
 
 #if defined(SHOW_SECOND_COLUMN)
 void sscShowSecondColumn(int8_t second)
-{ // формирование секундного столбца
+{ // формирование секундного столбика
   uint8_t col_sec = 0;
   uint8_t x = second / 5;
   for (uint8_t i = 0; i < x; i++)
@@ -1946,7 +1946,7 @@ void sscCheckUpDownButton()
       ssc_display_mode = DISPLAY_MODE_SET_COLOR_OF_NUMBER;
       buttons.resetButtonState(CLK_BTN_DOWN);
 #elif defined(SHOW_SECOND_COLUMN)
-      // вход в настройки секундного столбца
+      // вход в настройки секундного столбика
       ssc_display_mode = DISPLAY_MODE_SET_SECOND_COLUMN_ON_OFF;
       buttons.resetButtonState(CLK_BTN_DOWN);
 #endif
@@ -3027,7 +3027,7 @@ void sscAssembleString(clkDisplayMode data_type, uint8_t lenght)
 #endif
 
 #if defined(SHOW_SECOND_COLUMN)
-  case DISPLAY_MODE_SET_SECOND_COLUMN_ON_OFF: // настройка включения/выключения секундного столбца
+  case DISPLAY_MODE_SET_SECOND_COLUMN_ON_OFF: // настройка включения/выключения секундного столбика
     sscSetOnOffDataString(SET_SECOND_COLUMN_TAG,
                           lenght - 31,
                           (bool)read_eeprom_8(SECOND_COLUMN_ON_OF_DATA_EEPROM_INDEX),
