@@ -34,6 +34,13 @@
 #define USE_MATRIX_DISPLAY 0
 #endif
 
+// используются опции с параметрами вкл/откл
+#if defined(USE_ALARM) || defined(USE_TICKER_FOR_DATA) || defined(SHOW_SECOND_COLUMN)
+#define SHOW_ON_OFF_DATA 1
+#else
+#define SHOW_ON_OFF_DATA 0
+#endif
+
 // ===================================================
 
 #include <Arduino.h>
@@ -161,9 +168,9 @@ void sscShowTimeData(int8_t hour, int8_t minute);
 void sscShowSecondColumn(int8_t second);
 #endif
 void sscShowTimeSetting();
-void sscSetDisp();
+void sscShowDisplay();
 void sscCheckButton();
-void sscSetDisplay();
+void sscSetDisplayMode();
 #if defined(USE_ALARM)
 void sscCheckAlarm();
 void sscRunAlarmBuzzer();
@@ -186,7 +193,9 @@ void sscShowOtherSetting();
 void sscAutoShowData();
 uint8_t sscGetPeriodForAutoShow(uint8_t index);
 #endif
+#if SHOW_ON_OFF_DATA
 void sscShowOnOffData(clkDataType _type, bool _state, bool blink);
+#endif
 
 #if USE_MATRIX_DISPLAY
 
@@ -484,7 +493,7 @@ public:
 
 clkDisplayMode ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
 
-clkButtonGroup buttons;
+clkButtonGroup sscButtons;
 
 #if defined(USE_LIGHT_SENSOR)
 uint16_t light_threshold_step = 102;
@@ -673,7 +682,7 @@ private:
     sscTasks.alarm_guard = sscTasks.addTask(200ul, sscCheckAlarm);
     sscTasks.alarm_buzzer = sscTasks.addTask(50ul, sscRunAlarmBuzzer, false);
 #endif
-    sscTasks.display_guard = sscTasks.addTask(50ul, sscSetDisp);
+    sscTasks.display_guard = sscTasks.addTask(50ul, sscShowDisplay);
 #if defined(USE_LIGHT_SENSOR)
     sscTasks.light_sensor_guard = sscTasks.addTask(100ul, sscSetBrightness);
 #else
@@ -717,7 +726,7 @@ public:
   void init()
   {
     // ==== кнопки ===================================
-    buttons.init();
+    sscButtons.init();
 
     // ==== RTC ======================================
     rtc_init();
@@ -743,7 +752,7 @@ public:
   {
     sscCheckButton();
     sscTasks.tick();
-    sscSetDisplay();
+    sscSetDisplayMode();
   }
 
   /**
@@ -797,7 +806,7 @@ public:
    */
   uint8_t getButtonState(clkButtonType _btn)
   {
-    return (buttons.getLastState(_btn));
+    return (sscButtons.getLastState(_btn));
   }
 
   /**
@@ -809,7 +818,7 @@ public:
    */
   clkButtonFlag getButtonFlag(clkButtonType _btn, bool _clear = false)
   {
-    return buttons.getButtonFlag(_btn, _clear);
+    return sscButtons.getButtonFlag(_btn, _clear);
   }
 
   /**
@@ -820,7 +829,7 @@ public:
    */
   void setButtonFlag(clkButtonType _btn, clkButtonFlag _flag)
   {
-    buttons.setButtonFlag(_btn, _flag);
+    sscButtons.setButtonFlag(_btn, _flag);
   }
 
 #if defined(MAX72XX_MATRIX_DISPLAY)
@@ -978,9 +987,9 @@ public:
 
   /**
    * @brief получить текущий статус события будильника
-   * 
-   * @return true 
-   * @return false 
+   *
+   * @return true
+   * @return false
    */
   bool getAlarmEventState() { sscAlarmEvent.getState(); }
 
@@ -1146,7 +1155,7 @@ public:
   /**
    * @brief установка интервала автовывода информации
    *
-   * @param _index интервал задается в пределах 0..6, при этом соотвествтие индексов интервалу следующее: 0 -> 0, 1 -> 1, 2 -> 5, 3 -> 10, 4 -> 15, 5 -> 20, 6 -> 30, 7 -> 60
+   * @param _index интервал задается в пределах 0..7, при этом соответствие индексов интервалу следующее: 0 -> 0, 1 -> 1, 2 -> 5, 3 -> 10, 4 -> 15, 5 -> 20, 6 -> 30, 7 -> 60
    */
   void setIntervalForAutoShowData(uint8_t _index)
   {
@@ -1157,7 +1166,7 @@ public:
   /**
    * @brief получение текущего интервала автовывода информации
    *
-   * @return uint8_t
+   * @return uint8_t 0..7, при этом соответствие индексов интервалу следующее: 0 -> 0, 1 -> 1, 2 -> 5, 3 -> 10, 4 -> 15, 5 -> 20, 6 -> 30, 7 -> 60
    */
   uint8_t getIntervalForAutoShowData()
   {
@@ -1301,7 +1310,7 @@ void sscReturnToDefMode()
 #if defined(SHOW_SECOND_COLUMN)
   case DISPLAY_MODE_SET_SECOND_COLUMN_ON_OFF:
 #endif
-    buttons.setButtonFlag(CLK_BTN_SET, CLK_BTN_FLAG_EXIT);
+    sscButtons.setButtonFlag(CLK_BTN_SET, CLK_BTN_FLAG_EXIT);
     break;
 #if defined(USE_TEMP_DATA)
   case DISPLAY_MODE_SHOW_TEMP:
@@ -1332,8 +1341,8 @@ void sscShowTimeData(int8_t hour, int8_t minute)
 {
   // если наступило время блинка и кнопки Up/Down не нажаты, то стереть соответствующие разряды; при нажатых кнопках Up/Down во время изменения данных ничего не мигает
   if (!sscBlinkFlag &&
-      !buttons.isButtonClosed(CLK_BTN_UP) &&
-      !buttons.isButtonClosed(CLK_BTN_DOWN))
+      !sscButtons.isButtonClosed(CLK_BTN_UP) &&
+      !sscButtons.isButtonClosed(CLK_BTN_DOWN))
   {
     switch (ssc_display_mode)
     {
@@ -1430,9 +1439,9 @@ void sscCheckData(uint8_t &dt,
 
 void sscClearButtonFlag()
 {
-  buttons.setButtonFlag(CLK_BTN_SET, CLK_BTN_FLAG_NONE);
-  buttons.setButtonFlag(CLK_BTN_UP, CLK_BTN_FLAG_NONE);
-  buttons.setButtonFlag(CLK_BTN_DOWN, CLK_BTN_FLAG_NONE);
+  sscButtons.setButtonFlag(CLK_BTN_SET, CLK_BTN_FLAG_NONE);
+  sscButtons.setButtonFlag(CLK_BTN_UP, CLK_BTN_FLAG_NONE);
+  sscButtons.setButtonFlag(CLK_BTN_DOWN, CLK_BTN_FLAG_NONE);
 }
 
 void sscStopSetting(clkHandle task)
@@ -1508,7 +1517,7 @@ void _checkBtnSetForTmSet(uint8_t &curHour,
                           uint8_t &curMinute,
                           bool &time_checked)
 {
-  if (buttons.getButtonFlag(CLK_BTN_SET) > CLK_BTN_FLAG_NONE)
+  if (sscButtons.getButtonFlag(CLK_BTN_SET) > CLK_BTN_FLAG_NONE)
   {
     if (time_checked)
     {
@@ -1554,7 +1563,7 @@ void _checkBtnSetForTmSet(uint8_t &curHour,
       }
       time_checked = false;
     }
-    if (buttons.getButtonFlag(CLK_BTN_SET, true) == CLK_BTN_FLAG_NEXT)
+    if (sscButtons.getButtonFlag(CLK_BTN_SET, true) == CLK_BTN_FLAG_NEXT)
     {
       switch (ssc_display_mode)
       {
@@ -1618,10 +1627,10 @@ void _checkBtnUpDownForTmSet(uint8_t &curHour,
                              uint8_t &curMinute,
                              bool &time_checked)
 {
-  if ((buttons.getButtonFlag(CLK_BTN_UP) == CLK_BTN_FLAG_NEXT) ||
-      (buttons.getButtonFlag(CLK_BTN_DOWN, true) == CLK_BTN_FLAG_NEXT))
+  if ((sscButtons.getButtonFlag(CLK_BTN_UP) == CLK_BTN_FLAG_NEXT) ||
+      (sscButtons.getButtonFlag(CLK_BTN_DOWN, true) == CLK_BTN_FLAG_NEXT))
   {
-    bool dir = buttons.getButtonFlag(CLK_BTN_UP, true) == CLK_BTN_FLAG_NEXT;
+    bool dir = sscButtons.getButtonFlag(CLK_BTN_UP, true) == CLK_BTN_FLAG_NEXT;
     switch (ssc_display_mode)
     {
     case DISPLAY_MODE_SET_HOUR:
@@ -1687,8 +1696,8 @@ void _setDisplayForTmSet(uint8_t &curHour, uint8_t &curMinute)
   else if (sscTasks.getTaskState(sscTasks.set_time_mode))
   {
     bool _blink = !sscBlinkFlag &&
-                  !buttons.isButtonClosed(CLK_BTN_UP) &&
-                  !buttons.isButtonClosed(CLK_BTN_DOWN);
+                  !sscButtons.isButtonClosed(CLK_BTN_UP) &&
+                  !sscButtons.isButtonClosed(CLK_BTN_DOWN);
 
     switch (ssc_display_mode)
     {
@@ -1779,7 +1788,7 @@ void sscShowTimeSetting()
 
 // ==== end sscShowTimeSetting =======================
 
-void sscSetDisp()
+void sscShowDisplay()
 {
 #if defined(USE_TICKER_FOR_DATA)
   // обновление экрана делать только если в данный момент не работает бегущая строка, она сама обновляет экран, когда ей это нужно
@@ -1790,7 +1799,7 @@ void sscSetDisp()
 
 void sscCheckSetButton()
 {
-  switch (buttons.getButtonState(CLK_BTN_SET))
+  switch (sscButtons.getButtonState(CLK_BTN_SET))
   {
   case BTN_ONECLICK:
     switch (ssc_display_mode)
@@ -1832,7 +1841,7 @@ void sscCheckSetButton()
     case DISPLAY_MODE_CUSTOM_2:
     case DISPLAY_MODE_CUSTOM_3:
     case DISPLAY_MODE_CUSTOM_4:
-      buttons.setButtonFlag(CLK_BTN_SET, CLK_BTN_FLAG_NEXT);
+      sscButtons.setButtonFlag(CLK_BTN_SET, CLK_BTN_FLAG_NEXT);
       break;
     case DISPLAY_MODE_SHOW_TIME:
 #if defined(USE_ALARM)
@@ -1904,7 +1913,7 @@ void sscCheckSetButton()
     case DISPLAY_MODE_CUSTOM_2:
     case DISPLAY_MODE_CUSTOM_3:
     case DISPLAY_MODE_CUSTOM_4:
-      buttons.setButtonFlag(CLK_BTN_SET, CLK_BTN_FLAG_EXIT);
+      sscButtons.setButtonFlag(CLK_BTN_SET, CLK_BTN_FLAG_EXIT);
       break;
     default:
       break;
@@ -1915,11 +1924,11 @@ void sscCheckSetButton()
 
 void sscCheckUDbtn(clkButtonType btn)
 {
-  switch (buttons.getLastState(btn))
+  switch (sscButtons.getLastState(btn))
   {
   case BTN_DOWN:
   case BTN_DBLCLICK:
-    buttons.setButtonFlag(btn, CLK_BTN_FLAG_NEXT);
+    sscButtons.setButtonFlag(btn, CLK_BTN_FLAG_NEXT);
     break;
   case BTN_LONGCLICK:
     switch (ssc_display_mode)
@@ -1932,7 +1941,7 @@ void sscCheckUDbtn(clkButtonType btn)
 #endif
       return;
     default:
-      buttons.setButtonFlag(btn, CLK_BTN_FLAG_NEXT);
+      sscButtons.setButtonFlag(btn, CLK_BTN_FLAG_NEXT);
       break;
     }
     break;
@@ -1941,46 +1950,46 @@ void sscCheckUDbtn(clkButtonType btn)
 
 void sscCheckUpDownButton()
 {
-  buttons.getButtonState(CLK_BTN_UP);
-  buttons.getButtonState(CLK_BTN_DOWN);
+  sscButtons.getButtonState(CLK_BTN_UP);
+  sscButtons.getButtonState(CLK_BTN_DOWN);
 
   switch (ssc_display_mode)
   {
   case DISPLAY_MODE_SHOW_TIME:
-    if (buttons.getLastState(CLK_BTN_DOWN) == BTN_LONGCLICK &&
-        !buttons.isButtonClosed(CLK_BTN_UP))
+    if (sscButtons.getLastState(CLK_BTN_DOWN) == BTN_LONGCLICK &&
+        !sscButtons.isButtonClosed(CLK_BTN_UP))
     {
 #if defined(USE_TICKER_FOR_DATA)
       // вход в настройки анимации
       ssc_display_mode = DISPLAY_MODE_SET_TICKER_ON_OFF;
-      buttons.resetButtonState(CLK_BTN_DOWN);
+      sscButtons.resetButtonState(CLK_BTN_DOWN);
 #elif USE_AUTO_SHOW_DATA
       // вход в настройки периода автовывода на экран даты и/или температуры
       ssc_display_mode = DISPLAY_MODE_SET_AUTO_SHOW_PERIOD;
-      buttons.resetButtonState(CLK_BTN_DOWN);
+      sscButtons.resetButtonState(CLK_BTN_DOWN);
 #elif defined(WS2812_MATRIX_DISPLAY)
       ssc_display_mode = DISPLAY_MODE_SET_COLOR_OF_NUMBER;
-      buttons.resetButtonState(CLK_BTN_DOWN);
+      sscButtons.resetButtonState(CLK_BTN_DOWN);
 #elif defined(SHOW_SECOND_COLUMN)
       // вход в настройки секундного столбика
       ssc_display_mode = DISPLAY_MODE_SET_SECOND_COLUMN_ON_OFF;
-      buttons.resetButtonState(CLK_BTN_DOWN);
+      sscButtons.resetButtonState(CLK_BTN_DOWN);
 #endif
     }
 #if defined(USE_TEMP_DATA)
-    if (buttons.getLastState(CLK_BTN_UP) == BTN_ONECLICK)
+    if (sscButtons.getLastState(CLK_BTN_UP) == BTN_ONECLICK)
     {
       ssc_display_mode = DISPLAY_MODE_SHOW_TEMP;
     }
 #endif
 #if defined(USE_CALENDAR)
-    if (buttons.getLastState(CLK_BTN_DOWN) == BTN_ONECLICK)
+    if (sscButtons.getLastState(CLK_BTN_DOWN) == BTN_ONECLICK)
     {
       ssc_display_mode = DISPLAY_MODE_SHOW_DATE;
     }
 #endif
-    if (buttons.isSecondButtonPressed(CLK_BTN_UP, CLK_BTN_DOWN, BTN_LONGCLICK) ||
-        buttons.isSecondButtonPressed(CLK_BTN_DOWN, CLK_BTN_UP, BTN_LONGCLICK))
+    if (sscButtons.isSecondButtonPressed(CLK_BTN_UP, CLK_BTN_DOWN, BTN_LONGCLICK) ||
+        sscButtons.isSecondButtonPressed(CLK_BTN_DOWN, CLK_BTN_UP, BTN_LONGCLICK))
     {
 #if defined(USE_SET_BRIGHTNESS_MODE)
 #if defined(USE_LIGHT_SENSOR)
@@ -2030,18 +2039,18 @@ void sscCheckUpDownButton()
   case DISPLAY_MODE_CUSTOM_2:
   case DISPLAY_MODE_CUSTOM_3:
   case DISPLAY_MODE_CUSTOM_4:
-    if (!buttons.isButtonClosed(CLK_BTN_DOWN))
+    if (!sscButtons.isButtonClosed(CLK_BTN_DOWN))
     {
       sscCheckUDbtn(CLK_BTN_UP);
     }
-    if (!buttons.isButtonClosed(CLK_BTN_UP))
+    if (!sscButtons.isButtonClosed(CLK_BTN_UP))
     {
       sscCheckUDbtn(CLK_BTN_DOWN);
     }
     break;
 #if defined(USE_TEMP_DATA)
   case DISPLAY_MODE_SHOW_TEMP:
-    if (buttons.getLastState(CLK_BTN_UP) == BTN_ONECLICK)
+    if (sscButtons.getLastState(CLK_BTN_UP) == BTN_ONECLICK)
     {
       sscReturnToDefMode();
     }
@@ -2049,7 +2058,7 @@ void sscCheckUpDownButton()
 #endif
 #if defined(USE_CALENDAR)
   case DISPLAY_MODE_SHOW_DATE:
-    if (buttons.getLastState(CLK_BTN_DOWN) == BTN_ONECLICK)
+    if (sscButtons.getLastState(CLK_BTN_DOWN) == BTN_ONECLICK)
     { // выход из режима показа даты по клику кнопкой Down
       sscReturnToDefMode();
     }
@@ -2066,7 +2075,7 @@ void sscCheckButton()
   sscCheckUpDownButton();
 }
 
-void sscSetDisplay()
+void sscSetDisplayMode()
 {
   switch (ssc_display_mode)
   {
@@ -2304,9 +2313,9 @@ void _startOtherSettingMode(uint8_t &x)
 
 void _checkBtnSetForOthSet(uint8_t &x)
 {
-  if (buttons.getButtonFlag(CLK_BTN_SET) > CLK_BTN_FLAG_NONE)
+  if (sscButtons.getButtonFlag(CLK_BTN_SET) > CLK_BTN_FLAG_NONE)
   {
-    bool _next = buttons.getButtonFlag(CLK_BTN_SET, true) == CLK_BTN_FLAG_NEXT;
+    bool _next = sscButtons.getButtonFlag(CLK_BTN_SET, true) == CLK_BTN_FLAG_NEXT;
     switch (ssc_display_mode)
     {
 #if defined(USE_LIGHT_SENSOR)
@@ -2394,10 +2403,10 @@ void _checkBtnSetForOthSet(uint8_t &x)
 
 void _checkBtnUpDownForOthSet(uint8_t &x)
 {
-  if ((buttons.getButtonFlag(CLK_BTN_UP) == CLK_BTN_FLAG_NEXT) ||
-      (buttons.getButtonFlag(CLK_BTN_DOWN, true) == CLK_BTN_FLAG_NEXT))
+  if ((sscButtons.getButtonFlag(CLK_BTN_UP) == CLK_BTN_FLAG_NEXT) ||
+      (sscButtons.getButtonFlag(CLK_BTN_DOWN, true) == CLK_BTN_FLAG_NEXT))
   {
-    bool dir = (buttons.getButtonFlag(CLK_BTN_UP, true) == CLK_BTN_FLAG_NEXT);
+    bool dir = (sscButtons.getButtonFlag(CLK_BTN_UP, true) == CLK_BTN_FLAG_NEXT);
     switch (ssc_display_mode)
     {
 #if defined(USE_LIGHT_SENSOR)
@@ -2450,8 +2459,8 @@ void _setDisplayDataForOthSet(uint8_t &x)
   else
   {
     bool blink = !sscBlinkFlag &&
-                 !buttons.isButtonClosed(CLK_BTN_UP) &&
-                 !buttons.isButtonClosed(CLK_BTN_DOWN);
+                 !sscButtons.isButtonClosed(CLK_BTN_UP) &&
+                 !sscButtons.isButtonClosed(CLK_BTN_DOWN);
     switch (ssc_display_mode)
     {
 #if defined(USE_LIGHT_SENSOR)
@@ -2715,7 +2724,6 @@ void sscAutoShowData()
     if (++n > n_max)
     {
       sscReturnToDefMode();
-      // TODO: иногда при ручном выводе даты в конце промаргивает температура; бывает на любых экранах при отключенной анимации
     }
   }
 }
@@ -2740,6 +2748,7 @@ uint8_t sscGetPeriodForAutoShow(uint8_t index)
 }
 #endif
 
+#if SHOW_ON_OFF_DATA
 void sscShowOnOffData(clkDataType _type, bool _state, bool blink)
 {
   clkDisplay.clear();
@@ -2749,6 +2758,7 @@ void sscShowOnOffData(clkDataType _type, bool _state, bool blink)
   sscSetOnOffData(_type, _state, blink);
 #endif
 }
+#endif
 
 #if USE_MATRIX_DISPLAY
 
