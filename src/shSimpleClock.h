@@ -501,11 +501,11 @@ clkButtonGroup sscButtons;
 #if defined(USE_LIGHT_SENSOR)
 uint16_t light_threshold_step = 102;
 
-void sscGetLightThresholdStep(uint8_t adc_bit_depth)
+void sscGetLightThresholdStep(uint8_t _adc_bit_depth)
 {
   uint16_t x = 1;
 
-  for (uint8_t i = 0; i < adc_bit_depth; i++)
+  for (uint8_t i = 0; i < _adc_bit_depth; i++)
   {
     x *= 2;
   }
@@ -519,8 +519,6 @@ void sscGetLightThresholdStep(uint8_t adc_bit_depth)
 class shSimpleClock
 {
 private:
-  uint8_t adc_bit_depth = 10;
-
   void rtc_init()
   {
     Wire.begin();
@@ -588,10 +586,9 @@ private:
   {
 #if defined(USE_NTC)
     sscTempSensor.setADCbitDepth(BIT_DEPTH); // установить разрядность АЦП вашего МК, для AVR обычно равна 10 бит
-    adc_bit_depth = BIT_DEPTH;
 #endif
 #if defined(USE_LIGHT_SENSOR)
-    sscGetLightThresholdStep(adc_bit_depth);
+    sscGetLightThresholdStep(BIT_DEPTH);
 #endif
     // проверить корректность заданных уровней яркости
     uint8_t x = read_eeprom_8(MAX_BRIGHTNESS_VALUE_EEPROM_INDEX);
@@ -714,12 +711,11 @@ public:
    */
   void setADCbitDepth(uint8_t bit_depth)
   {
-    adc_bit_depth = bit_depth;
 #if defined(USE_NTC)
     sscTempSensor.setADCbitDepth(bit_depth);
 #endif
 #if defined(USE_LIGHT_SENSOR)
-    sscGetLightThresholdStep(adc_bit_depth);
+    sscGetLightThresholdStep(bit_depth);
 #endif
   }
 #endif
