@@ -53,7 +53,6 @@
 #include <shButton.h> // https://github.com/VAleSh-Soft/shButton
 #include "_eeprom.h"
 #include "shSimpleRTC.h"
-#include "shClockEvent.h"
 #include "clkTaskManager.h"
 
 // ===================================================
@@ -258,11 +257,15 @@ void sscShowTemp(int temp);
 #include "ntc.h"
 #endif
 #endif
+#if defined USE_CLOCK_EVENT
+#include "shClockEvent.h"
 
 shClockEvent sscClockEvent;
 #if defined(USE_ALARM)
 shClockEvent sscAlarmEvent;
 #endif
+#endif
+
 clkTaskManager sscTasks;
 
 // -----------------------------------------
@@ -703,6 +706,7 @@ public:
    */
   shSimpleClock() {}
 
+#if defined(USE_LIGHT_SENSOR) || defined(USE_NTC)
   /**
    * @brief задать действующее разрешение АЦП микроконтроллера;
    *
@@ -718,6 +722,7 @@ public:
     sscGetLightThresholdStep(adc_bit_depth);
 #endif
   }
+#endif
 
   /**
    * @brief инициализация часов
@@ -769,6 +774,7 @@ public:
    */
   void setDisplayMode(clkDisplayMode _mode) { ssc_display_mode = _mode; }
 
+#if defined USE_CLOCK_EVENT
   /**
    * @brief подключить callback-функцию к ежесекундному событию
    *
@@ -797,6 +803,7 @@ public:
    * @return false
    */
   bool getClockEventState() { return sscClockEvent.getState(); }
+#endif
 
   /**
    * @brief получить текущее состояние или событие кнопки
@@ -967,6 +974,8 @@ public:
 #endif
 
 #if defined(USE_ALARM)
+
+#if defined USE_CLOCK_EVENT
   /**
    * @brief подключить callback-функцию к событию будильника
    *
@@ -992,6 +1001,7 @@ public:
    * @return false
    */
   bool getAlarmEventState() { sscAlarmEvent.getState(); }
+#endif
 
   /**
    * @brief получение времени срабатывания будильника
@@ -1262,7 +1272,9 @@ void sscBlink()
   static uint32_t tmr = 0;
   if (cur_sec != sscClock.getCurTime().second())
   {
+#if defined USE_CLOCK_EVENT
     sscClockEvent.run();
+#endif
     cur_sec = sscClock.getCurTime().second();
     sscBlinkFlag = false;
     tmr = millis();
@@ -2154,7 +2166,9 @@ void sscCheckAlarm()
       !sscTasks.getTaskState(sscTasks.alarm_buzzer))
   {
     sscRunAlarmBuzzer();
+#if defined USE_CLOCK_EVENT
     sscAlarmEvent.run();
+#endif
   }
 }
 
