@@ -1210,7 +1210,6 @@ public:
 
 void sscRtcNow()
 {
-  static bool flag = false;
 
   sscClock.now();
   if (ssc_display_mode == DISPLAY_MODE_SHOW_TIME)
@@ -1224,6 +1223,13 @@ void sscRtcNow()
 #endif
 
 #if USE_AUTO_SHOW_DATA
+    static bool flag = false;
+
+    if (sscClock.getCurTime().second() > 0)
+    {
+      flag = false;
+    }
+
     uint8_t x = read_eeprom_8(INTERVAL_FOR_AUTOSHOWDATA_EEPROM_INDEX);
     if (((sscGetPeriodForAutoShow(x) > 0) &&
          (sscClock.getCurTime().minute() % sscGetPeriodForAutoShow(x) == 0)) &&
@@ -1254,11 +1260,6 @@ void sscRtcNow()
                   sscBlinkFlag);
 #endif
     }
-  }
-
-  if (sscClock.getCurTime().second() > 0)
-  {
-    flag = false;
   }
 }
 
@@ -1947,7 +1948,10 @@ void sscCheckUDbtn(clkButtonType btn)
 #if defined(USE_TICKER_FOR_DATA)
     case DISPLAY_MODE_SET_TICKER_ON_OFF:
 #endif
-      return;
+#if defined(SHOW_SECOND_COLUMN)
+    case DISPLAY_MODE_SET_SECOND_COLUMN_ON_OFF:
+#endif
+      break; // для этих режимов не реагировать на удержание кнопки, чтобы исключить постоянное переключение параметра
     default:
       sscButtons.setButtonFlag(btn, CLK_BTN_FLAG_NEXT);
       break;
