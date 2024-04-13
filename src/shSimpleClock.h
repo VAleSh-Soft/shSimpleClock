@@ -1704,9 +1704,11 @@ void _setDisplayForTmSet(uint8_t &curHour, uint8_t &curMinute)
   }
   else if (sscTasks.getTaskState(sscTasks.set_time_mode))
   {
+#if SHOW_ON_OFF_DATA
     bool _blink = !sscBlinkFlag &&
                   !sscButtons.isButtonClosed(CLK_BTN_UP) &&
                   !sscButtons.isButtonClosed(CLK_BTN_DOWN);
+#endif
 
     switch (ssc_display_mode)
     {

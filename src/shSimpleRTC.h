@@ -1,7 +1,7 @@
 /**
  * @file shSimpleRTC.h
  * @author Vladimir Shatalov (valesh-soft@yandex.ru)
- * @brief Небольшой модуль для работы с модулями часов реального времени DS3231 и DS1307
+ * @brief Небольшой модуль для работы с модулями часов реального времени DS3231/DS1307/PCF8563/PCF8523
  * @version 1.0
  * @date 11.03.2024
  *
@@ -12,7 +12,7 @@
 #include <Arduino.h>
 #include <Wire.h>
 
-#if defined(RTC_PFC8563)
+#if defined(RTC_PCF8563)
 #define CLOCK_ADDRESS 0x51
 #else
 #define CLOCK_ADDRESS 0x68
@@ -22,14 +22,14 @@
 
 static const uint8_t daysInMonth[] PROGMEM = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
-// DateTime (get everything at once) from JeeLabs / Adafruit
-// Simple general-purpose date/time class (no TZ / DST / leap second handling!)
+// DateTime (все вместе) от JeeLabs/Adafruit
+// Простой класс даты/времени общего назначения (без обработки TZ/DST/дополнительных секунд!)
 class DateTime
 {
 public:
   DateTime(uint32_t t = 0)
   {
-    t -= SECONDS_FROM_1970_TO_2000; // bring to 2000 timestamp from 1970
+    t -= SECONDS_FROM_1970_TO_2000; // переместить точку времени с 1970 года на 2000
 
     ss = t % 60;
     t /= 60;
@@ -80,12 +80,16 @@ public:
   uint8_t second() const { return ss; }
   uint8_t dayOfTheWeek() const;
 
-  // 32-bit times as seconds since 1/1/2000
+  // 32-битное время в секундах с 01.01.2000
   long secondstime() const;
-  // 32-bit times as seconds since 1/1/1970
-  // THE ABOVE COMMENT IS CORRECT FOR LOCAL TIME; TO USE THIS COMMAND TO
-  // OBTAIN TRUE UNIX TIME SINCE EPOCH, YOU MUST CALL THIS COMMAND AFTER
-  // SETTING YOUR CLOCK TO UTC
+
+  /*
+  * 32-битное время в секундах с 01.01.1970
+  *
+  * УТВЕРЖДЕНИЕ КОРРЕКТНО ДЛЯ ЛОКАЛЬНОГО ВРЕМЕНИ; ЧТОБЫ ИСПОЛЬЗОВАТЬ
+  * ЭТОТ МЕТОД ДЛЯ ПОЛУЧЕНИЯ ПРАВИЛЬНОГО ВРЕМЕНИ UNIX, ВЫ ДОЛЖНЫ 
+  * ВЫЗВАТЬ ЭТОТ МЕТОД ПОСЛЕ УСТАНОВКИ ЧАСОВ В UTC.
+  */ 
   uint32_t unixtime(void) const
   {
     uint32_t t;
@@ -200,8 +204,13 @@ public:
       uint8_t b0 = bcdToDec(Wire.read() & 0x7F);
       uint8_t b1 = bcdToDec(Wire.read());
       uint8_t b2 = bcdToDec(Wire.read());
-      uint8_t b3 = bcdToDec(Wire.read());
+#if defined(RTC_DS3231) || defined(RTC_DS1307)
+      Wire.read();
       uint8_t b4 = bcdToDec(Wire.read());
+#else
+      uint8_t b3 = bcdToDec(Wire.read());
+      Wire.read();
+#endif
       uint8_t b5 = bcdToDec(Wire.read());
       uint16_t b6 = bcdToDec(Wire.read());
 
@@ -428,7 +437,7 @@ public:
       Wire.write(0x0f);
 #elif defined(RTC_PCF8563)
       Wire.write(0x02);
-#elif defined(RTC_PCF8563)
+#elif defined(RTC_PCF8523)
       Wire.write(0x03);
 #endif
       Wire.endTransmission();
