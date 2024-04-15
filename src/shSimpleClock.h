@@ -1398,7 +1398,17 @@ void sscShowTimeData(int8_t hour, int8_t minute)
   else
 #endif
   {
-    sscSetTimeString(1, hour, minute, toColon, toDate);
+
+    uint8_t x = 1;
+#if defined(SHOW_SECOND_COLUMN)
+    // если включен секундный столбик, сместить символы влево на один столбец
+    if (ssc_display_mode == DISPLAY_MODE_SHOW_TIME &&
+        read_eeprom_8(SECOND_COLUMN_ON_OF_DATA_EEPROM_INDEX))
+    {
+      x = 0;
+    }
+#endif
+    sscSetTimeString(x, hour, minute, toColon, toDate);
   }
 #else
   sscShowTime(hour, minute, toColon);
