@@ -626,6 +626,7 @@ private:
 #if defined(WS2812_MATRIX_DISPLAY)
     clkDisplay.init(ssc_leds, 256);
 #elif defined(MAX72XX_MATRIX_DISPLAY) || defined(MAX72XX_7SEGMENT_DISPLAY)
+    clkDisplay.init();
     clkDisplay.shutdownAllDevices(false);
 #if defined(MAX72XX_MATRIX_DISPLAY)
     clkDisplay.setDirection(2);
