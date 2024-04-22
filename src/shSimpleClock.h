@@ -533,8 +533,11 @@ private:
     // если часовой модуль не запущен, запустить его, для чего установить время
     if (!sscClock.isRunning())
     {
-      DateTime dt = sscClock.getCurTime();
-      sscClock.setCurTime(dt.hour(), dt.minute(), dt.second());
+      // DateTime dt = sscClock.getCurTime();
+      // sscClock.setCurTime(dt.hour(), dt.minute(), dt.second());
+      sscClock.setCurTime(0, 0, 0);
+      sscClock.setCurDate(1, 1);
+      sscClock.setCurYear(24);
     }
   }
 
