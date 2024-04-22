@@ -47,7 +47,7 @@ public:
   clkHandle alarm_guard;  // отслеживание будильника
   clkHandle alarm_buzzer; // пищалка будильника
 #endif
-#if USE_AUTO_SHOW_DATA
+#if __USE_AUTO_SHOW_DATA__
   clkHandle auto_show_mode; // вывод даты и/или температуры
 #endif
 #if defined(USE_TEMP_DATA) && defined(USE_DS18B20)
@@ -56,7 +56,7 @@ public:
 #if defined(USE_LIGHT_SENSOR)
   clkHandle light_sensor_guard; // отслеживание показаний датчика света
 #endif
-#if USE_OTHER_SETTING
+#if __USE_OTHER_SETTING__
   clkHandle other_setting_mode; // режим настроек цифровых данных
 #endif
 #if defined(USE_TICKER_FOR_DATA)

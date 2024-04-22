@@ -84,12 +84,12 @@ public:
   long secondstime() const;
 
   /*
-  * 32-битное время в секундах с 01.01.1970
-  *
-  * УТВЕРЖДЕНИЕ КОРРЕКТНО ДЛЯ ЛОКАЛЬНОГО ВРЕМЕНИ; ЧТОБЫ ИСПОЛЬЗОВАТЬ
-  * ЭТОТ МЕТОД ДЛЯ ПОЛУЧЕНИЯ ПРАВИЛЬНОГО ВРЕМЕНИ UNIX, ВЫ ДОЛЖНЫ 
-  * ВЫЗВАТЬ ЭТОТ МЕТОД ПОСЛЕ УСТАНОВКИ ЧАСОВ В UTC.
-  */ 
+   * 32-битное время в секундах с 01.01.1970
+   *
+   * УТВЕРЖДЕНИЕ КОРРЕКТНО ДЛЯ ЛОКАЛЬНОГО ВРЕМЕНИ; ЧТОБЫ ИСПОЛЬЗОВАТЬ
+   * ЭТОТ МЕТОД ДЛЯ ПОЛУЧЕНИЯ ПРАВИЛЬНОГО ВРЕМЕНИ UNIX, ВЫ ДОЛЖНЫ
+   * ВЫЗВАТЬ ЭТОТ МЕТОД ПОСЛЕ УСТАНОВКИ ЧАСОВ В UTC.
+   */
   uint32_t unixtime(void) const
   {
     uint32_t t;
@@ -177,7 +177,7 @@ private:
 
 public:
   /**
-   * @brief конструктор объекта DS3231
+   * @brief конструктор объекта RTC
    *
    */
   shSimpleRTC() {}
@@ -201,28 +201,31 @@ public:
       Wire.endTransmission();
 
       Wire.requestFrom(CLOCK_ADDRESS, 7);
-      uint8_t b0 = bcdToDec(Wire.read() & 0x7F);
-      uint8_t b1 = bcdToDec(Wire.read());
-      uint8_t b2 = bcdToDec(Wire.read());
+      uint8_t b0 = Wire.read();
+      uint8_t b1 = Wire.read();
+      uint8_t b2 = Wire.read();
 #if defined(RTC_DS3231) || defined(RTC_DS1307)
       Wire.read();
-      uint8_t b4 = bcdToDec(Wire.read());
+      uint8_t b4 = Wire.read();
 #else
-      uint8_t b3 = bcdToDec(Wire.read());
+      uint8_t b3 = Wire.read();
       Wire.read();
 #endif
-      uint8_t b5 = bcdToDec(Wire.read());
-      uint16_t b6 = bcdToDec(Wire.read());
+      uint8_t b5 = Wire.read();
+      uint16_t b6 = Wire.read();
 
 #if defined(RTC_DS3231)
-      cur_time = DateTime(b6, (b5 & 0x7F), b4, b2, b1, (b0 & 0x7F));
+      cur_time = DateTime(bcdToDec(b6), bcdToDec(b5 & 0x7F), bcdToDec(b4),
+                          bcdToDec(b2), bcdToDec(b1), bcdToDec(b0 & 0x7F));
 #elif defined(RTC_DS1307)
-      cur_time = DateTime(b6, b5, b4, b2, b1, (b0 & 0x7F));
+      cur_time = DateTime(bcdToDec(b6), bcdToDec(b5), bcdToDec(b4),
+                          bcdToDec(b2), bcdToDec(b1), bcdToDec(b0 & 0x7F));
 #elif defined(RTC_PCF8563)
-      cur_time = DateTime(b6, (b5 & 0x1F), (b3 & 0x3F), (b2 & 0x3F),
-                          (b1 & 0x7F), (b0 & 0x7F));
+      cur_time = DateTime(bcdToDec(b6), bcdToDec(b5 & 0x1F), bcdToDec(b3 & 0x3f),
+                          bcdToDec(b2 & 0x3f), bcdToDec(b1 & 0x7f), bcdToDec(b0 & 0x7F));
 #elif defined(RTC_PCF8523)
-      cur_time = DateTime(b6, b5, b3, b2, b1, (b0 & 0x7F));
+      cur_time = DateTime(bcdToDec(b6), bcdToDec(b5), bcdToDec(b3),
+                          bcdToDec(b2), bcdToDec(b1), bcdToDec(b0 & 0x7F));
 #else
       cur_time = DateTime(0, 1, 1, 0, 0, 0);
 #endif
@@ -331,6 +334,7 @@ public:
     }
   }
 
+#if defined(RTC_DS3231)
   /**
    * @brief возвращает температуру внутреннего датчика DS3231; работает только с DS3231
    *
@@ -338,7 +342,6 @@ public:
    */
   uint8_t getTemperature()
   {
-#if defined(RTC_DS3231)
     uint8_t tMSB, tLSB;
     int16_t temp3231 = -127;
 
@@ -360,11 +363,8 @@ public:
     }
 
     return (temp3231);
-#else
-    // для не DS3231 вывод температуры без датчиков невозможен
-    return -127;
-#endif
   }
+#endif
 
 #if defined(RTC_DS3231)
   /**
@@ -475,7 +475,7 @@ public:
     if (ctlreg & (1 << 5))
     {
       Wire.beginTransmission(CLOCK_ADDRESS);
-      Wire.write(0x02);
+      Wire.write(0x00);
       Wire.write(ctlreg & ~(1 << 5));
       Wire.endTransmission();
     }

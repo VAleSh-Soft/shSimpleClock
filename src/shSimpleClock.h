@@ -4,16 +4,16 @@
 
 // флаг работы с esp8266 или esp32
 #if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)
-#define __ARDUINO_ESP__ 1
+#define __USE_ARDUINO_ESP__ 1
 #else
-#define __ARDUINO_ESP__ 0
+#define __USE_ARDUINO_ESP__ 0
 #endif
 
 // используется или нет периодический автовывод даты и/или температуры
 #if defined(USE_CALENDAR) || defined(USE_TEMP_DATA)
-#define USE_AUTO_SHOW_DATA 1
+#define __USE_AUTO_SHOW_DATA__ 1
 #else
-#define USE_AUTO_SHOW_DATA 0
+#define __USE_AUTO_SHOW_DATA__ 0
 #endif
 
 // дополнительные настройки; здесь настраиваются:
@@ -21,24 +21,27 @@
 //   - порог переключения яркости;
 //   - период автовывода;
 //   - выбор цвета символов для адресных светодиодов;
-#if defined(USE_SET_BRIGHTNESS_MODE) || defined(USE_LIGHT_SENSOR) || defined(WS2812_MATRIX_DISPLAY) || USE_AUTO_SHOW_DATA
-#define USE_OTHER_SETTING 1
+#if defined(USE_SET_BRIGHTNESS_MODE) || defined(USE_LIGHT_SENSOR) || defined(WS2812_MATRIX_DISPLAY) || __USE_AUTO_SHOW_DATA__
+#define __USE_OTHER_SETTING__ 1
 #else
-#define USE_OTHER_SETTING 0
+#define __USE_OTHER_SETTING__ 0
 #endif
 
 // используются матричные экраны
 #if defined(MAX72XX_MATRIX_DISPLAY) || defined(WS2812_MATRIX_DISPLAY)
-#define USE_MATRIX_DISPLAY 1
+#define __USE_MATRIX_DISPLAY__ 1
 #else
-#define USE_MATRIX_DISPLAY 0
+#define __USE_MATRIX_DISPLAY__ 0
 #endif
 
-// используются опции с параметрами вкл/откл
+// используются опции с параметрами вкл/откл:
+//   - включение/отключение будильника
+//   - включение/отключение анимации
+//   - включение/отключение отображения секундного столбика
 #if defined(USE_ALARM) || defined(USE_TICKER_FOR_DATA) || defined(SHOW_SECOND_COLUMN)
-#define SHOW_ON_OFF_DATA 1
+#define __USE_ON_OFF_DATA__ 1
 #else
-#define SHOW_ON_OFF_DATA 0
+#define __USE_ON_OFF_DATA__ 0
 #endif
 
 // ===================================================
@@ -68,7 +71,7 @@ enum clkDataType : uint8_t
   ,
   SET_ALARM_TAG
 #endif
-#if USE_AUTO_SHOW_DATA
+#if __USE_AUTO_SHOW_DATA__
   ,
   SET_AUTO_SHOW_PERIOD_TAG
 #endif
@@ -111,7 +114,7 @@ enum clkDisplayMode : uint8_t
   ,
   DISPLAY_MODE_SHOW_TEMP // режим вывода температуры
 #endif
-#if USE_AUTO_SHOW_DATA
+#if __USE_AUTO_SHOW_DATA__
   ,
   DISPLAY_AUTO_SHOW_DATA // автовывод даты и/или температуры в конце каждой минуты
 #endif
@@ -138,7 +141,7 @@ enum clkDisplayMode : uint8_t
   ,
   DISPLAY_MODE_SET_TICKER_ON_OFF // режим включения/выключения анимации
 #endif
-#if USE_AUTO_SHOW_DATA
+#if __USE_AUTO_SHOW_DATA__
   ,
   DISPLAY_MODE_SET_AUTO_SHOW_PERIOD // режим настройки периода автовывода даты и/или температуры
 #endif
@@ -185,18 +188,18 @@ void sscCheckDS18b20();
 #endif
 void sscClearButtonFlag();
 void sscStopSetting(clkHandle task);
-#if USE_OTHER_SETTING
+#if __USE_OTHER_SETTING__
 void sscShowOtherSetting();
 #endif
-#if USE_AUTO_SHOW_DATA
+#if __USE_AUTO_SHOW_DATA__
 void sscAutoShowData();
 uint8_t sscGetPeriodForAutoShow(uint8_t index);
 #endif
-#if SHOW_ON_OFF_DATA
+#if __USE_ON_OFF_DATA__
 void sscShowOnOffData(clkDataType _type, bool _state, bool blink);
 #endif
 
-#if USE_MATRIX_DISPLAY
+#if __USE_MATRIX_DISPLAY__
 
 void sscSetTimeString(uint8_t offset, int8_t hour, int8_t minute, bool show_colon,
                       bool toDate, bool toStringData = false);
@@ -359,7 +362,7 @@ public:
       {
         sscTasks.startTask(sscTasks.return_to_default_mode);
       }
-#if defined(USE_BUZZER_FOR_BUTTON)
+#if defined(USE_BUZZER_FOR_BUTTON) && BUZZER_PIN >= 0
       if (_state != BTN_LONGCLICK)
       {
         tone(BUZZER_PIN, 2000, 25); // на каждый клик срабатывает пищалка
@@ -544,7 +547,7 @@ private:
     }
 #endif
 
-#if USE_AUTO_SHOW_DATA
+#if __USE_AUTO_SHOW_DATA__
     if (read_eeprom_8(INTERVAL_FOR_AUTOSHOWDATA_EEPROM_INDEX) > 7)
     {
       write_eeprom_8(INTERVAL_FOR_AUTOSHOWDATA_EEPROM_INDEX, 1);
@@ -650,7 +653,7 @@ private:
 #if defined(USE_ALARM)
     task_count += 2;
 #endif
-#if USE_AUTO_SHOW_DATA
+#if __USE_AUTO_SHOW_DATA__
     task_count++;
 #endif
 #if defined(USE_TEMP_DATA) && defined(USE_DS18B20)
@@ -659,7 +662,7 @@ private:
 #if defined(USE_LIGHT_SENSOR)
     task_count++;
 #endif
-#if USE_OTHER_SETTING
+#if __USE_OTHER_SETTING__
     task_count++;
 #endif
 #if defined(USE_TICKER_FOR_DATA)
@@ -676,7 +679,7 @@ private:
 #if defined(USE_TEMP_DATA) && defined(USE_DS18B20)
     sscTasks.ds18b20_guard = sscTasks.addTask(3000ul, sscCheckDS18b20);
 #endif
-#if USE_AUTO_SHOW_DATA
+#if __USE_AUTO_SHOW_DATA__
     sscTasks.auto_show_mode = sscTasks.addTask(100ul, sscAutoShowData, false);
 #endif
 #if defined(USE_ALARM)
@@ -689,7 +692,7 @@ private:
 #else
     clkDisplay.setBrightness(read_eeprom_8(MAX_BRIGHTNESS_VALUE_EEPROM_INDEX));
 #endif
-#if USE_OTHER_SETTING
+#if __USE_OTHER_SETTING__
     sscTasks.other_setting_mode = sscTasks.addTask(50ul, sscShowOtherSetting, false);
 #endif
 #if defined(USE_TICKER_FOR_DATA)
@@ -1133,7 +1136,7 @@ public:
   }
 #endif
 
-#if USE_MATRIX_DISPLAY
+#if __USE_MATRIX_DISPLAY__
 
 #if defined(USE_TICKER_FOR_DATA)
   /**
@@ -1158,7 +1161,7 @@ public:
   }
 #endif
 
-#if USE_AUTO_SHOW_DATA
+#if __USE_AUTO_SHOW_DATA__
   /**
    * @brief установка интервала автовывода информации
    *
@@ -1223,7 +1226,7 @@ void sscRtcNow()
     }
 #endif
 
-#if USE_AUTO_SHOW_DATA
+#if __USE_AUTO_SHOW_DATA__
     static bool flag = false;
 
     if (sscClock.getCurTime().second() > 0)
@@ -1243,7 +1246,7 @@ void sscRtcNow()
     else
 #endif
     {
-#if USE_MATRIX_DISPLAY
+#if __USE_MATRIX_DISPLAY__
       sscShowTimeData(sscClock.getCurTime().hour(),
                       sscClock.getCurTime().minute());
 
@@ -1311,7 +1314,7 @@ void sscReturnToDefMode()
 #if defined(USE_TICKER_FOR_DATA)
   case DISPLAY_MODE_SET_TICKER_ON_OFF:
 #endif
-#if USE_AUTO_SHOW_DATA
+#if __USE_AUTO_SHOW_DATA__
   case DISPLAY_MODE_SET_AUTO_SHOW_PERIOD:
 #endif
 #if defined(WS2812_MATRIX_DISPLAY)
@@ -1328,7 +1331,7 @@ void sscReturnToDefMode()
 #if defined(USE_CALENDAR)
   case DISPLAY_MODE_SHOW_DATE:
 #endif
-#if USE_AUTO_SHOW_DATA
+#if __USE_AUTO_SHOW_DATA__
   case DISPLAY_AUTO_SHOW_DATA:
     sscTasks.stopTask(sscTasks.auto_show_mode);
 #endif
@@ -1389,7 +1392,7 @@ void sscShowTimeData(int8_t hour, int8_t minute)
             ssc_display_mode <= DISPLAY_MODE_SET_YEAR);
   toColon = ssc_display_mode != DISPLAY_MODE_SET_YEAR;
 #endif
-#if USE_MATRIX_DISPLAY
+#if __USE_MATRIX_DISPLAY__
 #if defined(USE_CALENDAR)
   if (ssc_display_mode == DISPLAY_MODE_SET_YEAR)
   {
@@ -1608,7 +1611,7 @@ void _checkBtnSetForTmSet(uint8_t &curHour,
 #endif
 #if defined(USE_TICKER_FOR_DATA)
       case DISPLAY_MODE_SET_TICKER_ON_OFF:
-#if USE_AUTO_SHOW_DATA
+#if __USE_AUTO_SHOW_DATA__
         ssc_display_mode = DISPLAY_MODE_SET_AUTO_SHOW_PERIOD;
 #elif defined(WS2812_MATRIX_DISPLAY)
         ssc_display_mode = DISPLAY_MODE_SET_COLOR_OF_NUMBER;
@@ -1618,8 +1621,8 @@ void _checkBtnSetForTmSet(uint8_t &curHour,
         sscStopSetting(sscTasks.set_time_mode);
         break;
 #endif
-#if defined(SHOW_SECOND_COLUMN) || USE_AUTO_SHOW_DATA
-#if USE_AUTO_SHOW_DATA
+#if defined(SHOW_SECOND_COLUMN) || __USE_AUTO_SHOW_DATA__
+#if __USE_AUTO_SHOW_DATA__
       case DISPLAY_MODE_SET_AUTO_SHOW_PERIOD:
 #endif
 #if defined(SHOW_SECOND_COLUMN)
@@ -1715,7 +1718,7 @@ void _setDisplayForTmSet(uint8_t &curHour, uint8_t &curMinute)
   }
   else if (sscTasks.getTaskState(sscTasks.set_time_mode))
   {
-#if SHOW_ON_OFF_DATA
+#if __USE_ON_OFF_DATA__
     bool _blink = !sscBlinkFlag &&
                   !sscButtons.isButtonClosed(CLK_BTN_UP) &&
                   !sscButtons.isButtonClosed(CLK_BTN_DOWN);
@@ -1761,7 +1764,7 @@ void sscShowTimeSetting()
   {
     _startTimeSettingMode(curHour, curMinute);
     time_checked = false;
-#if !USE_MATRIX_DISPLAY
+#if !__USE_MATRIX_DISPLAY__
     clkDisplay.sleep(); // слегка мигнуть экраном при входе в настройки
     return;
 #endif
@@ -1850,7 +1853,7 @@ void sscCheckSetButton()
 #if defined(USE_TICKER_FOR_DATA)
     case DISPLAY_MODE_SET_TICKER_ON_OFF:
 #endif
-#if USE_AUTO_SHOW_DATA
+#if __USE_AUTO_SHOW_DATA__
     case DISPLAY_MODE_SET_AUTO_SHOW_PERIOD:
 #endif
 #if defined(WS2812_MATRIX_DISPLAY)
@@ -1898,7 +1901,7 @@ void sscCheckSetButton()
       break;
 #if defined(USE_CALENDAR)
     case DISPLAY_MODE_SHOW_DATE:
-#if USE_AUTO_SHOW_DATA
+#if __USE_AUTO_SHOW_DATA__
       sscTasks.stopTask(sscTasks.auto_show_mode);
 #endif
       ssc_display_mode = DISPLAY_MODE_SET_DAY;
@@ -1919,7 +1922,7 @@ void sscCheckSetButton()
 #if defined(USE_TICKER_FOR_DATA)
     case DISPLAY_MODE_SET_TICKER_ON_OFF:
 #endif
-#if USE_AUTO_SHOW_DATA
+#if __USE_AUTO_SHOW_DATA__
     case DISPLAY_MODE_SET_AUTO_SHOW_PERIOD:
 #endif
 #if defined(USE_LIGHT_SENSOR)
@@ -1988,7 +1991,7 @@ void sscCheckUpDownButton()
       // вход в настройки анимации
       ssc_display_mode = DISPLAY_MODE_SET_TICKER_ON_OFF;
       sscButtons.resetButtonState(CLK_BTN_DOWN);
-#elif USE_AUTO_SHOW_DATA
+#elif __USE_AUTO_SHOW_DATA__
       // вход в настройки периода автовывода на экран даты и/или температуры
       ssc_display_mode = DISPLAY_MODE_SET_AUTO_SHOW_PERIOD;
       sscButtons.resetButtonState(CLK_BTN_DOWN);
@@ -2051,7 +2054,7 @@ void sscCheckUpDownButton()
 #if defined(USE_TICKER_FOR_DATA)
   case DISPLAY_MODE_SET_TICKER_ON_OFF:
 #endif
-#if USE_AUTO_SHOW_DATA
+#if __USE_AUTO_SHOW_DATA__
   case DISPLAY_MODE_SET_AUTO_SHOW_PERIOD:
 #endif
 #if defined(WS2812_MATRIX_DISPLAY)
@@ -2127,7 +2130,7 @@ void sscSetDisplayMode()
       sscShowTimeSetting();
     }
     break;
-#if USE_AUTO_SHOW_DATA
+#if __USE_AUTO_SHOW_DATA__
   case DISPLAY_AUTO_SHOW_DATA:
 #if defined(USE_CALENDAR)
   case DISPLAY_MODE_SHOW_DATE:
@@ -2141,8 +2144,8 @@ void sscSetDisplayMode()
     }
     break;
 #endif
-#if USE_OTHER_SETTING
-#if USE_AUTO_SHOW_DATA
+#if __USE_OTHER_SETTING__
+#if __USE_AUTO_SHOW_DATA__
   case DISPLAY_MODE_SET_AUTO_SHOW_PERIOD:
 #endif
 #if defined(USE_LIGHT_SENSOR)
@@ -2187,6 +2190,7 @@ void sscCheckAlarm()
 
 void sscRunAlarmBuzzer()
 {
+#if BUZZER_PIN >= 0
   static uint8_t n = 0;
   static uint8_t k = 0;
   static uint8_t m = 0;
@@ -2233,6 +2237,7 @@ void sscRunAlarmBuzzer()
       }
     }
   }
+#endif
 }
 
 #endif
@@ -2292,7 +2297,7 @@ int8_t sscGetCurTemp()
 }
 #endif
 
-#if USE_OTHER_SETTING
+#if __USE_OTHER_SETTING__
 
 // ==== sscShowOtherSetting =============================
 void _startOtherSettingMode(uint8_t &x)
@@ -2317,7 +2322,7 @@ void _startOtherSettingMode(uint8_t &x)
     break;
 #endif
 #endif
-#if USE_AUTO_SHOW_DATA
+#if __USE_AUTO_SHOW_DATA__
   case DISPLAY_MODE_SET_AUTO_SHOW_PERIOD:
     x = read_eeprom_8(INTERVAL_FOR_AUTOSHOWDATA_EEPROM_INDEX);
     break;
@@ -2382,7 +2387,7 @@ void _checkBtnSetForOthSet(uint8_t &x)
       break;
 #endif
 #endif
-#if USE_AUTO_SHOW_DATA
+#if __USE_AUTO_SHOW_DATA__
     case DISPLAY_MODE_SET_AUTO_SHOW_PERIOD:
       write_eeprom_8(INTERVAL_FOR_AUTOSHOWDATA_EEPROM_INDEX, x);
 #if defined(WS2812_MATRIX_DISPLAY)
@@ -2455,7 +2460,7 @@ void _checkBtnUpDownForOthSet(uint8_t &x)
 #endif
       break;
 #endif
-#if USE_AUTO_SHOW_DATA
+#if __USE_AUTO_SHOW_DATA__
     case DISPLAY_MODE_SET_AUTO_SHOW_PERIOD:
       sscCheckData(x, 7, dir, 0, false);
       break;
@@ -2492,7 +2497,7 @@ void _setDisplayDataForOthSet(uint8_t &x)
     {
 #if defined(USE_LIGHT_SENSOR)
     case DISPLAY_MODE_SET_LIGHT_THRESHOLD:
-#if USE_MATRIX_DISPLAY
+#if __USE_MATRIX_DISPLAY__
       sscSetOtherDataString(SET_LIGHT_THRESHOLD_TAG, 1, x, blink);
 #else
       sscSetOtherData(SET_LIGHT_THRESHOLD_TAG, x, blink);
@@ -2505,16 +2510,16 @@ void _setDisplayDataForOthSet(uint8_t &x)
 #endif
     case DISPLAY_MODE_SET_BRIGHTNESS_MAX:
       clkDisplay.setBrightness(x);
-#if USE_MATRIX_DISPLAY
+#if __USE_MATRIX_DISPLAY__
       sscSetOtherDataString(SET_BRIGHTNESS_TAG, 1, x, blink);
 #else
       sscSetOtherData(SET_BRIGHTNESS_TAG, x, blink);
 #endif
       break;
 #endif
-#if USE_AUTO_SHOW_DATA
+#if __USE_AUTO_SHOW_DATA__
     case DISPLAY_MODE_SET_AUTO_SHOW_PERIOD:
-#if USE_MATRIX_DISPLAY
+#if __USE_MATRIX_DISPLAY__
       sscSetOtherDataString(SET_AUTO_SHOW_PERIOD_TAG,
                             1,
                             sscGetPeriodForAutoShow(x),
@@ -2545,7 +2550,7 @@ void sscShowOtherSetting()
   if (!sscTasks.getTaskState(sscTasks.other_setting_mode))
   {
     _startOtherSettingMode(x);
-#if !USE_MATRIX_DISPLAY
+#if !__USE_MATRIX_DISPLAY__
     clkDisplay.sleep(); // слегка мигнуть экраном при входе в настройки
     return;
 #endif
@@ -2571,7 +2576,7 @@ void sscShowOtherSetting()
 
 #endif
 
-#if USE_AUTO_SHOW_DATA
+#if __USE_AUTO_SHOW_DATA__
 
 void _startAutoShowMode(uint8_t &n, uint8_t &n_max)
 {
@@ -2579,7 +2584,7 @@ void _startAutoShowMode(uint8_t &n, uint8_t &n_max)
   {
 #if defined(USE_CALENDAR)
   case DISPLAY_MODE_SHOW_DATE:
-#if USE_MATRIX_DISPLAY
+#if __USE_MATRIX_DISPLAY__
     n = 0;
 #else
     n = 1;
@@ -2610,7 +2615,7 @@ void _startAutoShowMode(uint8_t &n, uint8_t &n_max)
   sscTasks.startTask(sscTasks.auto_show_mode);
 }
 
-#if USE_MATRIX_DISPLAY
+#if __USE_MATRIX_DISPLAY__
 
 void _setDisplayForAutoShowData(uint8_t &n)
 {
@@ -2775,11 +2780,11 @@ uint8_t sscGetPeriodForAutoShow(uint8_t index)
 }
 #endif
 
-#if SHOW_ON_OFF_DATA
+#if __USE_ON_OFF_DATA__
 void sscShowOnOffData(clkDataType _type, bool _state, bool blink)
 {
   clkDisplay.clear();
-#if USE_MATRIX_DISPLAY
+#if __USE_MATRIX_DISPLAY__
   sscSetOnOffDataString(_type, 1, _state, blink);
 #else
   sscSetOnOffData(_type, _state, blink);
@@ -2787,7 +2792,7 @@ void sscShowOnOffData(clkDataType _type, bool _state, bool blink)
 }
 #endif
 
-#if USE_MATRIX_DISPLAY
+#if __USE_MATRIX_DISPLAY__
 
 void sscSetTimeString(uint8_t offset,
                       int8_t hour,
@@ -2862,7 +2867,7 @@ void sscSetOtherDataString(clkDataType _type,
     sscSetTag(offset, DISP_LIGHT_THRESHOLD_TAG, 5, toStringData);
     break;
 #endif
-#if USE_AUTO_SHOW_DATA
+#if __USE_AUTO_SHOW_DATA__
   case SET_AUTO_SHOW_PERIOD_TAG:
     sscSetTag(offset, DISP_DATE_DISPLAY_INTERVAL_TAG, 5, toStringData);
     break;
@@ -3122,7 +3127,7 @@ void sscAssembleString(clkDisplayMode data_type, uint8_t lenght)
                           true);
     break;
 #endif
-#if USE_AUTO_SHOW_DATA
+#if __USE_AUTO_SHOW_DATA__
   case DISPLAY_MODE_SET_AUTO_SHOW_PERIOD:
     sscSetOtherDataString(SET_AUTO_SHOW_PERIOD_TAG,
                           lenght - 31,
@@ -3269,7 +3274,7 @@ void sscSetTag(clkDataType _type)
 {
   switch (_type)
   {
-#if USE_AUTO_SHOW_DATA
+#if __USE_AUTO_SHOW_DATA__
   case SET_AUTO_SHOW_PERIOD_TAG: // Au
     clkDisplay.setDispData(0, clkDisplay.encodeDigit(0x0A));
 #if defined(TM1637_DISPLAY)
