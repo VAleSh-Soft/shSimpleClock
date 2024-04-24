@@ -50,7 +50,7 @@ public:
 #if __USE_AUTO_SHOW_DATA__
   clkHandle auto_show_mode; // вывод даты и/или температуры
 #endif
-#if defined(USE_TEMP_DATA) && defined(USE_DS18B20)
+#if defined(__USE_TEMP_DATA__) && defined(USE_DS18B20)
   clkHandle ds18b20_guard; // опрос датчика DS18b20
 #endif
 #if defined(USE_LIGHT_SENSOR)
