@@ -61,11 +61,11 @@ public:
            uint8_t hour = 0, uint8_t min = 0, uint8_t sec = 0)
   {
     yOff = year % 100;
-    m = month;
-    d = day;
-    hh = hour;
-    mm = min;
-    ss = sec;
+    m = (month <= 12) ? month : 1;
+    d = (day <= 31) ? day : 1;
+    hh = (hour <= 23) ? hour : 0;
+    mm = (min <= 59) ? min : 0;
+    ss = (sec <= 59) ? sec : 0;
   }
 
   DateTime(const DateTime &copy) : yOff(copy.yOff), m(copy.m), d(copy.d),
