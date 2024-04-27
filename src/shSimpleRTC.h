@@ -61,8 +61,8 @@ public:
            uint8_t hour = 0, uint8_t min = 0, uint8_t sec = 0)
   {
     yOff = year % 100;
-    m = (month <= 12) ? month : 1;
-    d = (day <= 31) ? day : 1;
+    m = (month <= 12 && month > 0) ? month : 1;
+    d = (day <= 31 && day > 0) ? day : 1;
     hh = (hour <= 23) ? hour : 0;
     mm = (min <= 59) ? min : 0;
     ss = (sec <= 59) ? sec : 0;

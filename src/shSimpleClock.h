@@ -123,7 +123,7 @@ enum clkDisplayMode : uint8_t
   DISPLAY_MODE_SET_ALARM_HOUR,  // режим настройки будильника - часы
   DISPLAY_MODE_SET_ALARM_MINUTE // режим настройки будильника - минуты
 #endif
-#if defined(__USE_TEMP_DATA__)
+#if __USE_TEMP_DATA__
   ,
   DISPLAY_MODE_SHOW_TEMP // режим вывода температуры
 #endif
@@ -193,7 +193,7 @@ void sscRunAlarmBuzzer();
 #if defined(USE_LIGHT_SENSOR)
 void sscSetBrightness();
 #endif
-#if defined(__USE_TEMP_DATA__)
+#if __USE_TEMP_DATA__
 int8_t sscGetCurTemp();
 #if defined(USE_DS18B20)
 void sscCheckDS18b20();
@@ -235,7 +235,7 @@ void sscSetDayOfWeakString(uint8_t offset, uint8_t dow, bool toStringData = fals
 void sscSetYearString(uint8_t offset, int16_t _year, bool toStringData = false);
 #endif
 
-#if defined(__USE_TEMP_DATA__)
+#if __USE_TEMP_DATA__
 void sscSetTempString(uint8_t offset, int16_t temp, bool toStringData = false);
 #endif
 
@@ -249,8 +249,12 @@ void sscSetOtherData(clkDataType _type, uint8_t _data, bool blink);
 void sscSetTag(clkDataType _type);
 void sscSetOnOffData(clkDataType _type, bool _state, bool _blink);
 void sscShowTime(int8_t hour, int8_t minute, bool show_colon);
+#if defined(USE_CALENDAR)
 void sscShowDate(DateTime date);
+#endif
+#if __USE_TEMP_DATA__
 void sscShowTemp(int temp);
+#endif
 #endif
 
 // ===================================================
@@ -266,7 +270,7 @@ void sscShowTemp(int temp);
 #if defined(USE_ALARM)
 #include "alarm.h"
 #endif
-#if defined(__USE_TEMP_DATA__)
+#if __USE_TEMP_DATA__
 #if defined(USE_DS18B20)
 #include "ds1820.h"
 #elif defined(USE_NTC)
@@ -308,7 +312,7 @@ Alarm sscAlarm(ALARM_LED_PIN, ALARM_DATA_EEPROM_INDEX);
 #endif
 
 // ---- датчики температуры ----------------
-#if defined(__USE_TEMP_DATA__)
+#if __USE_TEMP_DATA__
 #if defined(USE_DS18B20)
 DS1820 sscTempSensor(DS18B20_PIN);
 #elif defined(USE_NTC)
@@ -671,7 +675,7 @@ private:
 #if __USE_AUTO_SHOW_DATA__
     task_count++;
 #endif
-#if defined(__USE_TEMP_DATA__) && defined(USE_DS18B20)
+#if __USE_TEMP_DATA__ && defined(USE_DS18B20)
     task_count++;
 #endif
 #if defined(USE_LIGHT_SENSOR)
@@ -691,7 +695,7 @@ private:
                                                        sscReturnToDefMode,
                                                        false);
     sscTasks.set_time_mode = sscTasks.addTask(50ul, sscShowTimeSetting, false);
-#if defined(__USE_TEMP_DATA__) && defined(USE_DS18B20)
+#if __USE_TEMP_DATA__ && defined(USE_DS18B20)
     sscTasks.ds18b20_guard = sscTasks.addTask(3000ul, sscCheckDS18b20);
 #endif
 #if __USE_AUTO_SHOW_DATA__
@@ -976,7 +980,7 @@ public:
   }
 #endif
 
-#if defined(__USE_TEMP_DATA__)
+#if __USE_TEMP_DATA__
   /**
    * @brief получить текущую температуру, если определен используемый датчик
    *
@@ -1340,7 +1344,7 @@ void sscReturnToDefMode()
 #endif
     sscButtons.setButtonFlag(CLK_BTN_SET, CLK_BTN_FLAG_EXIT);
     break;
-#if defined(__USE_TEMP_DATA__)
+#if __USE_TEMP_DATA__
   case DISPLAY_MODE_SHOW_TEMP:
 #endif
 #if defined(USE_CALENDAR)
@@ -2019,7 +2023,7 @@ void sscCheckUpDownButton()
       sscButtons.resetButtonState(CLK_BTN_DOWN);
 #endif
     }
-#if defined(__USE_TEMP_DATA__)
+#if __USE_TEMP_DATA__
     if (sscButtons.getLastState(CLK_BTN_UP) == BTN_ONECLICK)
     {
       ssc_display_mode = DISPLAY_MODE_SHOW_TEMP;
@@ -2091,7 +2095,7 @@ void sscCheckUpDownButton()
       sscCheckUDbtn(CLK_BTN_DOWN);
     }
     break;
-#if defined(__USE_TEMP_DATA__)
+#if __USE_TEMP_DATA__
   case DISPLAY_MODE_SHOW_TEMP:
     if (sscButtons.getLastState(CLK_BTN_UP) == BTN_ONECLICK)
     {
@@ -2150,7 +2154,7 @@ void sscSetDisplayMode()
 #if defined(USE_CALENDAR)
   case DISPLAY_MODE_SHOW_DATE:
 #endif
-#if defined(__USE_TEMP_DATA__)
+#if __USE_TEMP_DATA__
   case DISPLAY_MODE_SHOW_TEMP:
 #endif
     if (!sscTasks.getTaskState(sscTasks.auto_show_mode))
@@ -2290,7 +2294,7 @@ void sscSetBrightness()
 
 #endif
 
-#if defined(__USE_TEMP_DATA__)
+#if __USE_TEMP_DATA__
 
 #if defined(USE_DS18B20)
 void sscCheckDS18b20()
@@ -2607,7 +2611,7 @@ void _startAutoShowMode(uint8_t &n, uint8_t &n_max)
     n_max = 3;
     break;
 #endif
-#if defined(__USE_TEMP_DATA__)
+#if __USE_TEMP_DATA__
   case DISPLAY_MODE_SHOW_TEMP:
     n = 3;
     n_max = 4;
@@ -2620,7 +2624,7 @@ void _startAutoShowMode(uint8_t &n, uint8_t &n_max)
 #else
     n = 3;
 #endif
-#if defined(__USE_TEMP_DATA__)
+#if __USE_TEMP_DATA__
     n_max = 4;
 #endif
     break;
@@ -2681,7 +2685,7 @@ void _setDisplayForAutoShowData(uint8_t &n)
     }
     break;
 #endif
-#if defined(__USE_TEMP_DATA__)
+#if __USE_TEMP_DATA__
   case 3:
 #if defined(USE_TICKER_FOR_DATA)
     if (read_eeprom_8(TICKER_STATE_VALUE_EEPROM_INDEX))
@@ -2724,7 +2728,7 @@ void _setDisplayForAutoShowData(uint8_t &n)
   }
   break;
 #endif
-#if defined(__USE_TEMP_DATA__)
+#if __USE_TEMP_DATA__
   case 3:
     sscShowTemp(sscGetCurTemp());
     break;
@@ -3051,7 +3055,7 @@ void sscAssembleString(clkDisplayMode data_type, uint8_t lenght)
                      true);
     break;
 
-#if defined(__USE_TEMP_DATA__)
+#if __USE_TEMP_DATA__
   case DISPLAY_MODE_SHOW_TEMP: // температура
     sscSetTempString(lenght - 31, sscGetCurTemp(), true);
     break;
@@ -3211,7 +3215,7 @@ void sscSetYearString(uint8_t offset, int16_t _year, bool toStringData)
 }
 #endif
 
-#if defined(__USE_TEMP_DATA__)
+#if __USE_TEMP_DATA__
 void sscSetTempString(uint8_t offset, int16_t temp, bool toStringData)
 {
   // если температура выходит за диапазон, сформировать строку минусов
@@ -3380,6 +3384,7 @@ void sscShowTime(int8_t hour, int8_t minute, bool show_colon)
   }
 }
 
+#if defined(USE_CALENDAR)
 void sscShowDate(DateTime date)
 {
   static uint8_t n = 0;
@@ -3401,7 +3406,9 @@ void sscShowDate(DateTime date)
     n = 0;
   }
 }
+#endif
 
+#if __USE_TEMP_DATA__
 void sscShowTemp(int temp)
 {
   clkDisplay.clear();
@@ -3435,5 +3442,6 @@ void sscShowTemp(int temp)
     clkDisplay.setDispData(2, clkDisplay.encodeDigit(temp % 10));
   }
 }
+#endif
 
 #endif
