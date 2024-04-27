@@ -136,44 +136,33 @@ private:
     return (Wire.endTransmission() == 0);
   }
 
-#if defined(RTC_DS3231)
-  uint8_t readControlByte(bool which)
+  uint8_t read_register(uint8_t reg)
   {
-    // чтение выбранного контрольного байта
-    // первый байт (false) is 0x0e, второй (true) is 0x0f
     Wire.beginTransmission(CLOCK_ADDRESS);
-    if (which)
-    {
-      // второй контрольный байт
-      Wire.write(0x0f);
-    }
-    else
-    {
-      // первый контрольный байт
-      Wire.write(0x0e);
-    }
+    Wire.write(reg);
     Wire.endTransmission();
     Wire.requestFrom(CLOCK_ADDRESS, 1);
     return Wire.read();
   }
 
-  void writeControlByte(uint8_t control, bool which)
+  void write_register(uint8_t reg, uint8_t data)
   {
-    // Запись выбранного контрольного байта.
-    // which = false -> 0x0e, true -> 0x0f.
     Wire.beginTransmission(CLOCK_ADDRESS);
-    if (which)
-    {
-      Wire.write(0x0f);
-    }
-    else
-    {
-      Wire.write(0x0e);
-    }
-    Wire.write(control);
+    Wire.write(reg);
+    Wire.write(data);
     Wire.endTransmission();
   }
-#endif
+
+  void write_register(uint8_t start_reg, uint8_t count, uint8_t *arr)
+  {
+    Wire.beginTransmission(CLOCK_ADDRESS);
+    Wire.write(start_reg);
+    for (uint8_t i = 0; i < count; i++)
+    {
+      Wire.write(arr[i]);
+    }
+    Wire.endTransmission();
+  }
 
 public:
   /**
@@ -268,14 +257,11 @@ public:
       Wire.endTransmission();
 #if defined(RTC_DS3231)
       // Очищаем флаг OSF
-      uint8_t temp_buffer = readControlByte(1);
-      writeControlByte((temp_buffer & 0x7F), 1);
+      uint8_t temp_buffer = read_register(0x0f);
+      write_register(0x0f, (temp_buffer & 0x7F));
 #elif defined(RTC_PCF8523)
-      // установить режим работы от батареи
-      Wire.beginTransmission(CLOCK_ADDRESS);
-      Wire.write(0x02);
-      Wire.write(0x00);
-      Wire.endTransmission();
+      // устанавливаем режим работы от батареи
+      write_register(0x02, 0x00);
 #endif
     }
   }
@@ -321,16 +307,13 @@ public:
   {
     if (isClockPresent())
     {
-      Wire.beginTransmission(CLOCK_ADDRESS);
 #if defined(RTC_PCF8563)
-      Wire.write(0x08);
+      write_register(0x08, decToBcd(_year % 100));
 #elif defined(RTC_PCF8523)
-      Wire.write(0x09);
+      write_register(0x09, decToBcd(_year % 100));
 #else
-      Wire.write(0x06);
+      write_register(0x06, decToBcd(_year % 100));
 #endif
-      Wire.write(decToBcd(_year % 100));
-      Wire.endTransmission();
     }
   }
 
@@ -364,9 +347,7 @@ public:
 
     return (temp3231);
   }
-#endif
 
-#if defined(RTC_DS3231)
   /**
    * устанавливает режим 12-часовой (true) или 24-часовой (false).
    * Одна вещь, которая меня беспокоит в том, как я это написал,
@@ -430,21 +411,21 @@ public:
 
     if (isClockPresent())
     {
-      Wire.beginTransmission(CLOCK_ADDRESS);
 #if defined(RTC_DS1307)
-      Wire.write(0x00);
+      result = !read_register(0x00) >> 7;
 #elif defined(RTC_DS3231)
-      Wire.write(0x0f);
+      result = !read_register(0x0f) >> 7;
 #elif defined(RTC_PCF8563)
-      Wire.write(0x02);
+      result = !read_register(0x02) >> 7;
 #elif defined(RTC_PCF8523)
-      Wire.write(0x03);
+      result = !read_register(0x03) >> 7;
 #endif
-      Wire.endTransmission();
 
-      Wire.requestFrom(CLOCK_ADDRESS, 1);
-
-      result = !(Wire.read() >> 7);
+#if defined(RTC_PCF8523)
+Serial.println(result);
+      result = result && ((read_register(0x02) & 0xE0) != 0xE0);
+Serial.println(result);
+#endif
     }
 
     return result;
@@ -458,26 +439,19 @@ public:
   void startRTC()
   {
 #if defined(RTC_DS3231)
-    uint8_t temp_buffer = readControlByte(0) & 0b11100111;
+    uint8_t temp_buffer = read_register(0x0e) & 0b11100111;
     // поднимаем флаг BBSQW - работа от батареи
     temp_buffer = temp_buffer | 0b01000000;
     // устанавливаем ~EOSC и INTCN в 0 - запускаем генератор
     temp_buffer = temp_buffer & 0b01111011;
     // записываем контрольный бит
-    writeControlByte(temp_buffer, 0);
+    write_register(0x0e, temp_buffer);
 #else
-    Wire.beginTransmission(CLOCK_ADDRESS);
-    Wire.write(0x00);
-    Wire.endTransmission();
-    Wire.requestFrom(CLOCK_ADDRESS, 1);
-    uint8_t ctlreg = Wire.read();
-
+    uint8_t ctlreg = read_register(0x00);
+    // Проверяем STOP бит и сбрасываем его
     if (ctlreg & (1 << 5))
     {
-      Wire.beginTransmission(CLOCK_ADDRESS);
-      Wire.write(0x00);
-      Wire.write(ctlreg & ~(1 << 5));
-      Wire.endTransmission();
+      write_register(0x00, (ctlreg & ~(1 << 5)));
     }
 #endif
   }

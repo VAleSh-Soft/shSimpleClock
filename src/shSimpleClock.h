@@ -11,7 +11,7 @@
 
 // используется или нет вывод температуры; вывод температуры доступен, если:
 //   - задан флаг USE_TEMP_DATA и:
-//     - либо задано использование одного из датчиков и пин для датчика, 
+//     - либо задано использование одного из датчиков и пин для датчика,
 //     - либо используется модуль DS3231
 #if defined(USE_TEMP_DATA) && ((defined(USE_DS18B20) && DS18B20_PIN >= 0) || \
                                (defined(USE_NTC) && NTC_PIN >= 0) ||         \
@@ -538,20 +538,19 @@ private:
   void rtc_init()
   {
     Wire.begin();
-#if !defined(RTC_DS1307)
-    sscClock.startRTC();
-#endif
-    sscRtcNow();
 
     // если часовой модуль не запущен, запустить его, для чего установить время
     if (!sscClock.isRunning())
     {
-      // DateTime dt = sscClock.getCurTime();
-      // sscClock.setCurTime(dt.hour(), dt.minute(), dt.second());
       sscClock.setCurTime(0, 0, 0);
       sscClock.setCurDate(1, 1);
-      sscClock.setCurYear(24);
+      sscClock.setCurYear(0);
     }
+#if !defined(RTC_DS1307)
+    sscClock.startRTC();
+#endif
+
+    sscRtcNow();
   }
 
   void eeprom_validate()
