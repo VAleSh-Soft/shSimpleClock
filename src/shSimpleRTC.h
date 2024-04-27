@@ -176,15 +176,17 @@ public:
 #endif
 
       uint8_t b0 = read_register(reg);
-      uint8_t b1 = read_register(reg + 1);
-      uint8_t b2 = read_register(reg + 2);
+      uint8_t b1 = read_register(++reg);
+      uint8_t b2 = read_register(++reg);
 #if defined(RTC_DS3231) || defined(RTC_DS1307)
-      uint8_t b4 = read_register(reg + 4);
+      reg += 2;
+      uint8_t b4 = read_register(reg);
 #else
-      uint8_t b3 = read_register(reg + 3);
+      uint8_t b3 = read_register(++reg);
+      reg++;
 #endif
-      uint8_t b5 = read_register(reg + 5);
-      uint16_t b6 = read_register(reg + 6);
+      uint8_t b5 = read_register(++reg);
+      uint16_t b6 = read_register(++reg);
 
 #if defined(RTC_DS3231)
       cur_time = DateTime(bcdToDec(b6), bcdToDec(b5 & 0x7F), bcdToDec(b4),
@@ -233,8 +235,12 @@ public:
       reg = 0x03;
 #endif
       write_register(reg, decToBcd(_second));
-      write_register(reg + 1, decToBcd(_minute));
-      write_register(reg + 2, decToBcd(_hour));
+      write_register(++reg, decToBcd(_minute));
+#if defined(RTC_DS3231)
+      // устанавливаем режим 24 часа
+      setClockMode(false);
+#endif
+      write_register(++reg, decToBcd(_hour));
 #if defined(RTC_DS3231)
       // Очищаем флаг OSF
       uint8_t temp_buffer = read_register(0x0f);
@@ -256,10 +262,6 @@ public:
   {
     if (isClockPresent())
     {
-#if defined(RTC_DS3231)
-      // устанавливаем режим 24 часа
-      setClockMode(false);
-#endif
 #if defined(RTC_PCF8563)
       write_register(0x05, decToBcd(_date));
       write_register(0x07, decToBcd(_month));
@@ -327,15 +329,6 @@ public:
    */
   void setClockMode(bool h12)
   {
-    // sets the mode to 12-hour (true) or 24-hour (false).
-    // One thing that bothers me about how I've written this is that
-    // if the read and right happen at the right hourly millisecnd,
-    // the clock will be set back an hour. Not sure how to do it better,
-    // though, and as long as one doesn't set the mode frequently it's
-    // a very minimal risk.
-    // It's zero risk if you call this BEFORE setting the hour, since
-    // the setHour() function doesn't change this mode.
-
     if (isClockPresent())
     {
       uint8_t temp_buffer;
