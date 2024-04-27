@@ -330,19 +330,11 @@ public:
 
     if (isClockPresent())
     { // временные регистры (11h-12h) обновляются автоматически каждые 64 секунды.
-      Wire.beginTransmission(CLOCK_ADDRESS);
-      Wire.write(0x11);
-      Wire.endTransmission();
-      Wire.requestFrom(CLOCK_ADDRESS, 2);
-
-      if (Wire.available())
-      {
-        tMSB = Wire.read();
-        tLSB = Wire.read();
+        tMSB = read_register(0x11);
+        tLSB = read_register(0x12);
 
         uint16_t x = ((((short)tMSB << 8) | (short)tLSB) >> 6);
         temp3231 = (x % 4 > 2) ? x / 4 + 1 : x / 4;
-      }
     }
 
     return (temp3231);
@@ -374,11 +366,7 @@ public:
       uint8_t temp_buffer;
 
       // старт считывания байта 0x02.
-      Wire.beginTransmission(CLOCK_ADDRESS);
-      Wire.write(0x02);
-      Wire.endTransmission();
-      Wire.requestFrom(CLOCK_ADDRESS, 1);
-      temp_buffer = Wire.read();
+      temp_buffer = read_register(0x02);
 
       // установка заданного флага:
       if (h12)
@@ -391,10 +379,7 @@ public:
       }
 
       // запись байта
-      Wire.beginTransmission(CLOCK_ADDRESS);
-      Wire.write(0x02);
-      Wire.write(temp_buffer);
-      Wire.endTransmission();
+      write_register(0x02, temp_buffer);
     }
   }
 #endif
@@ -412,19 +397,17 @@ public:
     if (isClockPresent())
     {
 #if defined(RTC_DS1307)
-      result = !read_register(0x00) >> 7;
+      result = !(read_register(0x00) >> 7);
 #elif defined(RTC_DS3231)
-      result = !read_register(0x0f) >> 7;
+      result = !(read_register(0x0f) >> 7);
 #elif defined(RTC_PCF8563)
-      result = !read_register(0x02) >> 7;
+      result = !(read_register(0x02) >> 7);
 #elif defined(RTC_PCF8523)
-      result = !read_register(0x03) >> 7;
+      result = !(read_register(0x03) >> 7);
 #endif
 
 #if defined(RTC_PCF8523)
-Serial.println(result);
       result = result && ((read_register(0x02) & 0xE0) != 0xE0);
-Serial.println(result);
 #endif
     }
 
