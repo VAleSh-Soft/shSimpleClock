@@ -2,8 +2,8 @@
  * @file shSimpleRTC.h
  * @author Vladimir Shatalov (valesh-soft@yandex.ru)
  * @brief Небольшой модуль для работы с модулями часов реального времени DS3231/DS1307/PCF8563/PCF8523
- * @version 1.0
- * @date 11.03.2024
+ * @version 1.4
+ * @date 27.04.2024
  *
  * @copyright Copyright (c) 2024
  *
