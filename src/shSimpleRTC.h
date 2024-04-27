@@ -153,17 +153,6 @@ private:
     Wire.endTransmission();
   }
 
-  void write_register(uint8_t start_reg, uint8_t count, uint8_t *arr)
-  {
-    Wire.beginTransmission(CLOCK_ADDRESS);
-    Wire.write(start_reg);
-    for (uint8_t i = 0; i < count; i++)
-    {
-      Wire.write(arr[i]);
-    }
-    Wire.endTransmission();
-  }
-
 public:
   /**
    * @brief конструктор объекта RTC
@@ -179,29 +168,23 @@ public:
   {
     if (isClockPresent())
     {
-      Wire.beginTransmission(CLOCK_ADDRESS);
+      uint8_t reg = 0x00;
 #if defined(RTC_PCF8563)
-      Wire.write(0x02);
+      reg = 0x02;
 #elif defined(RTC_PCF8523)
-      Wire.write(0x03);
-#else
-      Wire.write(0x00);
+      reg = 0x03;
 #endif
-      Wire.endTransmission();
 
-      Wire.requestFrom(CLOCK_ADDRESS, 7);
-      uint8_t b0 = Wire.read();
-      uint8_t b1 = Wire.read();
-      uint8_t b2 = Wire.read();
+      uint8_t b0 = read_register(reg);
+      uint8_t b1 = read_register(reg + 1);
+      uint8_t b2 = read_register(reg + 2);
 #if defined(RTC_DS3231) || defined(RTC_DS1307)
-      Wire.read();
-      uint8_t b4 = Wire.read();
+      uint8_t b4 = read_register(reg + 4);
 #else
-      uint8_t b3 = Wire.read();
-      Wire.read();
+      uint8_t b3 = read_register(reg + 3);
 #endif
-      uint8_t b5 = Wire.read();
-      uint16_t b6 = Wire.read();
+      uint8_t b5 = read_register(reg + 5);
+      uint16_t b6 = read_register(reg + 6);
 
 #if defined(RTC_DS3231)
       cur_time = DateTime(bcdToDec(b6), bcdToDec(b5 & 0x7F), bcdToDec(b4),
@@ -243,18 +226,15 @@ public:
   {
     if (isClockPresent())
     {
-      Wire.beginTransmission(CLOCK_ADDRESS);
+      uint8_t reg = 0x00;
 #if defined(RTC_PCF8563)
-      Wire.write(0x02);
+      reg = 0x02;
 #elif defined(RTC_PCF8523)
-      Wire.write(0x03);
-#else
-      Wire.write(0x00);
+      reg = 0x03;
 #endif
-      Wire.write(decToBcd(_second));
-      Wire.write(decToBcd(_minute));
-      Wire.write(decToBcd(_hour));
-      Wire.endTransmission();
+      write_register(reg, decToBcd(_second));
+      write_register(reg + 1, decToBcd(_minute));
+      write_register(reg + 2, decToBcd(_hour));
 #if defined(RTC_DS3231)
       // Очищаем флаг OSF
       uint8_t temp_buffer = read_register(0x0f);
@@ -280,21 +260,16 @@ public:
       // устанавливаем режим 24 часа
       setClockMode(false);
 #endif
-      Wire.beginTransmission(CLOCK_ADDRESS);
 #if defined(RTC_PCF8563)
-      Wire.write(0x05);
-      Wire.write(decToBcd(_date));
-      Wire.write(0x00);
+      write_register(0x05, decToBcd(_date));
+      write_register(0x07, decToBcd(_month));
 #elif defined(RTC_PCF8523)
-      Wire.write(0x06);
-      Wire.write(decToBcd(_date));
-      Wire.write(0x00);
+      write_register(0x06, decToBcd(_date));
+      write_register(0x08, decToBcd(_month));
 #else
-      Wire.write(0x04);
-      Wire.write(decToBcd(_date));
+      write_register(0x04, decToBcd(_date));
+      write_register(0x05, decToBcd(_month));
 #endif
-      Wire.write(decToBcd(_month));
-      Wire.endTransmission();
     }
   }
 
@@ -330,11 +305,11 @@ public:
 
     if (isClockPresent())
     { // временные регистры (11h-12h) обновляются автоматически каждые 64 секунды.
-        tMSB = read_register(0x11);
-        tLSB = read_register(0x12);
+      tMSB = read_register(0x11);
+      tLSB = read_register(0x12);
 
-        uint16_t x = ((((short)tMSB << 8) | (short)tLSB) >> 6);
-        temp3231 = (x % 4 > 2) ? x / 4 + 1 : x / 4;
+      uint16_t x = ((((short)tMSB << 8) | (short)tLSB) >> 6);
+      temp3231 = (x % 4 > 2) ? x / 4 + 1 : x / 4;
     }
 
     return (temp3231);

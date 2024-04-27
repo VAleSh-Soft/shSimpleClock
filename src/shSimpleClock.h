@@ -22,7 +22,7 @@
 #endif
 
 // используется или нет периодический автовывод даты и/или температуры
-#if defined(USE_CALENDAR) || defined(__USE_TEMP_DATA__)
+#if defined(USE_CALENDAR) || __USE_TEMP_DATA__
 #define __USE_AUTO_SHOW_DATA__ 1
 #else
 #define __USE_AUTO_SHOW_DATA__ 0
