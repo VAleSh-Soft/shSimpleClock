@@ -445,7 +445,7 @@ public:
       data = new uint8_t[_data_count];
       if (data != NULL)
       {
-        for (uint8_t i; i < _data_count; i++)
+        for (uint8_t i = 0; i < _data_count; i++)
         {
           data[i] = 0x00;
         }
