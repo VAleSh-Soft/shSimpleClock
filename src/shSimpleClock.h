@@ -31,7 +31,7 @@
 // дополнительные настройки; здесь настраиваются:
 //   - уровни яркости;
 //   - порог переключения яркости;
-//   - период автовывода;
+//   - период автовывода даты и/или температуры;
 //   - выбор цвета символов для адресных светодиодов;
 #if defined(USE_SET_BRIGHTNESS_MODE) || defined(USE_LIGHT_SENSOR) || \
     defined(WS2812_MATRIX_DISPLAY) || __USE_AUTO_SHOW_DATA__
@@ -415,14 +415,12 @@ private:
 
   bool isValidButton(clkButtonType _btn)
   {
-    bool result = false;
-
     if (buttons != NULL)
     {
-      result = buttons[(byte)_btn] != NULL;
+      return (buttons[(uint8_t)_btn] != NULL);
     }
 
-    return result;
+    return false;
   }
 
 public:
@@ -445,71 +443,69 @@ public:
   {
     if (isValidButton(_btn))
     {
-      buttons[(byte)_btn]->setButtonFlag(_flag);
+      buttons[(uint8_t)_btn]->setButtonFlag(_flag);
     }
   }
 
   clkButtonFlag getButtonFlag(clkButtonType _btn, bool _clear = false)
   {
-    clkButtonFlag result = CLK_BTN_FLAG_NONE;
     if (isValidButton(_btn))
     {
-      result = buttons[(byte)_btn]->getButtonFlag(_clear);
+      return (buttons[(uint8_t)_btn]->getButtonFlag(_clear));
     }
-    return result;
+
+    return CLK_BTN_FLAG_NONE;
   }
 
   uint8_t getButtonState(clkButtonType _btn)
   {
-    uint8_t result = BTN_RELEASED;
     if (isValidButton(_btn))
     {
-      result = buttons[(byte)_btn]->getButtonState();
+      return (buttons[(uint8_t)_btn]->getButtonState());
     }
-    return result;
+
+    return BTN_RELEASED;
   }
 
   uint8_t getLastState(clkButtonType _btn)
   {
-    uint8_t result = BTN_RELEASED;
     if (isValidButton(_btn))
     {
-      result = buttons[(byte)_btn]->getLastState();
+      return (buttons[(uint8_t)_btn]->getLastState());
     }
-    return result;
+
+    return BTN_RELEASED;
   }
 
   void resetButtonState(clkButtonType _btn)
   {
     if (isValidButton(_btn))
     {
-      buttons[(byte)_btn]->resetButtonState();
+      buttons[(uint8_t)_btn]->resetButtonState();
     }
   }
 
   bool isButtonClosed(clkButtonType _btn)
   {
-    bool result = false;
     if (isValidButton(_btn))
     {
-      result = buttons[(byte)_btn]->isButtonClosed();
+      return (buttons[(uint8_t)_btn]->isButtonClosed());
     }
-    return result;
+
+    return false;
   }
 
   bool isSecondButtonPressed(clkButtonType _btn1,
                              clkButtonType _btn2,
                              uint8_t _state)
   {
-    bool result = false;
-
     if (isValidButton(_btn1) && isValidButton(_btn2))
     {
-      result = buttons[(byte)_btn1]->isSecondButtonPressed(*buttons[(byte)_btn2],
-                                                           _state);
+      return (buttons[(uint8_t)_btn1]->isSecondButtonPressed(*buttons[(uint8_t)_btn2],
+                                                             _state));
     }
 
-    return result;
+    return false;
   }
 };
 // ==== end clkButtonGroup ===========================
@@ -1165,7 +1161,7 @@ public:
    */
   void setAnimationState(bool _state)
   {
-    write_eeprom_8(TICKER_STATE_VALUE_EEPROM_INDEX, (byte)_state);
+    write_eeprom_8(TICKER_STATE_VALUE_EEPROM_INDEX, (uint8_t)_state);
   }
 
   /**

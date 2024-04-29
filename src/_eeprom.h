@@ -5,7 +5,7 @@
 
 // ===================================================
 
-#if defined(__USE_ARDUINO_ESP__)
+#if __USE_ARDUINO_ESP__
 #define EEPROM_SIZE 256
 #endif
 

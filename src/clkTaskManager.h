@@ -15,7 +15,7 @@
 // ==== clkTaskManager ===============================
 
 typedef void (*clkCallback)(void); // тип - указатель для Callback-функции
-typedef int16_t clkHandle;         // тип - идентификатор задачи
+typedef int8_t clkHandle;          // тип - идентификатор задачи
 static const clkHandle CLK_INVALID_HANDLE = -1;
 
 struct clkTask // структура, описывающая задачу
@@ -50,7 +50,7 @@ public:
 #if __USE_AUTO_SHOW_DATA__
   clkHandle auto_show_mode; // вывод даты и/или температуры
 #endif
-#if defined(__USE_TEMP_DATA__) && defined(USE_DS18B20)
+#if __USE_TEMP_DATA__ && defined(USE_DS18B20)
   clkHandle ds18b20_guard; // опрос датчика DS18b20
 #endif
 #if defined(USE_LIGHT_SENSOR)
@@ -92,7 +92,6 @@ public:
 
   clkHandle addTask(uint32_t _interval, clkCallback _callback, bool isActive = true)
   {
-    int16_t result = CLK_INVALID_HANDLE;
     for (uint8_t i = 0; i < TASKCOUNT; i++)
     {
       if (taskList[i].callback == NULL)
@@ -101,22 +100,18 @@ public:
         taskList[i].interval = _interval;
         taskList[i].callback = _callback;
         taskList[i].timer = millis();
-        result = i;
-        break;
+        return (i);
       }
     }
-    return (result);
+    return (CLK_INVALID_HANDLE);
   }
 
   void startTask(clkHandle _handle)
   {
-    if (isValidHandle(_handle))
+    if (isValidHandle(_handle) && taskList[_handle].callback != NULL)
     {
-      if (taskList[_handle].callback != NULL)
-      {
-        taskList[_handle].status = true;
-        taskList[_handle].timer = millis();
-      }
+      taskList[_handle].status = true;
+      taskList[_handle].timer = millis();
     }
   }
 
@@ -130,12 +125,12 @@ public:
 
   bool getTaskState(clkHandle _handle)
   {
-    bool result = isValidHandle(_handle);
-    if (result && (taskList != NULL))
+    if (isValidHandle(_handle) && (taskList != NULL))
     {
-      result = taskList[_handle].status && taskList[_handle].callback != NULL;
+      return (taskList[_handle].status && taskList[_handle].callback != NULL);
     }
-    return (result);
+    
+    return (false);
   }
 
   void setTaskInterval(clkHandle _handle, uint32_t _interval, bool _restart = true)
