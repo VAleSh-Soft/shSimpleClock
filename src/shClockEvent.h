@@ -11,48 +11,53 @@ private:
   bool state = false;
 
 public:
-  shClockEvent() {}
+  shClockEvent();
 
-  void init(uint16_t _interval, sceCallback _callback, bool _active = true)
+  void init(uint16_t _interval, sceCallback _callback, bool _active = true);
+
+  void init(sceCallback _callback, bool _active = true);
+
+  // ~shClockEvent();
+
+  void run();
+
+  void setState(bool _state);
+
+  bool getState();
+};
+
+shClockEvent::shClockEvent() {}
+
+void shClockEvent::init(uint16_t _interval, sceCallback _callback, bool _active)
+{
+  index = 0;
+  count = _interval;
+  state = _active;
+  callback = _callback;
+}
+
+void shClockEvent::init(sceCallback _callback, bool _active)
+{
+  index = 0;
+  count = 1;
+  state = _active;
+  callback = _callback;
+}
+
+// shClockEvent::~shClockEvent() { callback = NULL; }
+
+void shClockEvent::run()
+{
+  if (state && callback != NULL)
   {
-    index = 0;
-    count = _interval;
-    state = _active;
-    callback = _callback;
-  }
-
-  void init(sceCallback _callback, bool _active = true)
-  {
-    index = 0;
-    count = 1;
-    state = _active;
-    callback = _callback;
-  }
-
-  // ~shClockEvent()
-  // {
-  //   callback = NULL;
-  // }
-
-  void run()
-  {
-    if (state && callback != NULL)
+    if (++index >= count)
     {
-      if (++index >= count)
-      {
-        index = 0;
-        callback();
-      }
+      index = 0;
+      callback();
     }
   }
+}
 
-  void setState(bool _state)
-  {
-    state = _state;
-  }
+void shClockEvent::setState(bool _state) { state = _state; }
 
-  bool getState()
-  {
-    return state;
-  }
-};
+bool shClockEvent::getState() { return state; }

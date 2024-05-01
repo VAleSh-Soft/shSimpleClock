@@ -90,259 +90,286 @@ private:
   uint32_t dbl_timer = 0; // таймер двойного клика
 
   // получение состояния бита
-  bool getFlag(uint8_t _bit)
-  {
-    bool result = (_bit < 8) ? (((_flags) >> (_bit)) & 0x01) : false;
-    return (result);
-  }
+  bool getFlag(uint8_t _bit);
   // установка состояния бита
-  void setFlag(uint8_t _bit, bool x)
-  {
-    if (_bit < 8)
-    {
-      (x) ? (_flags) |= (1UL << (_bit)) : (_flags) &= ~(1UL << (_bit));
-    }
-  }
+  void setFlag(uint8_t _bit, bool x);
 
   // получение мгновенного состояния кнопки - нажата/не нажата с учетом типа подключения и без учета дребезга контактов
-  bool getContactsState()
-  {
-    bool val = false;
-    val = digitalRead(_PIN);
-    if (getFlag(INPUTTYPE_BIT) == PULL_UP)
-    {
-      val = !val;
-    }
-    if (getFlag(BTNTYPE_BIT) == BTN_NC)
-    {
-      val = !val;
-    }
-
-    return (val);
-  }
+  bool getContactsState();
 
   // установка кнопке состояния "только что нажата" или "только что отпущена"
-  void setBtnUpDown(bool flag, uint32_t thisMls)
-  {
-    setFlag(DEBOUNCE_BIT, false);
-    setFlag(FLAG_BIT, flag);
-
-    if (flag)
-    {
-      if (!getFlag(ONECLICK_BIT))
-      { // если это первый клик, запустить таймер двойного клика и поднять флаг одиночного клика
-        _btn_state = BTN_DOWN;
-        setFlag(ONECLICK_BIT, true);
-        dbl_timer = thisMls;
-      }
-      else if (thisMls - dbl_timer <= _dblclck_timeout)
-      {
-        _btn_state = BTN_DBLCLICK;
-        setFlag(ONECLICK_BIT, false);
-      }
-    }
-    else
-    {
-      _btn_state = BTN_UP;
-    }
-  }
+  void setBtnUpDown(bool flag, uint32_t thisMls);
 
   // дополнительная обработка клика
-  void setAdditionalOptions()
-  {
-    switch (_btn_state)
-    {
-    case BTN_DOWN:
-    case BTN_DBLCLICK:
-    case BTN_LONGCLICK:
-      // в любом режиме, кроме стандартного, каждый клик любой кнопки перезапускает таймер автовыхода в стандартный режим
-      if (clkTasks.getTaskState(clkTasks.return_to_default_mode))
-      {
-        clkTasks.startTask(clkTasks.return_to_default_mode);
-      }
-#if defined(USE_BUZZER_FOR_BUTTON) && BUZZER_PIN >= 0
-      if (_state != BTN_LONGCLICK)
-      {
-        tone(BUZZER_PIN, 2000, 25); // на каждый клик срабатывает пищалка
-      }
-#endif
-#if defined(USE_ALARM)
-      // если сработал будильник, отключить его
-      if (clkAlarm.getAlarmState() == ALARM_YES)
-      {
-        clkAlarm.setAlarmState(ALARM_ON);
-        resetButtonState();
-      }
-#endif
-      break;
-    }
-  }
+  void setAdditionalOptions();
 
   clkButtonFlag btn_flag = CLK_BTN_FLAG_NONE;
 
 public:
-  clkButton(uint8_t pin, bool serial_mode = false)
-  {
-    _PIN = pin;
-    setFlag(INPUTTYPE_BIT, BTN_INPUT_TYPE);
-    (BTN_INPUT_TYPE == PULL_UP) ? pinMode(_PIN, INPUT_PULLUP) : pinMode(_PIN, INPUT);
-    setFlag(BTNTYPE_BIT, BTN_TYPE);
-    if (serial_mode)
-    {
-      _longclick_mode = LCM_CLICKSERIES;
-    }
-  }
+  clkButton(uint8_t pin, bool serial_mode = false);
 
   // получение текущего состояния кнопки
-  uint8_t getButtonState()
+  uint8_t getButtonState();
+
+  // получение состояния кнопки по результату последнего опроса
+  uint8_t getLastState();
+
+  // возвращает true, если по результатам последнего вызова метода getButtonState() кнопка нажата;
+  bool isButtonClosed();
+
+  // определение одновременного нажатия двух кнопок; возвращает true, если в момент возникновения события btn_state текущей кнопки кнопка _but уже нажата; если метод вернул true, состояние обеих кнопок сбрасывается;
+  bool isSecondButtonPressed(clkButton &_but, byte btn_state = BTN_DOWN);
+
+  // принудительный сброс состояния кнопки; может понадобиться, если по каким-то причинам нужно, например, исключить возникновение событий BTN_ONECLICK и BTN_DBLCLICK;
+  void resetButtonState();
+
+  clkButtonFlag getButtonFlag(bool _clear = false);
+
+  void setButtonFlag(clkButtonFlag flag);
+};
+
+// ---- clkButton private -----------------------
+
+bool clkButton::getFlag(uint8_t _bit)
+{
+  bool result = (_bit < 8) ? (((_flags) >> (_bit)) & 0x01) : false;
+  return (result);
+}
+
+void clkButton::setFlag(uint8_t _bit, bool x)
+{
+  if (_bit < 8)
   {
-    uint32_t thisMls = millis();
+    (x) ? (_flags) |= (1UL << (_bit)) : (_flags) &= ~(1UL << (_bit));
+  }
+}
 
-    // если поднят флаг подавления дребезга и интервал еще не вышел, больше ничего не делать
-    if (_debounce_timeout > 0 &&
-        getFlag(DEBOUNCE_BIT) &&
-        thisMls - btn_timer < _debounce_timeout)
-    {
-      return (_btn_state);
+bool clkButton::getContactsState()
+{
+  bool val = false;
+  val = digitalRead(_PIN);
+  if (getFlag(INPUTTYPE_BIT) == PULL_UP)
+  {
+    val = !val;
+  }
+  if (getFlag(BTNTYPE_BIT) == BTN_NC)
+  {
+    val = !val;
+  }
+
+  return (val);
+}
+
+void clkButton::setBtnUpDown(bool flag, uint32_t thisMls)
+{
+  setFlag(DEBOUNCE_BIT, false);
+  setFlag(FLAG_BIT, flag);
+
+  if (flag)
+  {
+    if (!getFlag(ONECLICK_BIT))
+    { // если это первый клик, запустить таймер двойного клика и поднять флаг одиночного клика
+      _btn_state = BTN_DOWN;
+      setFlag(ONECLICK_BIT, true);
+      dbl_timer = thisMls;
     }
+    else if (thisMls - dbl_timer <= _dblclck_timeout)
+    {
+      _btn_state = BTN_DBLCLICK;
+      setFlag(ONECLICK_BIT, false);
+    }
+  }
+  else
+  {
+    _btn_state = BTN_UP;
+  }
+}
 
-    uint8_t isClosed = getContactsState();
-    // состояние кнопки не изменилось с прошлого опроса
-    if (isClosed == getFlag(FLAG_BIT))
-    { // и не поднят флаг подавления дребезга
-      if (!getFlag(DEBOUNCE_BIT))
-      {
-        if (!isClosed)
-        { // кнопка находится в отжатом состоянии
-          _btn_state = BTN_RELEASED;
-          if (thisMls - dbl_timer > _dblclck_timeout)
-          { // если период двойного клика закончился, проверить на виртуальный клик и сбросить флаг одиночного клика
-            if (getFlag(VIRTUALCLICK_BIT) && getFlag(ONECLICK_BIT))
-            {
-              _btn_state = BTN_ONECLICK;
-            }
-            setFlag(ONECLICK_BIT, false);
-            setFlag(LONGCLICK_BIT, false);
-          }
-        }
-        else if (thisMls - btn_timer < _longclick_timeout && !getFlag(LONGCLICK_BIT))
-        { // кнопка находится в нажатом состоянии, но время удержания еще не вышло, и события удержания еще не было
-          _btn_state = BTN_PRESSED;
-        }
-        else // если кнопка удерживается нажатой дольше времени удержания, то дальше возможны варианты
-        {    // если события удержания еще не было, то выдать его
-          if (!getFlag(LONGCLICK_BIT))
+void clkButton::setAdditionalOptions()
+{
+  switch (_btn_state)
+  {
+  case BTN_DOWN:
+  case BTN_DBLCLICK:
+  case BTN_LONGCLICK:
+    // в любом режиме, кроме стандартного, каждый клик любой кнопки перезапускает таймер автовыхода в стандартный режим
+    if (clkTasks.getTaskState(clkTasks.return_to_default_mode))
+    {
+      clkTasks.startTask(clkTasks.return_to_default_mode);
+    }
+#if defined(USE_BUZZER_FOR_BUTTON) && BUZZER_PIN >= 0
+    if (_state != BTN_LONGCLICK)
+    {
+      tone(BUZZER_PIN, 2000, 25); // на каждый клик срабатывает пищалка
+    }
+#endif
+#if defined(USE_ALARM)
+    // если сработал будильник, отключить его
+    if (clkAlarm.getAlarmState() == ALARM_YES)
+    {
+      clkAlarm.setAlarmState(ALARM_ON);
+      resetButtonState();
+    }
+#endif
+    break;
+  }
+}
+
+// ---- clkButton public ------------------------
+
+clkButton::clkButton(uint8_t pin, bool serial_mode = false)
+{
+  _PIN = pin;
+  setFlag(INPUTTYPE_BIT, BTN_INPUT_TYPE);
+  (BTN_INPUT_TYPE == PULL_UP) ? pinMode(_PIN, INPUT_PULLUP) : pinMode(_PIN, INPUT);
+  setFlag(BTNTYPE_BIT, BTN_TYPE);
+  if (serial_mode)
+  {
+    _longclick_mode = LCM_CLICKSERIES;
+  }
+}
+
+uint8_t clkButton::getButtonState()
+{
+  uint32_t thisMls = millis();
+
+  // если поднят флаг подавления дребезга и интервал еще не вышел, больше ничего не делать
+  if (_debounce_timeout > 0 &&
+      getFlag(DEBOUNCE_BIT) &&
+      thisMls - btn_timer < _debounce_timeout)
+  {
+    return (_btn_state);
+  }
+
+  uint8_t isClosed = getContactsState();
+  // состояние кнопки не изменилось с прошлого опроса
+  if (isClosed == getFlag(FLAG_BIT))
+  { // и не поднят флаг подавления дребезга
+    if (!getFlag(DEBOUNCE_BIT))
+    {
+      if (!isClosed)
+      { // кнопка находится в отжатом состоянии
+        _btn_state = BTN_RELEASED;
+        if (thisMls - dbl_timer > _dblclck_timeout)
+        { // если период двойного клика закончился, проверить на виртуальный клик и сбросить флаг одиночного клика
+          if (getFlag(VIRTUALCLICK_BIT) && getFlag(ONECLICK_BIT))
           {
-            if (_longclick_mode == LCM_CLICKSERIES)
-            {
-              btn_timer = thisMls;
-            }
-            setFlag(LONGCLICK_BIT, true);
-            _btn_state = BTN_LONGCLICK;
-          }
-          else // если это уже не первое событие удержания, то дальше согласно выбранного режима
-          {
-            switch (_longclick_mode)
-            {
-            case LCM_ONLYONCE:
-              _btn_state = BTN_PRESSED;
-              break;
-            case LCM_CLICKSERIES:
-              if (thisMls - btn_timer >= _interval_of_serial)
-              {
-                btn_timer = thisMls;
-                _btn_state = BTN_LONGCLICK;
-              }
-              else
-              {
-                _btn_state = BTN_PRESSED;
-              }
-              break;
-            default:
-              _btn_state = BTN_LONGCLICK;
-              break;
-            }
+            _btn_state = BTN_ONECLICK;
           }
           setFlag(ONECLICK_BIT, false);
+          setFlag(LONGCLICK_BIT, false);
         }
+      }
+      else if (thisMls - btn_timer < _longclick_timeout && !getFlag(LONGCLICK_BIT))
+      { // кнопка находится в нажатом состоянии, но время удержания еще не вышло, и события удержания еще не было
+        _btn_state = BTN_PRESSED;
+      }
+      else // если кнопка удерживается нажатой дольше времени удержания, то дальше возможны варианты
+      {    // если события удержания еще не было, то выдать его
+        if (!getFlag(LONGCLICK_BIT))
+        {
+          if (_longclick_mode == LCM_CLICKSERIES)
+          {
+            btn_timer = thisMls;
+          }
+          setFlag(LONGCLICK_BIT, true);
+          _btn_state = BTN_LONGCLICK;
+        }
+        else // если это уже не первое событие удержания, то дальше согласно выбранного режима
+        {
+          switch (_longclick_mode)
+          {
+          case LCM_ONLYONCE:
+            _btn_state = BTN_PRESSED;
+            break;
+          case LCM_CLICKSERIES:
+            if (thisMls - btn_timer >= _interval_of_serial)
+            {
+              btn_timer = thisMls;
+              _btn_state = BTN_LONGCLICK;
+            }
+            else
+            {
+              _btn_state = BTN_PRESSED;
+            }
+            break;
+          default:
+            _btn_state = BTN_LONGCLICK;
+            break;
+          }
+        }
+        setFlag(ONECLICK_BIT, false);
       }
     }
-    // состояние кнопки изменилось с прошлого опроса
-    else
-    { // если задано подавление дребезга контактов
-      if (_debounce_timeout > 0)
-      { // если флаг подавления еще не поднят - поднять и больше ничего не делать
-        if (!getFlag(DEBOUNCE_BIT))
+  }
+  // состояние кнопки изменилось с прошлого опроса
+  else
+  { // если задано подавление дребезга контактов
+    if (_debounce_timeout > 0)
+    { // если флаг подавления еще не поднят - поднять и больше ничего не делать
+      if (!getFlag(DEBOUNCE_BIT))
+      {
+        btn_timer = thisMls;
+        setFlag(DEBOUNCE_BIT, true);
+        // и заодно сбросить переменную _btn_state, чтобы не выскакивали множественные события типа BTN_DOWN пока не истечет интервал антидребезга; исключение - состояние удержания кнопки в режиме непрерывного события
+        if (!(_btn_state == BTN_LONGCLICK && _longclick_mode == LCM_CONTINUED))
         {
-          btn_timer = thisMls;
-          setFlag(DEBOUNCE_BIT, true);
-          // и заодно сбросить переменную _btn_state, чтобы не выскакивали множественные события типа BTN_DOWN пока не истечет интервал антидребезга; исключение - состояние удержания кнопки в режиме непрерывного события
-          if (!(_btn_state == BTN_LONGCLICK && _longclick_mode == LCM_CONTINUED))
-          {
-            _btn_state = isButtonClosed();
-          }
-        } // иначе, если поднят, и интервал вышел - установить состояние кнопки
-        else if (thisMls - btn_timer >= _debounce_timeout)
-        {
-          btn_timer = thisMls;
-          setBtnUpDown(isClosed, thisMls);
+          _btn_state = isButtonClosed();
         }
-      }
-      else // если подавление вообще не задано, то сразу установить состояние кнопки
+      } // иначе, если поднят, и интервал вышел - установить состояние кнопки
+      else if (thisMls - btn_timer >= _debounce_timeout)
       {
         btn_timer = thisMls;
         setBtnUpDown(isClosed, thisMls);
       }
     }
-
-    setAdditionalOptions();
-
-    return (_btn_state);
-  }
-
-  // получение состояния кнопки по результату последнего опроса
-  uint8_t getLastState() { return (_btn_state); }
-
-  // возвращает true, если по результатам последнего вызова метода getButtonState() кнопка нажата;
-  bool isButtonClosed() { return (getFlag(FLAG_BIT)); }
-
-  // определение одновременного нажатия двух кнопок; возвращает true, если в момент возникновения события btn_state текущей кнопки кнопка _but уже нажата; если метод вернул true, состояние обеих кнопок сбрасывается;
-  bool isSecondButtonPressed(clkButton &_but, byte btn_state = BTN_DOWN)
-  {
-    bool result = false;
-    if (getLastState() == btn_state && _but.isButtonClosed())
+    else // если подавление вообще не задано, то сразу установить состояние кнопки
     {
-      result = true;
-      resetButtonState();
-      _but.resetButtonState();
+      btn_timer = thisMls;
+      setBtnUpDown(isClosed, thisMls);
     }
-    return (result);
   }
 
-  // принудительный сброс состояния кнопки; может понадобиться, если по каким-то причинам нужно, например, исключить возникновение событий BTN_ONECLICK и BTN_DBLCLICK;
-  void resetButtonState()
-  {
-    setFlag(ONECLICK_BIT, false);
-    setFlag(LONGCLICK_BIT, false);
-    // сброс _btn_state в зависимости от последнего состояния - либо нажата, либо отпущена
-    _btn_state = isButtonClosed();
-  }
+  setAdditionalOptions();
 
-  clkButtonFlag getButtonFlag(bool _clear = false)
-  {
-    clkButtonFlag result = btn_flag;
-    if (_clear)
-    {
-      btn_flag = CLK_BTN_FLAG_NONE;
-    }
-    return (result);
-  }
+  return (_btn_state);
+}
 
-  void setButtonFlag(clkButtonFlag flag)
+uint8_t clkButton::getLastState() { return (_btn_state); }
+
+bool clkButton::isButtonClosed() { return (getFlag(FLAG_BIT)); }
+
+bool clkButton::isSecondButtonPressed(clkButton &_but, byte btn_state = BTN_DOWN)
+{
+  bool result = false;
+  if (getLastState() == btn_state && _but.isButtonClosed())
   {
-    btn_flag = flag;
+    result = true;
+    resetButtonState();
+    _but.resetButtonState();
   }
-};
+  return (result);
+}
+
+void clkButton::resetButtonState()
+{
+  setFlag(ONECLICK_BIT, false);
+  setFlag(LONGCLICK_BIT, false);
+  // сброс _btn_state в зависимости от последнего состояния - либо нажата, либо отпущена
+  _btn_state = isButtonClosed();
+}
+
+clkButtonFlag clkButton::getButtonFlag(bool _clear = false)
+{
+  clkButtonFlag result = btn_flag;
+  if (_clear)
+  {
+    btn_flag = CLK_BTN_FLAG_NONE;
+  }
+  return (result);
+}
+
+void clkButton::setButtonFlag(clkButtonFlag flag) { btn_flag = flag; }
 
 // ==== end clkButton=================================
 
@@ -359,101 +386,128 @@ class clkButtonGroup
 private:
   clkButton *buttons[3] = {NULL, NULL, NULL};
 
-  bool isValidButton(clkButtonType _btn)
-  {
-    if (buttons != NULL)
-    {
-      return (buttons[(uint8_t)_btn] != NULL);
-    }
-
-    return false;
-  }
+  bool isValidButton(clkButtonType _btn);
 
 public:
-  clkButtonGroup() {}
+  clkButtonGroup();
 
-  void init()
-  {
-#if (BTN_SET_PIN >= 0)
-    buttons[0] = new clkButton(BTN_SET_PIN);
-#endif
-#if (BTN_UP_PIN >= 0)
-    buttons[1] = new clkButton(BTN_UP_PIN, true);
-#endif
-#if (BTN_DOWN_PIN >= 0)
-    buttons[2] = new clkButton(BTN_DOWN_PIN, true);
-#endif
-  }
+  void init();
 
-  void setButtonFlag(clkButtonType _btn, clkButtonFlag _flag)
-  {
-    if (isValidButton(_btn))
-    {
-      buttons[(uint8_t)_btn]->setButtonFlag(_flag);
-    }
-  }
+  void setButtonFlag(clkButtonType _btn, clkButtonFlag _flag);
 
-  clkButtonFlag getButtonFlag(clkButtonType _btn, bool _clear = false)
-  {
-    if (isValidButton(_btn))
-    {
-      return (buttons[(uint8_t)_btn]->getButtonFlag(_clear));
-    }
+  clkButtonFlag getButtonFlag(clkButtonType _btn, bool _clear = false);
 
-    return CLK_BTN_FLAG_NONE;
-  }
+  uint8_t getButtonState(clkButtonType _btn);
 
-  uint8_t getButtonState(clkButtonType _btn)
-  {
-    if (isValidButton(_btn))
-    {
-      return (buttons[(uint8_t)_btn]->getButtonState());
-    }
+  uint8_t getLastState(clkButtonType _btn);
 
-    return BTN_RELEASED;
-  }
+  void resetButtonState(clkButtonType _btn);
 
-  uint8_t getLastState(clkButtonType _btn)
-  {
-    if (isValidButton(_btn))
-    {
-      return (buttons[(uint8_t)_btn]->getLastState());
-    }
-
-    return BTN_RELEASED;
-  }
-
-  void resetButtonState(clkButtonType _btn)
-  {
-    if (isValidButton(_btn))
-    {
-      buttons[(uint8_t)_btn]->resetButtonState();
-    }
-  }
-
-  bool isButtonClosed(clkButtonType _btn)
-  {
-    if (isValidButton(_btn))
-    {
-      return (buttons[(uint8_t)_btn]->isButtonClosed());
-    }
-
-    return false;
-  }
+  bool isButtonClosed(clkButtonType _btn);
 
   bool isSecondButtonPressed(clkButtonType _btn1,
                              clkButtonType _btn2,
-                             uint8_t _state)
-  {
-    if (isValidButton(_btn1) && isValidButton(_btn2))
-    {
-      return (buttons[(uint8_t)_btn1]->isSecondButtonPressed(*buttons[(uint8_t)_btn2],
-                                                             _state));
-    }
-
-    return false;
-  }
+                             uint8_t _state);
 };
+
+// ---- clkButtonGroup private ------------------
+
+bool clkButtonGroup::isValidButton(clkButtonType _btn)
+{
+  if (buttons != NULL)
+  {
+    return (buttons[(uint8_t)_btn] != NULL);
+  }
+
+  return false;
+}
+
+// ---- clkButtonGroup public -------------------
+
+clkButtonGroup::clkButtonGroup() {}
+
+void clkButtonGroup::init()
+{
+#if (BTN_SET_PIN >= 0)
+  buttons[0] = new clkButton(BTN_SET_PIN);
+#endif
+#if (BTN_UP_PIN >= 0)
+  buttons[1] = new clkButton(BTN_UP_PIN, true);
+#endif
+#if (BTN_DOWN_PIN >= 0)
+  buttons[2] = new clkButton(BTN_DOWN_PIN, true);
+#endif
+}
+
+void clkButtonGroup::setButtonFlag(clkButtonType _btn, clkButtonFlag _flag)
+{
+  if (isValidButton(_btn))
+  {
+    buttons[(uint8_t)_btn]->setButtonFlag(_flag);
+  }
+}
+
+clkButtonFlag clkButtonGroup::getButtonFlag(clkButtonType _btn, bool _clear = false)
+{
+  if (isValidButton(_btn))
+  {
+    return (buttons[(uint8_t)_btn]->getButtonFlag(_clear));
+  }
+
+  return CLK_BTN_FLAG_NONE;
+}
+
+uint8_t clkButtonGroup::getButtonState(clkButtonType _btn)
+{
+  if (isValidButton(_btn))
+  {
+    return (buttons[(uint8_t)_btn]->getButtonState());
+  }
+
+  return BTN_RELEASED;
+}
+
+uint8_t clkButtonGroup::getLastState(clkButtonType _btn)
+{
+  if (isValidButton(_btn))
+  {
+    return (buttons[(uint8_t)_btn]->getLastState());
+  }
+
+  return BTN_RELEASED;
+}
+
+void clkButtonGroup::resetButtonState(clkButtonType _btn)
+{
+  if (isValidButton(_btn))
+  {
+    buttons[(uint8_t)_btn]->resetButtonState();
+  }
+}
+
+bool clkButtonGroup::isButtonClosed(clkButtonType _btn)
+{
+  if (isValidButton(_btn))
+  {
+    return (buttons[(uint8_t)_btn]->isButtonClosed());
+  }
+
+  return false;
+}
+
+bool clkButtonGroup::isSecondButtonPressed(clkButtonType _btn1,
+                                           clkButtonType _btn2,
+                                           uint8_t _state)
+{
+  if (isValidButton(_btn1) && isValidButton(_btn2))
+  {
+    return (buttons[(uint8_t)_btn1]->isSecondButtonPressed(*buttons[(uint8_t)_btn2],
+                                                           _state));
+  }
+
+  return false;
+}
+
 // ==== end clkButtonGroup ===========================
 
 clkButtonGroup clkButtons;

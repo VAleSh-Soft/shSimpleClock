@@ -70,68 +70,193 @@ private:
   CRGB color = CRGB::Red;
   CRGB bg_color = CRGB::Black;
 
-  uint8_t getLedIndexOfStrip(uint8_t row, uint8_t col)
-  {
-    uint8_t result = 0;
-    switch (matrix_type)
-    {
-    case BY_COLUMNS:
-      result = col * row_count + (((col >> 0) & 0x01) ? row_count - row - 1 : row);
-      break;
-    case BY_LINE:
-      result = row * col_count + (((row >> 0) & 0x01) ? col_count - col - 1 : col);
-      break;
-    }
-    return (result);
-  }
+  uint8_t getLedIndexOfStrip(uint8_t row, uint8_t col);
 
-  void setNumString(uint8_t offset, uint8_t num,
-                    uint8_t width = 6, uint8_t space = 1,
-                    uint8_t *_data = NULL, uint8_t _data_count = 0)
-  {
-    uint8_t x = (width == 6) ? num / 10 : num / 10 + 0x30;
-    setChar(offset, x, width);
-    x = (width == 6) ? num % 10 : num % 10 + 0x30;
-    setChar(offset + width + space, x, width);
-  }
+  // void setNumString(uint8_t offset, uint8_t num,
+  //                   uint8_t width = 6, uint8_t space = 1,
+  //                   uint8_t *_data = NULL, uint8_t _data_count = 0);
 
   void setChar(uint8_t offset, uint8_t chr,
-               uint8_t width = 6, uint8_t *_arr = NULL, uint8_t _arr_length = 0)
-  {
-    for (uint8_t j = offset, i = 0; i < width; j++, i++)
-    {
-      uint8_t chr_data = 0;
-      switch (width)
-      {
-      case 5:
-        chr_data = reverseByte(pgm_read_byte(&font_5_7[chr * width + i]));
-        break;
-      case 6:
-        chr_data = pgm_read_byte(&font_digit[chr * width + i]);
-        break;
-      default:
-        break;
-      }
+               uint8_t width = 6, uint8_t *_arr = NULL, uint8_t _arr_length = 0);
 
-      if (_arr != NULL)
+#if __ESPICHIPSET__
+  void setESpiLedsData(CRGB *data, uint16_t leds_count);
+#else
+
+  void setLedsData(CRGB *data, uint16_t leds_count);
+#endif
+
+public:
+  /**
+   * @brief конструктор
+   *
+   * @param _leds массив светодиодов
+   * @param _color цвет
+   * @param _type тип матрицы, собрана по столбцам или построчно
+   */
+  DisplayWS2812Matrix(CRGB *_leds, CRGB _color, MatrixType _type);
+
+  /**
+   * @brief запись столбца в буфер экрана
+   *
+   * @param col столбец
+   * @param _data байт для записи
+   */
+  void setColumn(uint8_t col, uint8_t _data);
+
+  /**
+   * @brief получение битовой маски столбца из буфера устройства
+   *
+   * @param column столбец (координата X)
+   * @return результат
+   */
+  uint8_t getColumn(uint8_t col);
+
+  /**
+   * @brief очистка буфера экрана
+   *
+   * @param upd при false очищается только буфер экрана, при true - очищается и сам экран
+   */
+  void clear(bool upd = false);
+
+  /**
+   * @brief запись символа в буфера экрана
+   *
+   * @param offset индекс столбца, с которого начинается отрисовка символа (0..31)
+   * @param chr символ для записи
+   * @param width ширина символа, может иметь значение 5 или 6, определяет, какой набор символов будет использован: 5х7 (для текста) или 6х8 (для вывода цифр)
+   */
+  void setDispData(uint8_t offset, uint8_t chr, uint8_t width = 6);
+
+  /**
+   * @brief вывести двоеточие в середине экрана
+   *
+   * @param toDot вместо двоеточия вывести точку
+   */
+  void setColon(bool toDot = false);
+
+  /**
+   * @brief отрисовка на экране содержимого его буфера
+   *
+   */
+  void show();
+
+  /**
+   * @brief установка яркости экрана
+   *
+   * @param brightness значение яркости (0..25)
+   */
+  void setBrightness(uint8_t brightness);
+
+  /**
+   * @brief установка цвета символов
+   *
+   * @param _color новый цвет
+   */
+  void setColorOfNumber(CRGB _color);
+
+  /**
+   * @brief получение текущего цвета символов
+   *
+   * @return CRGB
+   */
+  CRGB getColorOfNumber();
+
+  /**
+   * @brief установка цвета фона
+   *
+   * @param _color новый цвет
+   */
+  void setColorOfBackground(CRGB _color);
+
+  /**
+   * @brief получение текущего цвета фона
+   *
+   * @return CRGB
+   */
+  CRGB getColorOfBackground();
+
+  /**
+   * @brief установка максимальной мощности блока питания матрицы
+   *
+   * @param volts напряжение, Вольт
+   * @param milliamps максимальный ток, милиампер
+   */
+  void setMaxPSP(uint8_t volts, uint32_t milliamps);
+
+  /**
+   * @brief инициализация матрицы
+   *
+   * @param data
+   * @param leds_count
+   */
+  void init(CRGB *data, uint16_t leds_count);
+};
+
+// ---- DisplayWS2812Matrix private -------------
+
+uint8_t DisplayWS2812Matrix::getLedIndexOfStrip(uint8_t row, uint8_t col)
+{
+  uint8_t result = 0;
+  switch (matrix_type)
+  {
+  case BY_COLUMNS:
+    result = col * row_count + (((col >> 0) & 0x01) ? row_count - row - 1 : row);
+    break;
+  case BY_LINE:
+    result = row * col_count + (((row >> 0) & 0x01) ? col_count - col - 1 : col);
+    break;
+  }
+  return (result);
+}
+
+// void DisplayWS2812Matrix::setNumString(uint8_t offset, uint8_t num,
+//                                        uint8_t width, uint8_t space,
+//                                        uint8_t *_data, uint8_t _data_count)
+// {
+//   uint8_t x = (width == 6) ? num / 10 : num / 10 + 0x30;
+//   setChar(offset, x, width);
+//   x = (width == 6) ? num % 10 : num % 10 + 0x30;
+//   setChar(offset + width + space, x, width);
+// }
+
+void DisplayWS2812Matrix::setChar(uint8_t offset, uint8_t chr,
+                                  uint8_t width, uint8_t *_arr, uint8_t _arr_length)
+{
+  for (uint8_t j = offset, i = 0; i < width; j++, i++)
+  {
+    uint8_t chr_data = 0;
+    switch (width)
+    {
+    case 5:
+      chr_data = reverseByte(pgm_read_byte(&font_5_7[chr * width + i]));
+      break;
+    case 6:
+      chr_data = pgm_read_byte(&font_digit[chr * width + i]);
+      break;
+    default:
+      break;
+    }
+
+    if (_arr != NULL)
+    {
+      if (j < _arr_length)
       {
-        if (j < _arr_length)
-        {
-          _arr[j] = chr_data;
-        }
+        _arr[j] = chr_data;
       }
-      else
+    }
+    else
+    {
+      if (j < 32)
       {
-        if (j < 32)
-        {
-          setColumn(j, chr_data);
-        }
+        setColumn(j, chr_data);
       }
     }
   }
+}
 
 #if __ESPICHIPSET__
-void setESpiLedsData(CRGB *data, uint16_t leds_count)
+void DisplayWS2812Matrix::setESpiLedsData(CRGB *data, uint16_t leds_count)
 {
 #if defined CHIPSET_LPD6803
   ESPIChipsets const chip = LPD6803;
@@ -161,7 +286,7 @@ void setESpiLedsData(CRGB *data, uint16_t leds_count)
 }
 #else
 
-void setLedsData(CRGB *data, uint16_t leds_count)
+void DisplayWS2812Matrix::setLedsData(CRGB *data, uint16_t leds_count)
 {
 #if defined CHIPSET_NEOPIXEL
   FastLED.addLeds<NEOPIXEL, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
@@ -223,15 +348,9 @@ void setLedsData(CRGB *data, uint16_t leds_count)
 }
 #endif
 
-public:
-  /**
-   * @brief конструктор
-   *
-   * @param _leds массив светодиодов
-   * @param _color цвет
-   * @param _type тип матрицы, собрана по столбцам или построчно
-   */
-  DisplayWS2812Matrix(CRGB *_leds, CRGB _color, MatrixType _type)
+// ---- DisplayWS2812Matrix public --------------
+
+  DisplayWS2812Matrix::DisplayWS2812Matrix(CRGB *_leds, CRGB _color, MatrixType _type)
   {
     leds = _leds;
     color = _color;
@@ -241,13 +360,7 @@ public:
     setMaxPSP(POWER_SUPPLY_VOLTAGE, POWER_SUPPLY_CURRENT);
   }
 
-  /**
-   * @brief запись столбца в буфер экрана
-   *
-   * @param col столбец
-   * @param _data байт для записи
-   */
-  void setColumn(uint8_t col, uint8_t _data)
+  void DisplayWS2812Matrix::setColumn(uint8_t col, uint8_t _data)
   {
     if (col < 32)
     {
@@ -293,13 +406,7 @@ public:
     }
   }
 
-  /**
-   * @brief получение битовой маски столбца из буфера устройства
-   *
-   * @param column столбец (координата X)
-   * @return результат
-   */
-  uint8_t getColumn(uint8_t col)
+  uint8_t DisplayWS2812Matrix::getColumn(uint8_t col)
   {
     uint8_t result = 0x00;
     if (col < 32)
@@ -317,12 +424,7 @@ public:
     return (result);
   }
 
-  /**
-   * @brief очистка буфера экрана
-   *
-   * @param upd при false очищается только буфер экрана, при true - очищается и сам экран
-   */
-  void clear(bool upd = false)
+  void DisplayWS2812Matrix::clear(bool upd )
   {
     for (uint8_t i = 0; i < 32; i++)
     {
@@ -334,14 +436,7 @@ public:
     }
   }
 
-  /**
-   * @brief запись символа в буфера экрана
-   *
-   * @param offset индекс столбца, с которого начинается отрисовка символа (0..31)
-   * @param chr символ для записи
-   * @param width ширина символа, может иметь значение 5 или 6, определяет, какой набор символов будет использован: 5х7 (для текста) или 6х8 (для вывода цифр)
-   */
-  void setDispData(uint8_t offset, uint8_t chr, uint8_t width = 6)
+  void DisplayWS2812Matrix::setDispData(uint8_t offset, uint8_t chr, uint8_t width)
   {
     if (offset < 32)
     {
@@ -349,94 +444,48 @@ public:
     }
   }
 
-  /**
-   * @brief вывести двоеточие в середине экрана
-   *
-   * @param toDot вместо двоеточия вывести точку
-   */
-  void setColon(bool toDot = false)
+  void DisplayWS2812Matrix::setColon(bool toDot)
   {
     (toDot) ? setColumn(15, 0b00000001) : setColumn(15, 0b00100100);
   }
 
-  /**
-   * @brief отрисовка на экране содержимого его буфера
-   *
-   */
-  void show()
+  void DisplayWS2812Matrix::show()
   {
     FastLED.show();
   }
 
-  /**
-   * @brief установка яркости экрана
-   *
-   * @param brightness значение яркости (0..25)
-   */
-  void setBrightness(uint8_t brightness)
+  void DisplayWS2812Matrix::setBrightness(uint8_t brightness)
   {
     brightness = (brightness <= 25) ? brightness : 25;
     FastLED.setBrightness(brightness * 10);
   }
 
-  /**
-   * @brief установка цвета символов
-   *
-   * @param _color новый цвет
-   */
-  void setColorOfNumber(CRGB _color)
+  void DisplayWS2812Matrix::setColorOfNumber(CRGB _color)
   {
     color = _color;
   }
 
-  /**
-   * @brief получение текущего цвета символов
-   *
-   * @return CRGB
-   */
-  CRGB getColorOfNumber()
+  CRGB DisplayWS2812Matrix::getColorOfNumber()
   {
     return (color);
   }
 
-  /**
-   * @brief установка цвета фона
-   *
-   * @param _color новый цвет
-   */
-  void setColorOfBackground(CRGB _color)
+  void DisplayWS2812Matrix::setColorOfBackground(CRGB _color)
   {
     bg_color = _color;
   }
 
-  /**
-   * @brief получение текущего цвета фона
-   *
-   * @return CRGB
-   */
-  CRGB getColorOfBackground()
+  CRGB DisplayWS2812Matrix::getColorOfBackground()
   {
     return (bg_color);
   }
 
-  /**
-   * @brief установка максимальной мощности блока питания матрицы
-   *
-   * @param volts напряжение, Вольт
-   * @param milliamps максимальный ток, милиампер
-   */
-  void setMaxPSP(uint8_t volts, uint32_t milliamps)
+  void DisplayWS2812Matrix::setMaxPSP(uint8_t volts, uint32_t milliamps)
   {
     FastLED.setMaxPowerInVoltsAndMilliamps(volts, milliamps);
   }
 
-  /**
-   * @brief инициализация матрицы
-   *
-   * @param data
-   * @param leds_count
-   */
-  void init(CRGB *data, uint16_t leds_count)
+  void DisplayWS2812Matrix::init(CRGB *data, uint16_t leds_count)
   {
 #if __ESPICHIPSET__
     setESpiLedsData(data, leds_count);
@@ -444,4 +493,3 @@ public:
     setLedsData(data, leds_count);
 #endif
   }
-};

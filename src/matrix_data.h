@@ -2,8 +2,8 @@
  * @file matrix_data.h
  * @author Vladimir Shatalov (valesh-soft@yandex.ru)
  * @brief Модуль для работы с матричными экранами
- * @version 1.0
- * @date 11.03.2024
+ * @version 1.5
+ * @date 01.05.2024
  *
  * @copyright Copyright (c) 2024
  *
@@ -427,7 +427,7 @@ private:
   uint8_t data_count = 0;
 
 public:
-  StringData() {}
+  StringData();
 
   /**
    * @brief инициализация строки
@@ -436,41 +436,13 @@ public:
    * символа и величины межсимвольного интервала)
    * @return возвращает true, если память для строки успешно выделена; иначе возвращает false
    */
-  bool stringInit(uint8_t _data_count)
-  {
-    bool result = false;
-    stringFree();
-
-    {
-      data = new uint8_t[_data_count];
-      if (data != NULL)
-      {
-        for (uint8_t i = 0; i < _data_count; i++)
-        {
-          data[i] = 0x00;
-        }
-        result = true;
-        data_count = _data_count;
-      }
-    }
-
-    return (result);
-  }
+  bool stringInit(uint8_t _data_count);
 
   /**
    * @brief освобождение памяти, занимаемой строкой
    *
    */
-  void stringFree()
-  {
-    if (data != NULL)
-    {
-
-      delete[] data;
-      data = NULL;
-      data_count = 0;
-    }
-  }
+  void stringFree();
 
   /**
    * @brief получение битовой маски столбца
@@ -478,15 +450,7 @@ public:
    * @param index индекс столбца
    * @return результат
    */
-  uint8_t getData(uint8_t index)
-  {
-    uint8_t result = 0;
-    if (data != NULL)
-    {
-      result = (index < data_count) ? data[index] : 0;
-    }
-    return (result);
-  }
+  uint8_t getData(uint8_t index);
 
   /**
    * @brief установка битовой маски столбца
@@ -494,24 +458,72 @@ public:
    * @param index индекс столбца
    * @param _data битовая маска столбца
    */
-  void setData(uint8_t index, uint8_t _data)
-
-  {
-    if ((data != NULL) && (index < data_count))
-    {
-      data[index] = _data;
-    }
-  }
+  void setData(uint8_t index, uint8_t _data);
 
   /**
    * @brief получение размера строки в столбцах
    *
    * @return результат
    */
-  uint8_t getDataLenght()
-  {
-    return (data_count);
-  }
+  uint8_t getDataLenght();
 };
+
+StringData::StringData() {}
+
+bool StringData::stringInit(uint8_t _data_count)
+{
+  bool result = false;
+  stringFree();
+
+  {
+    data = new uint8_t[_data_count];
+    if (data != NULL)
+    {
+      for (uint8_t i = 0; i < _data_count; i++)
+      {
+        data[i] = 0x00;
+      }
+      result = true;
+      data_count = _data_count;
+    }
+  }
+
+  return (result);
+}
+
+void StringData::stringFree()
+{
+  if (data != NULL)
+  {
+
+    delete[] data;
+    data = NULL;
+    data_count = 0;
+  }
+}
+
+uint8_t StringData::getData(uint8_t index)
+{
+  uint8_t result = 0;
+  if (data != NULL)
+  {
+    result = (index < data_count) ? data[index] : 0;
+  }
+  return (result);
+}
+
+void StringData::setData(uint8_t index, uint8_t _data)
+
+{
+  if ((data != NULL) && (index < data_count))
+  {
+    data[index] = _data;
+  }
+}
+
+uint8_t StringData::getDataLenght()
+{
+  return (data_count);
+}
 
 StringData sData; // данные бегущей строки

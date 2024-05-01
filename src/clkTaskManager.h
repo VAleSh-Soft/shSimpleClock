@@ -2,11 +2,11 @@
  * @file clkTaskManager.h
  * @author Vladimir Shatalov (valesh-soft@yandex.ru)
  *
- * @brief диспетчер задач; 
+ * @brief диспетчер задач;
  *        полная версия здесь - https://github.com/VAleSh-Soft/shTaskManager
  *
- * @version 1.0
- * @date 11.03.2024
+ * @version 1.5
+ * @date 01.05.2024
  *
  * @copyright Copyright (c) 2024
  *
@@ -33,10 +33,7 @@ private:
   uint8_t TASKCOUNT = 0;
   clkTask *taskList = NULL;
 
-  bool isValidHandle(clkHandle _handle)
-  {
-    return (_handle > CLK_INVALID_HANDLE && _handle < TASKCOUNT);
-  }
+  bool isValidHandle(clkHandle _handle);
 
 public:
   clkHandle rtc_guard;              // опрос микросхемы RTC по таймеру, чтобы не дергать ее откуда попало
@@ -64,91 +61,114 @@ public:
   clkHandle ticker; // отработка бегущей строки
 #endif
 
-  clkTaskManager() {}
+  clkTaskManager();
 
-  void init(uint8_t _taskCount)
+  void init(uint8_t _taskCount);
+
+  void tick();
+
+  clkHandle addTask(uint32_t _interval, clkCallback _callback, bool isActive = true);
+
+  void startTask(clkHandle _handle);
+
+  void stopTask(clkHandle _handle);
+
+  bool getTaskState(clkHandle _handle);
+
+  void setTaskInterval(clkHandle _handle, uint32_t _interval, bool _restart = true);
+};
+
+// ---- clkTaskManager private ------------------
+
+bool clkTaskManager::isValidHandle(clkHandle _handle)
+{
+  return (_handle > CLK_INVALID_HANDLE && _handle < TASKCOUNT);
+}
+// ---- clkTaskManager public -------------------
+
+clkTaskManager::clkTaskManager() {}
+
+void clkTaskManager::init(uint8_t _taskCount)
+{
+  TASKCOUNT = (_taskCount) ? _taskCount : 1;
+  taskList = (clkTask *)calloc(TASKCOUNT, sizeof(clkTask));
+  if (taskList == NULL)
   {
-    TASKCOUNT = (_taskCount) ? _taskCount : 1;
-    taskList = (clkTask *)calloc(TASKCOUNT, sizeof(clkTask));
-    if (taskList == NULL)
-    {
-      TASKCOUNT = 0;
-    }
+    TASKCOUNT = 0;
   }
+}
 
-  void tick()
+void clkTaskManager::tick()
+{
+  for (uint8_t i = 0; i < TASKCOUNT; i++)
   {
-    for (uint8_t i = 0; i < TASKCOUNT; i++)
+    if (taskList[i].status && taskList[i].callback != NULL)
     {
-      if (taskList[i].status && taskList[i].callback != NULL)
+      if (millis() - taskList[i].timer >= taskList[i].interval)
       {
-        if (millis() - taskList[i].timer >= taskList[i].interval)
-        {
-          taskList[i].timer += taskList[i].interval;
-          taskList[i].callback();
-        }
+        taskList[i].timer += taskList[i].interval;
+        taskList[i].callback();
       }
     }
   }
+}
 
-  clkHandle addTask(uint32_t _interval, clkCallback _callback, bool isActive = true)
+clkHandle clkTaskManager::addTask(uint32_t _interval, clkCallback _callback, bool isActive = true)
+{
+  for (uint8_t i = 0; i < TASKCOUNT; i++)
   {
-    for (uint8_t i = 0; i < TASKCOUNT; i++)
+    if (taskList[i].callback == NULL)
     {
-      if (taskList[i].callback == NULL)
-      {
-        taskList[i].status = isActive;
-        taskList[i].interval = _interval;
-        taskList[i].callback = _callback;
-        taskList[i].timer = millis();
-        return (i);
-      }
+      taskList[i].status = isActive;
+      taskList[i].interval = _interval;
+      taskList[i].callback = _callback;
+      taskList[i].timer = millis();
+      return (i);
     }
-    return (CLK_INVALID_HANDLE);
+  }
+  return (CLK_INVALID_HANDLE);
+}
+
+void clkTaskManager::startTask(clkHandle _handle)
+{
+  if (isValidHandle(_handle) && taskList[_handle].callback != NULL)
+  {
+    taskList[_handle].status = true;
+    taskList[_handle].timer = millis();
+  }
+}
+
+void clkTaskManager::stopTask(clkHandle _handle)
+{
+  if (isValidHandle(_handle))
+  {
+    taskList[_handle].status = false;
+  }
+}
+
+bool clkTaskManager::getTaskState(clkHandle _handle)
+{
+  if (isValidHandle(_handle) && (taskList != NULL))
+  {
+    return (taskList[_handle].status && taskList[_handle].callback != NULL);
   }
 
-  void startTask(clkHandle _handle)
+  return (false);
+}
+
+void clkTaskManager::setTaskInterval(clkHandle _handle, uint32_t _interval, bool _restart = true)
+{
+  if (isValidHandle(_handle))
   {
-    if (isValidHandle(_handle) && taskList[_handle].callback != NULL)
+    taskList[_handle].interval = _interval;
+    if (_restart && (taskList[_handle].callback != NULL))
     {
       taskList[_handle].status = true;
       taskList[_handle].timer = millis();
     }
   }
-
-  void stopTask(clkHandle _handle)
-  {
-    if (isValidHandle(_handle))
-    {
-      taskList[_handle].status = false;
-    }
-  }
-
-  bool getTaskState(clkHandle _handle)
-  {
-    if (isValidHandle(_handle) && (taskList != NULL))
-    {
-      return (taskList[_handle].status && taskList[_handle].callback != NULL);
-    }
-    
-    return (false);
-  }
-
-  void setTaskInterval(clkHandle _handle, uint32_t _interval, bool _restart = true)
-  {
-    if (isValidHandle(_handle))
-    {
-      taskList[_handle].interval = _interval;
-      if (_restart && (taskList[_handle].callback != NULL))
-      {
-        taskList[_handle].status = true;
-        taskList[_handle].timer = millis();
-      }
-    }
-  }
-};
+}
 
 // ==== end clkTaskManager ===========================
 
 clkTaskManager clkTasks;
-

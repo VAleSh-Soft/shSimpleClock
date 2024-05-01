@@ -2,8 +2,8 @@
  * @file clkAlarmClass.h
  * @author Vladimir Shatalov (valesh-soft@yandex.ru)
  * @brief Класс, реализующий будильник
- * @version 1.0
- * @date 11.03.2024
+ * @version 1.5
+ * @date 01.05.2024
  *
  * @copyright Copyright (c) 2024
  *
@@ -40,62 +40,25 @@ private:
 #if ALARM_LED_PIN >= 0
   uint8_t led_pin;
 
-  void setLed()
-  {
-    static uint8_t n = 0;
-    uint8_t led_state = LOW;
-    switch (state)
-    {
-    case ALARM_ON: // при включенном будильнике светодиод горит
-      led_state = HIGH;
-      n = 0;
-      break;
-    case ALARM_YES: // при сработавшем будильнике светодиод мигает с частотой вызова метода tick()
-      led_state = n != 0;
-      if (++n > 1)
-      {
-        n = 0;
-      }
-      break;
-    default:
-      break;
-    }
-    digitalWrite(led_pin, led_state);
-  }
-#endif
-public:
-  clkAlarmClass(int8_t _led_pin, uint16_t _eeprom_index)
-  {
-#if ALARM_LED_PIN >= 0
-    led_pin = _led_pin;
-    pinMode(led_pin, OUTPUT);
+  void setLed();
 #endif
 
-    eeprom_index = _eeprom_index;
-    if (read_eeprom_8(eeprom_index + ALARM_STATE) > 1)
-    {
-      write_eeprom_8(eeprom_index + ALARM_STATE, 0);
-    }
-    if (read_eeprom_16(eeprom_index + ALARM_POINT) > MAX_DATA)
-    {
-      write_eeprom_16(eeprom_index + ALARM_POINT, 360);
-    }
-    state = (AlarmState)read_eeprom_8(eeprom_index + ALARM_STATE);
-  }
+public:
+  clkAlarmClass(int8_t _led_pin, uint16_t _eeprom_index);
 
   /**
    * @brief получение текущего состояния будильника
    *
    * @return AlarmState
    */
-  AlarmState getAlarmState() { return (state); }
+  AlarmState getAlarmState();
 
   /**
    * @brief установка текущего состояния будильника
    *
    * @param _state новое значение состояния будильника
    */
-  void setAlarmState(AlarmState _state) { state = _state; }
+  void setAlarmState(AlarmState _state);
 
   /**
    * @brief получение информации о состоянии будильника - включен/выключен
@@ -103,59 +66,123 @@ public:
    * @return true
    * @return false
    */
-  bool getOnOffAlarm() { return (bool)read_eeprom_8(eeprom_index + ALARM_STATE); }
+  bool getOnOffAlarm();
 
   /**
    * @brief включение/выключение будильника
    *
    * @param _state флаг для установки состояния будильника
    */
-  void setOnOffAlarm(bool _state)
-  {
-    write_eeprom_8(eeprom_index + ALARM_STATE, (uint8_t)_state);
-    state = (AlarmState)_state;
-  }
+  void setOnOffAlarm(bool _state);
 
   /**
    * @brief получение установленного времени срабатывания будильника в минутах от начала суток
    *
    * @return uint16_t
    */
-  uint16_t getAlarmPoint() { return (read_eeprom_16(eeprom_index + ALARM_POINT)); }
+  uint16_t getAlarmPoint();
 
   /**
    * @brief установка времени срабатывания будильника
    *
    * @param _time время в минутах от начала суток
    */
-  void setAlarmPoint(uint16_t _time) { write_eeprom_16(eeprom_index + ALARM_POINT, _time); }
+  void setAlarmPoint(uint16_t _time);
 
   /**
    * @brief проверка текущего состояния будильника
    *
    * @param _time текущее время
    */
-  void tick(DateTime _time)
-  {
-#if ALARM_LED_PIN >= 0
-    setLed();
-#endif
-    switch (state)
-    {
-    case ALARM_ON:
-      uint32_t tm;
-      tm = _time.hour() * 3600ul + _time.minute() * 60ul + _time.second();
-      if (tm == getAlarmPoint() * 60ul)
-      {
-        state = ALARM_YES;
-      }
-      break;
-    default:
-      break;
-    }
-  }
+  void tick(DateTime _time);
 };
+
+// ---- clkAlarmClass private -------------------
+
+#if ALARM_LED_PIN >= 0
+void clkAlarmClass::setLed()
+{
+  static uint8_t n = 0;
+  uint8_t led_state = LOW;
+  switch (state)
+  {
+  case ALARM_ON: // при включенном будильнике светодиод горит
+    led_state = HIGH;
+    n = 0;
+    break;
+  case ALARM_YES: // при сработавшем будильнике светодиод мигает с частотой вызова метода tick()
+    led_state = n != 0;
+    if (++n > 1)
+    {
+      n = 0;
+    }
+    break;
+  default:
+    break;
+  }
+  digitalWrite(led_pin, led_state);
+}
+#endif
+
+// ---- clkAlarmClass public --------------------
+
+clkAlarmClass::clkAlarmClass(int8_t _led_pin, uint16_t _eeprom_index)
+{
+#if ALARM_LED_PIN >= 0
+  led_pin = _led_pin;
+  pinMode(led_pin, OUTPUT);
+#endif
+
+  eeprom_index = _eeprom_index;
+  if (read_eeprom_8(eeprom_index + ALARM_STATE) > 1)
+  {
+    write_eeprom_8(eeprom_index + ALARM_STATE, 0);
+  }
+  if (read_eeprom_16(eeprom_index + ALARM_POINT) > MAX_DATA)
+  {
+    write_eeprom_16(eeprom_index + ALARM_POINT, 360);
+  }
+  state = (AlarmState)read_eeprom_8(eeprom_index + ALARM_STATE);
+}
+
+AlarmState clkAlarmClass::getAlarmState() { return (state); }
+
+void clkAlarmClass::setAlarmState(AlarmState _state) { state = _state; }
+
+bool clkAlarmClass::getOnOffAlarm() { return (bool)read_eeprom_8(eeprom_index + ALARM_STATE); }
+
+void clkAlarmClass::setOnOffAlarm(bool _state)
+{
+  write_eeprom_8(eeprom_index + ALARM_STATE, (uint8_t)_state);
+  state = (AlarmState)_state;
+}
+
+uint16_t clkAlarmClass::getAlarmPoint() { return (read_eeprom_16(eeprom_index + ALARM_POINT)); }
+
+void clkAlarmClass::setAlarmPoint(uint16_t _time) { write_eeprom_16(eeprom_index + ALARM_POINT, _time); }
+
+void clkAlarmClass::tick(DateTime _time)
+{
+#if ALARM_LED_PIN >= 0
+  setLed();
+#endif
+  switch (state)
+  {
+  case ALARM_ON:
+    uint32_t tm;
+    tm = _time.hour() * 3600ul + _time.minute() * 60ul + _time.second();
+    if (tm == getAlarmPoint() * 60ul)
+    {
+      state = ALARM_YES;
+    }
+    break;
+  default:
+    break;
+  }
+}
 
 // ==== end clkAlarmClass ============================
 
+#if defined(USE_ALARM)
 clkAlarmClass clkAlarm(ALARM_LED_PIN, ALARM_DATA_EEPROM_INDEX);
+#endif
