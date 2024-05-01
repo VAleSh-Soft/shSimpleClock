@@ -2,7 +2,8 @@
  * @file clkTaskManager.h
  * @author Vladimir Shatalov (valesh-soft@yandex.ru)
  *
- * @brief диспетчер задач; полная версия здесь - https://github.com/VAleSh-Soft/shTaskManager
+ * @brief диспетчер задач; 
+ *        полная версия здесь - https://github.com/VAleSh-Soft/shTaskManager
  *
  * @version 1.0
  * @date 11.03.2024
@@ -148,3 +149,6 @@ public:
 };
 
 // ==== end clkTaskManager ===========================
+
+clkTaskManager clkTasks;
+

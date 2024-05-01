@@ -1,5 +1,5 @@
 /**
- * @file alarm.h
+ * @file clkAlarmClass.h
  * @author Vladimir Shatalov (valesh-soft@yandex.ru)
  * @brief Класс, реализующий будильник
  * @version 1.0
@@ -22,6 +22,8 @@
 uint8_t constexpr ALARM_STATE = 0; // состояние будильника, включен/нет, uint8_t
 uint8_t constexpr ALARM_POINT = 1; // точка срабатывания будильника в минутах от полуночи, uint16_t
 
+// ==== clkAlarmClass ================================
+
 enum AlarmState : uint8_t // состояние будильника
 {
   ALARM_OFF, // будильник выключен
@@ -29,7 +31,7 @@ enum AlarmState : uint8_t // состояние будильника
   ALARM_YES  // будильник сработал
 };
 
-class Alarm
+class clkAlarmClass
 {
 private:
   uint16_t eeprom_index;
@@ -62,7 +64,7 @@ private:
   }
 #endif
 public:
-  Alarm(int8_t _led_pin, uint16_t _eeprom_index)
+  clkAlarmClass(int8_t _led_pin, uint16_t _eeprom_index)
   {
 #if ALARM_LED_PIN >= 0
     led_pin = _led_pin;
@@ -153,3 +155,7 @@ public:
     }
   }
 };
+
+// ==== end clkAlarmClass ============================
+
+clkAlarmClass clkAlarm(ALARM_LED_PIN, ALARM_DATA_EEPROM_INDEX);

@@ -14,8 +14,8 @@
  *        В скетче так же показан способ использования кнопок, предназначенных
  *        для управления часами, в своих целях;
  * 
- * @version 1.0
- * @date 11.03.2024
+ * @version 1.5
+ * @date 01.05.2024
  * 
  * @copyright Copyright (c) 2024
  * 
@@ -23,7 +23,6 @@
 
 #include "clockSetting.h"
 #include <shSimpleClock.h> // https://github.com/VAleSh-Soft/shSimpleClock
-#include <shButton.h>      // https://github.com/VAleSh-Soft/shButton
 
 // объявляем экземпляр часов
 shSimpleClock simple_clock;

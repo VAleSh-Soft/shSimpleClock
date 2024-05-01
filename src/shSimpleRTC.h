@@ -122,6 +122,8 @@ private:
   }
 };
 
+// ==== shSimpleRTC ==================================
+
 class shSimpleRTC
 {
 private:
@@ -408,3 +410,7 @@ public:
   }
 #endif
 };
+
+// ==== end shSimpleRTC ==============================
+
+shSimpleRTC sscClock;

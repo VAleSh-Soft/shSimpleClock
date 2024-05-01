@@ -12,8 +12,8 @@
  *        ВАЖНО: объявление файла clockSetting.h в скетче должно быть ДО
  *               объявления библиотеки shSimpleClock.h (см. скетч ниже)
 
- * @version 1.0
- * @date 26.03.2024
+ * @version 1.5
+ * @date 01.05.2024
  *
  * @copyright Copyright (c) 2024
  *
@@ -21,7 +21,6 @@
 
 #include "clockSetting.h"
 #include <shSimpleClock.h> // https://github.com/VAleSh-Soft/shSimpleClock
-#include <shButton.h>      // https://github.com/VAleSh-Soft/shButton
 
 // объявляем экземпляр часов
 shSimpleClock simple_clock;
