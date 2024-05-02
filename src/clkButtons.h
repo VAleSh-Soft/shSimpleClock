@@ -198,7 +198,7 @@ void clkButton::setAdditionalOptions()
       clkTasks.startTask(clkTasks.return_to_default_mode);
     }
 #if defined(USE_BUZZER_FOR_BUTTON) && BUZZER_PIN >= 0
-    if (_state != BTN_LONGCLICK)
+    if (_btn_state != BTN_LONGCLICK)
     {
       tone(BUZZER_PIN, 2000, 25); // на каждый клик срабатывает пищалка
     }

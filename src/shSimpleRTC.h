@@ -291,11 +291,12 @@ void shSimpleRTC::now()
 {
   if (isClockPresent())
   {
-    uint8_t reg = 0x00;
 #if defined(RTC_PCF8563)
-    reg = 0x02;
+    uint8_t reg = 0x02;
 #elif defined(RTC_PCF8523)
-    reg = 0x03;
+    uint8_t reg = 0x03;
+#else
+    uint8_t reg = 0x00;
 #endif
 
     uint8_t b0 = read_register(reg);
