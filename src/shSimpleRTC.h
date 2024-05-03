@@ -87,7 +87,7 @@ long DateTime::time2long(uint16_t days, uint8_t h, uint8_t m, uint8_t s)
 
 // ---- DateTime public -------------------------
 
-DateTime::DateTime(uint32_t t = 0)
+DateTime::DateTime(uint32_t t)
 {
   t -= SECONDS_FROM_1970_TO_2000; // переместить точку времени с 1970 года на 2000
 
@@ -118,7 +118,7 @@ DateTime::DateTime(uint32_t t = 0)
 }
 
 DateTime::DateTime(uint16_t year, uint8_t month, uint8_t day,
-                   uint8_t hour = 0, uint8_t min = 0, uint8_t sec = 0)
+                   uint8_t hour, uint8_t min, uint8_t sec)
 {
   yOff = year % 100;
   m = (month <= 12 && month > 0) ? month : 1;

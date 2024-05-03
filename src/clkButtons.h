@@ -22,7 +22,7 @@
 #define BTNTYPE_BIT 2       // тип кнопки - нормально разомкнутая или нормально замкнутая
 #define DEBOUNCE_BIT 3      // флаг включения подавления дребезга
 #define VIRTUALCLICK_BIT 4  // режим виртуального клика
-#define VIRTUALBUTTON_BIT 5 // флаг режима виртуальной кнопки
+#define VIRTUALBUTTON_BIT 5 // флаг режима виртуальной кнопки; здесь не используется
 #define ONECLICK_BIT 6      // флаг одиночного клика
 #define LONGCLICK_BIT 7     // флаг длинного клика
 
@@ -81,7 +81,7 @@ private:
    * 2 бит - тип кнопки - нормально разомкнутая (BTN_NO(0)) или нормально замкнутая (BTN_NC(1))
    * 3 бит - флаг включения подавления дребезга - пока флаг поднят (1), изменения состояния не принимаются
    * 4 бит - режим виртуального клика, 0 - выключен, 1 - включен
-   * 5 бит - флаг виртуальной кнопки, 0 - обычная кнопка, 1 - виртуальная кнопка
+   * 5 бит - флаг виртуальной кнопки, 0 - обычная кнопка, 1 - виртуальная кнопка; здесь не используется
    * 6 бит - флаг одиночного клика, 0 - не было, 1 - был одиночный клик
    * 7 бит - флаг длинного клика, 0 - не было, 1 - был длинный клик
    */
@@ -146,15 +146,14 @@ void clkButton::setFlag(uint8_t _bit, bool x)
 
 bool clkButton::getContactsState()
 {
-  bool val = false;
-  val = digitalRead(_PIN);
+  bool val = digitalRead(_PIN);
   if (getFlag(INPUTTYPE_BIT) == PULL_UP)
   {
     val = !val;
   }
   if (getFlag(BTNTYPE_BIT) == BTN_NC)
   {
-    val = !val;
+    return (!val);
   }
 
   return (val);
@@ -217,7 +216,7 @@ void clkButton::setAdditionalOptions()
 
 // ---- clkButton public ------------------------
 
-clkButton::clkButton(uint8_t pin, bool serial_mode = false)
+clkButton::clkButton(uint8_t pin, bool serial_mode)
 {
   _PIN = pin;
   setFlag(INPUTTYPE_BIT, BTN_INPUT_TYPE);
@@ -241,7 +240,7 @@ uint8_t clkButton::getButtonState()
     return (_btn_state);
   }
 
-  uint8_t isClosed = getContactsState();
+  bool isClosed = getContactsState();
   // состояние кнопки не изменилось с прошлого опроса
   if (isClosed == getFlag(FLAG_BIT))
   { // и не поднят флаг подавления дребезга
@@ -339,7 +338,7 @@ uint8_t clkButton::getLastState() { return (_btn_state); }
 
 bool clkButton::isButtonClosed() { return (getFlag(FLAG_BIT)); }
 
-bool clkButton::isSecondButtonPressed(clkButton &_but, byte btn_state = BTN_DOWN)
+bool clkButton::isSecondButtonPressed(clkButton &_but, byte btn_state)
 {
   bool result = false;
   if (getLastState() == btn_state && _but.isButtonClosed())
@@ -359,7 +358,7 @@ void clkButton::resetButtonState()
   _btn_state = isButtonClosed();
 }
 
-clkButtonFlag clkButton::getButtonFlag(bool _clear = false)
+clkButtonFlag clkButton::getButtonFlag(bool _clear)
 {
   clkButtonFlag result = btn_flag;
   if (_clear)
@@ -447,7 +446,7 @@ void clkButtonGroup::setButtonFlag(clkButtonType _btn, clkButtonFlag _flag)
   }
 }
 
-clkButtonFlag clkButtonGroup::getButtonFlag(clkButtonType _btn, bool _clear = false)
+clkButtonFlag clkButtonGroup::getButtonFlag(clkButtonType _btn, bool _clear)
 {
   if (isValidButton(_btn))
   {

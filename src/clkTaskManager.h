@@ -113,7 +113,7 @@ void clkTaskManager::tick()
   }
 }
 
-clkHandle clkTaskManager::addTask(uint32_t _interval, clkCallback _callback, bool isActive = true)
+clkHandle clkTaskManager::addTask(uint32_t _interval, clkCallback _callback, bool isActive)
 {
   for (uint8_t i = 0; i < TASKCOUNT; i++)
   {
@@ -156,7 +156,7 @@ bool clkTaskManager::getTaskState(clkHandle _handle)
   return (false);
 }
 
-void clkTaskManager::setTaskInterval(clkHandle _handle, uint32_t _interval, bool _restart = true)
+void clkTaskManager::setTaskInterval(clkHandle _handle, uint32_t _interval, bool _restart)
 {
   if (isValidHandle(_handle))
   {

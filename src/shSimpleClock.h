@@ -964,7 +964,7 @@ uint8_t shSimpleClock::getButtonState(clkButtonType _btn)
   return (clkButtons.getLastState(_btn));
 }
 
-clkButtonFlag shSimpleClock::getButtonFlag(clkButtonType _btn, bool _clear = false)
+clkButtonFlag shSimpleClock::getButtonFlag(clkButtonType _btn, bool _clear)
 {
   return clkButtons.getButtonFlag(_btn, _clear);
 }

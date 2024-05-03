@@ -301,7 +301,7 @@ void DisplayMAX72xxMatrix<cs_pin>::clear(bool upd)
 }
 
 template <uint8_t cs_pin>
-void DisplayMAX72xxMatrix<cs_pin>::setDispData(uint8_t offset, uint8_t chr, uint8_t width = 6)
+void DisplayMAX72xxMatrix<cs_pin>::setDispData(uint8_t offset, uint8_t chr, uint8_t width)
 {
   setChar(offset, chr, width);
 }
