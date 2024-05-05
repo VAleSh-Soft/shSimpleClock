@@ -725,6 +725,11 @@ void shSimpleClock::rtc_init()
   // если часовой модуль не запущен, запускаем его, для чего нужно установить время
   if (!clkClock.isRunning())
   {
+#if defined(RTC_DS3231)
+    // устанавливаем режим 24 часа
+    clkClock.setClockMode(false);
+#endif
+
     clkClock.setCurTime(0, 0, 0);
     clkClock.setCurDate(1, 1);
     clkClock.setCurYear(0);
@@ -1022,6 +1027,10 @@ DateTime shSimpleClock::getCurrentDateTime()
 
 void shSimpleClock::setCurrentTime(uint8_t _hour, uint8_t _minute, uint8_t _second)
 {
+#if defined(RTC_DS3231)
+  // устанавливаем режим 24 часа
+  clkClock.setClockMode(false);
+#endif
   clkClock.setCurTime(_hour, _minute, _second);
 }
 
@@ -1506,6 +1515,10 @@ void _checkBtnSetForTmSet(uint8_t &curHour,
       {
       case DISPLAY_MODE_SET_HOUR:
       case DISPLAY_MODE_SET_MINUTE:
+#if defined(RTC_DS3231)
+        // устанавливаем режим 24 часа
+        clkClock.setClockMode(false);
+#endif
         clkClock.setCurTime(curHour, curMinute, 0);
         sscRtcNow();
         break;

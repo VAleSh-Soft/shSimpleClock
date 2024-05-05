@@ -233,7 +233,7 @@ public:
    * Однако не знаю, как это сделать лучше, и пока режим не устанавливается
    * часто, риск очень минимален.
    * Риск нулевой, если вы вызываете это ДО установки часа, поскольку
-   * функция setHour() не меняет этот режим.
+   * функция setCurTime() не меняет этот режим.
    */
   void setClockMode(bool h12);
 #endif
@@ -340,19 +340,39 @@ void shSimpleRTC::setCurTime(uint8_t _hour, uint8_t _minute, uint8_t _second)
 {
   if (isClockPresent())
   {
-    uint8_t reg = 0x00;
 #if defined(RTC_PCF8563)
-    reg = 0x02;
+    uint8_t reg = 0x02;
 #elif defined(RTC_PCF8523)
-    reg = 0x03;
+    uint8_t reg = 0x03;
+#else
+    uint8_t reg = 0x00;
 #endif
     write_register(reg, decToBcd(_second));
     write_register(++reg, decToBcd(_minute));
 #if defined(RTC_DS3231)
-    // устанавливаем режим 24 часа
-    setClockMode(false);
-#endif
+    // устанавливаем час с учетом бита 12/24 часа
+    bool h12 = (read_register(++reg) & 0b01000000);
+    if (h12)
+    {
+      // 12 hour
+      if (_hour > 12)
+      {
+        _hour = decToBcd(_hour - 12) | 0b01100000;
+      }
+      else
+      {
+        _hour = decToBcd(_hour) & 0b11011111;
+      }
+    }
+    else
+    {
+      // 24 hour
+      _hour = decToBcd(_hour) & 0b10111111;
+    }
+    write_register(reg, _hour);
+#else
     write_register(++reg, decToBcd(_hour));
+#endif
 #if defined(RTC_DS3231)
     // Очищаем флаг OSF
     uint8_t temp_buffer = read_register(0x0f);
@@ -419,7 +439,7 @@ void shSimpleRTC::setClockMode(bool h12)
   {
     uint8_t temp_buffer;
 
-    // старт считывания байта 0x02.
+    // считывание байта 0x02.
     temp_buffer = read_register(0x02);
 
     // установка заданного флага:
