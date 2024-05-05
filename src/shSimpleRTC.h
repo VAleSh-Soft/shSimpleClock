@@ -221,9 +221,9 @@ public:
   /**
    * @brief возвращает температуру внутреннего датчика DS3231; работает только с DS3231
    *
-   * @return uint8_t
+   * @return int16_t
    */
-  uint8_t getTemperature();
+  int16_t getTemperature();
 
   /**
    * устанавливает режим 12-часовой (true) или 24-часовой (false).
@@ -396,7 +396,7 @@ void shSimpleRTC::setCurYear(uint8_t _year)
 }
 
 #if defined(RTC_DS3231)
-uint8_t shSimpleRTC::getTemperature()
+int16_t shSimpleRTC::getTemperature()
 {
   uint8_t tMSB, tLSB;
   int16_t temp3231 = -127;
