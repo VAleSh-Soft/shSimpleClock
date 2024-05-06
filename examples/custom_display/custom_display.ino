@@ -3,12 +3,12 @@
  * @author Vladimir Shatalov (valesh-soft@yandex.ru)
  * @brief Пример вывода пользовательской информации на экран часов;
  *
- *        Вывод данных по двойному клику кнопкой Up на примере часов с 
+ *        Вывод данных по двойному клику кнопкой Up на примере часов с
  *        семисегментным индикатором на драйвере TM1637;
- * 
- *        Так же показано использование флагов кнопок управления часами для 
+ *
+ *        Так же показано использование флагов кнопок управления часами для
  *        управления пользовательским экраном;
- * 
+ *
  *        ВАЖНО: объявление файла clockSetting.h в скетче должно быть ДО
  *               объявления библиотеки shSimpleClock.h (см. скетч ниже)
 
@@ -25,34 +25,36 @@
 // объявляем экземпляр часов
 shSimpleClock simple_clock;
 
-void setCustomDisplay()
+void setCustomDisplay1()
 {
-  if (simple_clock.getDisplayMode() == DISPLAY_MODE_CUSTOM_1)
+  if (simple_clock.getDisplayMode() != DISPLAY_MODE_CUSTOM_1)
   {
-    // выводим наборы символов на экран от "0000" до "FFFF"; смена символов - каждые 500 милисекунд
-    static uint32_t timer = 0;
-    if (millis() - timer >= 500)
-    {
-      timer = millis();
+    return;
+  }
+  
+  // выводим наборы символов на экран от "0000" до "FFFF"; смена символов - каждые 500 милисекунд
+  static uint32_t timer = 0;
+  if (millis() - timer >= 500)
+  {
+    timer = millis();
 
-      static uint8_t data = 0x00;
-      for (uint8_t i = 0; i < 4; i++)
-      {
-        clkDisplay.setDispData(i, clkDisplay.encodeDigit(data));
-      }
-      // после завершения автоматически вернуть экран в режим отображения текущего времени
-      if (data++ > 0x0F)
-      {
-        data = 0x00;
-        simple_clock.setDisplayMode(DISPLAY_MODE_SHOW_TIME);
-      }
+    static uint8_t data = 0x00;
+    for (uint8_t i = 0; i < 4; i++)
+    {
+      clkDisplay.setDispData(i, clkDisplay.encodeDigit(data));
     }
-
-    // или немедленно вернуться в режим отображения текущего времени при удержании нажатой кнопки Set
-    if (simple_clock.getButtonFlag(CLK_BTN_SET, true) == CLK_BTN_FLAG_EXIT)
+    // после завершения автоматически вернуть экран в режим отображения текущего времени
+    if (data++ > 0x0F)
     {
+      data = 0x00;
       simple_clock.setDisplayMode(DISPLAY_MODE_SHOW_TIME);
     }
+  }
+
+  // или немедленно вернуться в режим отображения текущего времени при удержании нажатой кнопки Set
+  if (simple_clock.getButtonFlag(CLK_BTN_SET, true) == CLK_BTN_FLAG_EXIT)
+  {
+    simple_clock.setDisplayMode(DISPLAY_MODE_SHOW_TIME);
   }
 }
 
@@ -74,6 +76,9 @@ void loop()
     simple_clock.setDisplayMode(DISPLAY_MODE_CUSTOM_1);
   }
 
-  // работа с пользовательским экраном
-  setCustomDisplay();
+  if (simple_clock.getDisplayMode() == DISPLAY_MODE_CUSTOM_1)
+  {
+    // работа с пользовательским экраном
+    setCustomDisplay1();
+  }
 }
