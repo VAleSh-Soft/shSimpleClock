@@ -354,6 +354,7 @@ void clkButton::resetButtonState()
 {
   setFlag(ONECLICK_BIT, false);
   setFlag(LONGCLICK_BIT, false);
+  setButtonFlag(CLK_BTN_FLAG_NONE);
   // сброс _btn_state в зависимости от последнего состояния - либо нажата, либо отпущена
   _btn_state = isButtonClosed();
 }
