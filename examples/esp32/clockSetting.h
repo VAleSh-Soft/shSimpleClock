@@ -41,11 +41,9 @@
 #define DISPLAY_DIN_PIN 23 // пин для подключения экрана - DAT (не менять!!!)
 #define DISPLAY_CS_PIN 4  // пин для подключения экрана - CS
 
-#endif
-
 
 // ---- матрица из адресных светодиодов ----
-#if defined(WS2812_MATRIX_DISPLAY)
+#elif defined(WS2812_MATRIX_DISPLAY)
 
 /*
  * здесь укажите используемый вами тип светодиодов;
@@ -229,11 +227,17 @@ uint8_t constexpr ALARM_REPETITION_COUNT = 3;
 #if defined(USE_TEMP_DATA)
 // ---- датчики температуры ---------------------
 
+
 // ---- DS18B20 ----------------------------
 #define USE_DS18B20 // использовать для вывода температуры датчик DS18b20
 
+#if defined(USE_DS18B20)
+
 // ---- DS18B20 - пин ----------------------
 #define DS18B20_PIN 17 
+
+#endif
+
 
 // ---- NTC термистор ----------------------
 // #define USE_NTC     // использовать для вывода температуры NTC термистор
