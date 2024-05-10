@@ -301,15 +301,7 @@ CRGB ssc_leds[256];
 DisplayWS2812Matrix clkDisplay(ssc_leds, COLOR_OF_NUMBER, MX_TYPE);
 #endif
 
-// ---- датчики температуры ----------------
-#if __USE_TEMP_DATA__
-#if defined(USE_NTC)
-NTCSensor sscTempSensor(NTC_PIN,
-                        RESISTOR_STD,
-                        BALANCE_RESISTOR,
-                        BETA_COEFFICIENT);
-#endif
-#endif
+// -----------------------------------------
 
 clkDisplayMode ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
 

@@ -183,6 +183,4 @@ void clkAlarmClass::tick(DateTime _time)
 
 // ==== end clkAlarmClass ============================
 
-#if defined(USE_ALARM)
 clkAlarmClass clkAlarm(ALARM_LED_PIN, ALARM_DATA_EEPROM_INDEX);
-#endif

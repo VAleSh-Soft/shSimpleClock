@@ -18,7 +18,7 @@
 
 #define ERROR_TEMP -127
 
-OneWire ds;
+OneWire sscDS18b20;
 
 class DS1820
 {
@@ -54,7 +54,7 @@ bool DS1820::checkData(uint8_t *data)
   // именно нуль будет записан в ячейке CRC массива data[] в этом
   // случае; поэтому проверяем ячейку, в которой указано разрешение
   // конвертации, оно нулю равняться не должно
-  bool result = ds.crc8(data, 8) == data[8];
+  bool result = sscDS18b20.crc8(data, 8) == data[8];
   if (result && data[8] == 0)
   {
     result = (!type_c && data[7] != 0x00) && (type_c && data[4] != 0x00);
@@ -65,17 +65,17 @@ bool DS1820::checkData(uint8_t *data)
 
 DS1820::DS1820(uint8_t data_pin)
 {
-  ds.begin(data_pin);
-  ds.reset();
+  sscDS18b20.begin(data_pin);
+  sscDS18b20.reset();
   // если датчик найден
-  if (ds.search(addr))
+  if (sscDS18b20.search(addr))
   {
     // если адрес верифицирован
-    if (ds.crc8(addr, 7) == addr[7])
+    if (sscDS18b20.crc8(addr, 7) == addr[7])
     {
       // установим разрешение датчика, минимального достаточно ))
-      ds.select(addr);
-      ds.write(0x1F); // точность 0,5гр = 1F; 0,25гр = 3F; 0,125гр = 5F; 0,0625гр = 7F;
+      sscDS18b20.select(addr);
+      sscDS18b20.write(0x1F); // точность 0,5гр = 1F; 0,25гр = 3F; 0,125гр = 5F; 0,0625гр = 7F;
 
       // определяем тип чипа
       switch (addr[0])
@@ -91,9 +91,9 @@ DS1820::DS1820(uint8_t data_pin)
     }
     if (type_c < 2)
     {
-      ds.reset();
-      ds.select(addr);
-      ds.write(0x44, 1);
+      sscDS18b20.reset();
+      sscDS18b20.select(addr);
+      sscDS18b20.write(0x44, 1);
     }
   }
 }
@@ -104,12 +104,12 @@ void DS1820::readData()
   {
     uint8_t data[9];
     // считывание данных из датчика
-    ds.reset();
-    ds.select(addr);
-    ds.write(0xBE);
+    sscDS18b20.reset();
+    sscDS18b20.select(addr);
+    sscDS18b20.write(0xBE);
     for (uint8_t i = 0; i < 9; i++)
     {
-      data[i] = ds.read();
+      data[i] = sscDS18b20.read();
     }
 
     if (!checkData(data))
@@ -151,12 +151,14 @@ void DS1820::readData()
     }
 
     // даем команду на конвертацию для следующего запроса
-    ds.reset();
-    ds.select(addr);
-    ds.write(0x44, 1);
+    sscDS18b20.reset();
+    sscDS18b20.select(addr);
+    sscDS18b20.write(0x44, 1);
   }
 }
 
 int16_t DS1820::getTemp() { return (temp); }
+
+// ===================================================
 
 DS1820 sscTempSensor(DS18B20_PIN);

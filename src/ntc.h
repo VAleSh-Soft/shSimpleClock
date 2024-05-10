@@ -3,13 +3,13 @@
 
    Методы библиотеки:
 
-   NTCSensor temp_sensor(_sensor_pin, RESISTOR_STD, BALANCE_RESISTOR, BETA_COEFFICIENT = 3950) - конструктор класса.
+   NTCSensor temp_sensor(_sensor_pin, resistor_std, balance_resistor, beta_coefficient = 3950) - конструктор класса.
    Список аргументов:
 
     _sensor_pin - аналоговый пин, куда подключен датчик;
-    RESISTOR_STD - сопротивление датчика при комнатной температуре (25 градусов Цельсия) в Омах;
-    BALANCE_RESISTOR - сопротивление второго резистора делителя напряжения, в Омах;
-    BETA_COEFFICIENT - бета-коэффициент датчика, см. данные производителя; если данных производителя нет, коэффициент можно расчитать, исходя из бета-формулы расчета температуры, которую можно легко найти в интернете.
+    resistor_std - сопротивление датчика при комнатной температуре (25 градусов Цельсия) в Омах;
+    balance_resistor - сопротивление второго резистора делителя напряжения, в Омах;
+    beta_coefficient - бета-коэффициент датчика, см. данные производителя; если данных производителя нет, коэффициент можно расчитать, исходя из бета-формулы расчета температуры, которую можно легко найти в интернете.
 
    int16_t getTemp() - получение температуры с датчика;
 
@@ -32,9 +32,9 @@ private:
 
 public:
   NTCSensor(uint8_t _sensor_pin,
-            uint16_t RESISTOR_STD,
-            uint16_t BALANCE_RESISTOR,
-            uint16_t BETA_COEFFICIENT = 3950);
+            uint16_t resistor_std,
+            uint16_t balance_resistor,
+            uint16_t beta_coefficient = 3950);
 
   /**
    * @brief получение температуры с датчика
@@ -52,14 +52,14 @@ public:
 };
 
 NTCSensor::NTCSensor(uint8_t _sensor_pin,
-                     uint16_t RESISTOR_STD,
-                     uint16_t BALANCE_RESISTOR,
-                     uint16_t BETA_COEFFICIENT = 3950)
+                     uint16_t resistor_std,
+                     uint16_t balance_resistor,
+                     uint16_t beta_coefficient = 3950)
 {
   sensor_pin = _sensor_pin;
-  balance = BALANCE_RESISTOR;
-  resistor_room_temp = RESISTOR_STD;
-  beta = BETA_COEFFICIENT;
+  balance = balance_resistor;
+  resistor_room_temp = resistor_std;
+  beta = beta_coefficient;
 }
 
 uint16_t NTCSensor::getTemp()
@@ -88,3 +88,10 @@ void NTCSensor::setADCbitDepth(uint8_t bit_depth)
   }
   max_adc = d - 1;
 }
+
+// ===================================================
+
+NTCSensor sscTempSensor(NTC_PIN,
+                        RESISTOR_STD,
+                        BALANCE_RESISTOR,
+                        BETA_COEFFICIENT);

@@ -11,7 +11,9 @@
  */
 #pragma once
 
+#if defined(USE_ALARM)
 #include "clkAlarmClass.h"
+#endif
 #include "clkTaskManager.h"
 
 // ==== clkButton ====================================
