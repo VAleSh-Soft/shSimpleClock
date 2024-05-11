@@ -328,3 +328,11 @@ void DisplayMAX72xxMatrix<cs_pin>::setBrightness(uint8_t brightness)
     shMAX72xxMini<cs_pin, 4>::setBrightness(i, brightness);
   }
 }
+
+// ====================================================
+
+#if defined(MAX72XX_7SEGMENT_DISPLAY)
+DisplayMAX72xx7segment<DISPLAY_CS_PIN> clkDisplay;
+#else
+DisplayMAX72xxMatrix<DISPLAY_CS_PIN> clkDisplay;
+#endif

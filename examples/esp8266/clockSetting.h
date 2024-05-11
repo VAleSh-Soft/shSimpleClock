@@ -29,17 +29,17 @@
 #if defined(TM1637_DISPLAY)
 
 // ---- пины для подключения индикатора ----
-#define DISPLAY_CLK_PIN D6 // пин для подключения экрана - CLK
-#define DISPLAY_DAT_PIN D5 // пин для подключения экрана - DAT
+int8_t constexpr DISPLAY_CLK_PIN = D6; // пин для подключения экрана - CLK
+int8_t constexpr DISPLAY_DAT_PIN = D5; // пин для подключения экрана - DAT
 
 
 // ---- MAX72XX ----------------------------
 #elif defined(MAX72XX_7SEGMENT_DISPLAY) || defined(MAX72XX_MATRIX_DISPLAY)
 
 // ---- пины для подключения драйвера ------
-#define DISPLAY_CLK_PIN D5 // пин для подключения экрана - CLK (не менять!!!)
-#define DISPLAY_DIN_PIN D7 // пин для подключения экрана - DAT (не менять!!!)
-#define DISPLAY_CS_PIN D8  // пин для подключения экрана - CS
+int8_t constexpr DISPLAY_CLK_PIN = D5; // пин для подключения экрана - CLK (не менять!!!)
+int8_t constexpr DISPLAY_DIN_PIN = D7; // пин для подключения экрана - DAT (не менять!!!)
+int8_t constexpr DISPLAY_CS_PIN = D8;  // пин для подключения экрана - CS
 
 
 // ---- матрица из адресных светодиодов ----
@@ -81,20 +81,20 @@
 #define MX_TYPE BY_COLUMNS
 
 // ---- цвет символов ----------------------
-#define COLOR_OF_NUMBER CRGB::Blue
+#define COLOR_OF_NUMBER CRGB::Red
 
 // ---- цвет фона --------------------------
 #define COLOR_OF_BACKGROUND CRGB::Black
 
 // ---- напряжение блока питания, В --------
-#define POWER_SUPPLY_VOLTAGE 5
+uint32_t constexpr POWER_SUPPLY_VOLTAGE = 5;
 
 // ---- максимальный ток блока питания, мА --
-#define POWER_SUPPLY_CURRENT 800
+uint32_t constexpr POWER_SUPPLY_CURRENT = 800;
 
 // ---- пины для подключения матрицы -------
-#define DISPLAY_DIN_PIN D5 // пин для подключения экрана - DIN
-#define DISPLAY_CLK_PIN -1 // пин для подключения экрана - CLK (для четырехпроводных схем)
+int8_t constexpr DISPLAY_DIN_PIN = D5; // пин для подключения экрана - DIN
+int8_t constexpr DISPLAY_CLK_PIN = -1; // пин для подключения экрана - CLK (для четырехпроводных схем)
 
 #endif
 
@@ -158,9 +158,9 @@ uint16_t constexpr TIMEOUT_OF_DBLCLICK = 300;   // интервал двойно
  * если кнопка не будет использоваться, нужно указать -1;
  * в этом случае ее объект не будет создаваться в памяти;
 */
-#define BTN_SET_PIN D3  // пин для подключения кнопки Set
-#define BTN_DOWN_PIN D4 // пин для подключения кнопки Down
-#define BTN_UP_PIN D6   // пин для подключения кнопки Up
+int8_t constexpr BTN_SET_PIN = D3;  // пин для подключения кнопки Set
+int8_t constexpr BTN_DOWN_PIN = D4; // пин для подключения кнопки Down
+int8_t constexpr BTN_UP_PIN = D6;   // пин для подключения кнопки Up
 
 
 
@@ -168,11 +168,11 @@ uint16_t constexpr TIMEOUT_OF_DBLCLICK = 300;   // интервал двойно
 
 
 // ---- календарь -------------------------------
-#define USE_CALENDAR // использовать или нет вывод даты по клику кнопкой Down
+#define USE_CALENDAR // использовать вывод даты по клику кнопкой Down
 
 
 // ---- будильник -------------------------------
-#define USE_ALARM // использовать или нет будильник
+#define USE_ALARM // использовать будильник
 
 #if defined(USE_ALARM)
 
@@ -189,7 +189,7 @@ uint8_t constexpr ALARM_REPETITION_COUNT = 3;
 // #define USE_ONECLICK_TO_SET_ALARM // использовать одиночный клик кнопкой Set для входа в настройки будильника, иначе вход по двойному клику
 
 // ---- будильник - пин светодиода ---------
-#define ALARM_LED_PIN 1 // пин для подключения светодиода - индикатора будильника
+int8_t constexpr ALARM_LED_PIN = 1; // пин для подключения светодиода - индикатора будильника
 
 #endif
 
@@ -198,14 +198,14 @@ uint8_t constexpr ALARM_REPETITION_COUNT = 3;
 
 
 // ---- вывод температуры ------------------
-#define USE_TEMP_DATA // использовать или нет вывод на экран температуры по клику кнопкой Up
+#define USE_TEMP_DATA // использовать вывод на экран температуры по клику кнопкой Up
 
 
 
 #if defined(USE_ALARM) || defined(USE_BUZZER_FOR_BUTTON)
 
 // ==== пищалка ======================================
-#define BUZZER_PIN D8    // пин для подключения пищалки
+int8_t constexpr BUZZER_PIN = D8;    // пин для подключения пищалки
 
 #endif
 
@@ -215,12 +215,12 @@ uint8_t constexpr ALARM_REPETITION_COUNT = 3;
 
 
 // ---- датчик освещенности ---------------------
-#define USE_LIGHT_SENSOR // использовать или нет датчик света на аналоговом входе для регулировки яркости экрана
+#define USE_LIGHT_SENSOR // использовать датчик освещенности на аналоговом входе для регулировки яркости экрана
 
 #if defined(USE_LIGHT_SENSOR)
 
 // ---- датчик освещенности - пин ----------
-#define LIGHT_SENSOR_PIN A0 
+int8_t constexpr LIGHT_SENSOR_PIN = A0; 
 
 #endif
 
@@ -234,7 +234,7 @@ uint8_t constexpr ALARM_REPETITION_COUNT = 3;
 #if defined(USE_DS18B20)
 
 // ---- DS18B20 - пин ----------------------
-#define DS18B20_PIN 8 
+int8_t constexpr DS18B20_PIN = 8; 
 
 #endif
 
@@ -250,7 +250,7 @@ uint16_t constexpr BALANCE_RESISTOR = 9850; // точное сопротивле
 uint16_t constexpr BETA_COEFFICIENT = 3950; // бета-коэффициент датчика, см. данные производителя; если данных производителя нет, коэффициент можно расчитать, исходя из бета-формулы расчета температуры, которую можно легко найти в интернете
 
 // ---- NTC термистор - пин---------------
-#define NTC_PIN A0 
+int8_t constexpr NTC_PIN = A0; 
 
 #endif
 #endif

@@ -60,10 +60,12 @@ enum MatrixType : uint8_t
   BY_LINE
 };
 
+  uint16_t const LEDS_COUNT = 256;
+
 class DisplayWS2812Matrix
 {
 private:
-  CRGB *leds = NULL;
+  CRGB leds[LEDS_COUNT];
   MatrixType matrix_type = BY_COLUMNS;
   uint8_t row_count = 8;
   uint8_t col_count = 32;
@@ -94,7 +96,7 @@ public:
    * @param _color цвет
    * @param _type тип матрицы, собрана по столбцам или построчно
    */
-  DisplayWS2812Matrix(CRGB *_leds, CRGB _color, MatrixType _type);
+  DisplayWS2812Matrix(CRGB _color, MatrixType _type);
 
   /**
    * @brief запись столбца в буфер экрана
@@ -190,7 +192,7 @@ public:
    * @param data
    * @param leds_count
    */
-  void init(CRGB *data, uint16_t leds_count);
+  void init();
 };
 
 // ---- DisplayWS2812Matrix private -------------
@@ -350,146 +352,149 @@ void DisplayWS2812Matrix::setLedsData(CRGB *data, uint16_t leds_count)
 
 // ---- DisplayWS2812Matrix public --------------
 
-  DisplayWS2812Matrix::DisplayWS2812Matrix(CRGB *_leds, CRGB _color, MatrixType _type)
-  {
-    leds = _leds;
-    color = _color;
-    bg_color = COLOR_OF_BACKGROUND;
-    matrix_type = _type;
-    clear(true);
-    setMaxPSP(POWER_SUPPLY_VOLTAGE, POWER_SUPPLY_CURRENT);
-  }
+DisplayWS2812Matrix::DisplayWS2812Matrix(CRGB _color, MatrixType _type)
+{
+  color = _color;
+  bg_color = COLOR_OF_BACKGROUND;
+  matrix_type = _type;
+  clear(true);
+  setMaxPSP(POWER_SUPPLY_VOLTAGE, POWER_SUPPLY_CURRENT);
+}
 
-  void DisplayWS2812Matrix::setColumn(uint8_t col, uint8_t _data)
+void DisplayWS2812Matrix::setColumn(uint8_t col, uint8_t _data)
+{
+  if (col < 32)
   {
-    if (col < 32)
+    for (uint8_t i = 0; i < 8; i++)
     {
-      for (uint8_t i = 0; i < 8; i++)
+      uint8_t grd = 0;
+      grd = (grd > 7) ? 0 : grd;
+
+      if (grd > 0)
       {
-        uint8_t grd = 0;
-        grd = (grd > 7) ? 0 : grd;
+        // Варианты градиента для вывода символов; grd - выбор градиента
+        uint8_t j;
 
-        if (grd > 0)
+        switch (grd)
         {
-          // Варианты градиента для вывода символов; grd - выбор градиента
-          uint8_t j;
-
-          switch (grd)
-          {
-          case 1: // градиент по диагонали 1
-            j = (i + col) % 7 + 1;
-            break;
-          case 2: // градиент по диагонали 2
-            j = (i + (7 - col % 7)) % 7 + 1;
-            break;
-          case 3: // градиент по вертикали - красный -- красный
-          case 4: // градиент по вертикали - желтый -- желтый
-          case 5: // градиент по вертикали - голубой -- голубой
-          case 6: // градиент по вертикали - фиолетовый -- фиолетовый
-            j = (i + (grd - 3) * 2) % 7 + 1;
-            break;
-          case 7: // градиент по горизонтали
-            j = col % 7 + 1;
-            break;
-          }
-
-          leds[getLedIndexOfStrip(i, col)] =
-              (((_data) >> (7 - i)) & 0x01) ? pgm_read_dword(&color_of_number[j])
-                                            : bg_color;
+        case 1: // градиент по диагонали 1
+          j = (i + col) % 7 + 1;
+          break;
+        case 2: // градиент по диагонали 2
+          j = (i + (7 - col % 7)) % 7 + 1;
+          break;
+        case 3: // градиент по вертикали - красный -- красный
+        case 4: // градиент по вертикали - желтый -- желтый
+        case 5: // градиент по вертикали - голубой -- голубой
+        case 6: // градиент по вертикали - фиолетовый -- фиолетовый
+          j = (i + (grd - 3) * 2) % 7 + 1;
+          break;
+        case 7: // градиент по горизонтали
+          j = col % 7 + 1;
+          break;
         }
-        else
-        {
-          leds[getLedIndexOfStrip(i, col)] =
-              (((_data) >> (7 - i)) & 0x01) ? color : bg_color;
-        }
+
+        leds[getLedIndexOfStrip(i, col)] =
+            (((_data) >> (7 - i)) & 0x01) ? pgm_read_dword(&color_of_number[j])
+                                          : bg_color;
+      }
+      else
+      {
+        leds[getLedIndexOfStrip(i, col)] =
+            (((_data) >> (7 - i)) & 0x01) ? color : bg_color;
       }
     }
   }
+}
 
-  uint8_t DisplayWS2812Matrix::getColumn(uint8_t col)
+uint8_t DisplayWS2812Matrix::getColumn(uint8_t col)
+{
+  uint8_t result = 0x00;
+  if (col < 32)
   {
-    uint8_t result = 0x00;
-    if (col < 32)
+    for (uint8_t i = 0; i < 8; i++)
     {
-      for (uint8_t i = 0; i < 8; i++)
-      {
-        CRGB x = leds[getLedIndexOfStrip(i, col)];
-        (x.r != bg_color.r ||
-         x.g != bg_color.g ||
-         x.b != bg_color.b)
-            ? (result) |= (1UL << (7 - i))
-            : (result) &= ~(1UL << (7 - i));
-      }
-    }
-    return (result);
-  }
-
-  void DisplayWS2812Matrix::clear(bool upd )
-  {
-    for (uint8_t i = 0; i < 32; i++)
-    {
-      setColumn(i, 0x00);
-    }
-    if (upd)
-    {
-      FastLED.show();
+      CRGB x = leds[getLedIndexOfStrip(i, col)];
+      (x.r != bg_color.r ||
+       x.g != bg_color.g ||
+       x.b != bg_color.b)
+          ? (result) |= (1UL << (7 - i))
+          : (result) &= ~(1UL << (7 - i));
     }
   }
+  return (result);
+}
 
-  void DisplayWS2812Matrix::setDispData(uint8_t offset, uint8_t chr, uint8_t width)
+void DisplayWS2812Matrix::clear(bool upd)
+{
+  for (uint8_t i = 0; i < 32; i++)
   {
-    if (offset < 32)
-    {
-      setChar(offset, chr, width);
-    }
+    setColumn(i, 0x00);
   }
-
-  void DisplayWS2812Matrix::setColon(bool toDot)
-  {
-    (toDot) ? setColumn(15, 0b00000001) : setColumn(15, 0b00100100);
-  }
-
-  void DisplayWS2812Matrix::show()
+  if (upd)
   {
     FastLED.show();
   }
+}
 
-  void DisplayWS2812Matrix::setBrightness(uint8_t brightness)
+void DisplayWS2812Matrix::setDispData(uint8_t offset, uint8_t chr, uint8_t width)
+{
+  if (offset < 32)
   {
-    brightness = (brightness <= 25) ? brightness : 25;
-    FastLED.setBrightness(brightness * 10);
+    setChar(offset, chr, width);
   }
+}
 
-  void DisplayWS2812Matrix::setColorOfNumber(CRGB _color)
-  {
-    color = _color;
-  }
+void DisplayWS2812Matrix::setColon(bool toDot)
+{
+  (toDot) ? setColumn(15, 0b00000001) : setColumn(15, 0b00100100);
+}
 
-  CRGB DisplayWS2812Matrix::getColorOfNumber()
-  {
-    return (color);
-  }
+void DisplayWS2812Matrix::show()
+{
+  FastLED.show();
+}
 
-  void DisplayWS2812Matrix::setColorOfBackground(CRGB _color)
-  {
-    bg_color = _color;
-  }
+void DisplayWS2812Matrix::setBrightness(uint8_t brightness)
+{
+  brightness = (brightness <= 25) ? brightness : 25;
+  FastLED.setBrightness(brightness * 10);
+}
 
-  CRGB DisplayWS2812Matrix::getColorOfBackground()
-  {
-    return (bg_color);
-  }
+void DisplayWS2812Matrix::setColorOfNumber(CRGB _color)
+{
+  color = _color;
+}
 
-  void DisplayWS2812Matrix::setMaxPSP(uint8_t volts, uint32_t milliamps)
-  {
-    FastLED.setMaxPowerInVoltsAndMilliamps(volts, milliamps);
-  }
+CRGB DisplayWS2812Matrix::getColorOfNumber()
+{
+  return (color);
+}
 
-  void DisplayWS2812Matrix::init(CRGB *data, uint16_t leds_count)
-  {
+void DisplayWS2812Matrix::setColorOfBackground(CRGB _color)
+{
+  bg_color = _color;
+}
+
+CRGB DisplayWS2812Matrix::getColorOfBackground()
+{
+  return (bg_color);
+}
+
+void DisplayWS2812Matrix::setMaxPSP(uint8_t volts, uint32_t milliamps)
+{
+  FastLED.setMaxPowerInVoltsAndMilliamps(volts, milliamps);
+}
+
+void DisplayWS2812Matrix::init()
+{
 #if __ESPICHIPSET__
-    setESpiLedsData(data, leds_count);
+  setESpiLedsData(leds, LEDS_COUNT);
 #else
-    setLedsData(data, leds_count);
+  setLedsData(leds, LEDS_COUNT);
 #endif
-  }
+}
+
+// ===================================================
+
+DisplayWS2812Matrix clkDisplay(COLOR_OF_NUMBER, MX_TYPE);

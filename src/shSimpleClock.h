@@ -279,31 +279,15 @@ void sscShowTemp(int temp);
 #endif
 #if defined USE_CLOCK_EVENT
 #include "shClockEvent.h"
-
-shClockEvent sscClockEvent;
-#if defined(USE_ALARM)
-shClockEvent sscAlarmEvent;
-#endif
 #endif
 
-// -----------------------------------------
+// ===================================================
+
 bool sscBlinkFlag = false; // флаг блинка, используется всем, что должно мигать
 
-// ---- экраны -----------------------------
-#if defined(TM1637_DISPLAY)
-DisplayTM1637 clkDisplay(DISPLAY_CLK_PIN, DISPLAY_DAT_PIN);
-#elif defined(MAX72XX_7SEGMENT_DISPLAY)
-DisplayMAX72xx7segment<DISPLAY_CS_PIN> clkDisplay;
-#elif defined(MAX72XX_MATRIX_DISPLAY)
-DisplayMAX72xxMatrix<DISPLAY_CS_PIN> clkDisplay;
-#elif defined(WS2812_MATRIX_DISPLAY)
-CRGB ssc_leds[256];
-DisplayWS2812Matrix clkDisplay(ssc_leds, COLOR_OF_NUMBER, MX_TYPE);
-#endif
-
-// -----------------------------------------
-
 clkDisplayMode ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
+
+// ===================================================
 
 #if defined(USE_LIGHT_SENSOR)
 uint16_t light_threshold_step = 102;
@@ -822,7 +806,7 @@ void shSimpleClock::sensor_init()
 void shSimpleClock::display_init()
 {
 #if defined(WS2812_MATRIX_DISPLAY)
-  clkDisplay.init(ssc_leds, 256);
+  clkDisplay.init();
 #elif defined(MAX72XX_MATRIX_DISPLAY) || defined(MAX72XX_7SEGMENT_DISPLAY)
   clkDisplay.init();
   clkDisplay.shutdownAllDevices(false);

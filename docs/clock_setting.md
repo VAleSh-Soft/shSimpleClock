@@ -90,11 +90,11 @@
 
 Строки
 ```
-#define POWER_SUPPLY_VOLTAGE 5
+uint32_t constexpr POWER_SUPPLY_VOLTAGE = 5;
 ```
 и
 ```
-#define POWER_SUPPLY_CURRENT 2000
+uint32_t constexpr POWER_SUPPLY_CURRENT = 2000;
 ```
 задают параметры блока питания матрицы - напряжение в вольтах и максимальную силу тока в милиамперах. Эти параметры позволяют уберечь блок питания от перегрузки и выхода из строя.
 
@@ -165,9 +165,9 @@ uint16_t constexpr TIMEOUT_OF_DBLCLICK = 300;
 
 Пины для подключения кнопок задаются в строках
 ```
-#define BTN_SET_PIN 4 
-#define BTN_DOWN_PIN 6 
-#define BTN_UP_PIN 9 
+int8_t constexpr BTN_SET_PIN = 4;
+int8_t constexpr BTN_DOWN_PIN = 6;
+int8_t constexpr BTN_UP_PIN = 9;
 ```
 если какая-то из кнопок не будет использоваться, вместо номера можно задать -1.
 
@@ -205,7 +205,7 @@ uint8_t constexpr ALARM_REPETITION_COUNT = 3;
 
 Строка
 ```
-#define ALARM_LED_PIN 7
+int8_t constexpr ALARM_LED_PIN = 7;
 ```
 задает пин для подключения светодиода-индикатора состояния будильника; если индикаторный светодиод использоваться не будет, можно задать для его пина значение -1.
 
@@ -231,7 +231,7 @@ uint8_t constexpr ALARM_REPETITION_COUNT = 3;
 
 Пищалка может использоваться как будильником, так и кнопками для озвучивания клика (например, если вы используете сенсорные кнопки). Пин для подключения пищалки задается строкой
 ```
-#define BUZZER_PIN 5 
+int8_t constexpr BUZZER_PIN = 5; 
 ```
 
 ### Блок "датчики"
@@ -246,7 +246,7 @@ uint8_t constexpr ALARM_REPETITION_COUNT = 3;
 
 Строка
 ```
-#define LIGHT_SENSOR_PIN A3 
+int8_t constexpr LIGHT_SENSOR_PIN = A3; 
 ```
 определяет аналоговый пин, к которому будет подключен датчик. Схему подключения датчика см. [здесь](light_sensor.md).
 
@@ -262,7 +262,7 @@ uint8_t constexpr ALARM_REPETITION_COUNT = 3;
 
 Строка
 ```
-#define DS18B20_PIN 8
+int8_t constexpr DS18B20_PIN = 8;
 ```
 определяет пин, к которому подключается линия данных дачика
 
@@ -284,7 +284,7 @@ uint16_t constexpr BETA_COEFFICIENT = 3950;
 
 Строка
 ```
-#define NTC_PIN A0 
+int8_t constexpr NTC_PIN = A0; 
 ```
 задает аналоговый пин, к которому подключается датчик.
 

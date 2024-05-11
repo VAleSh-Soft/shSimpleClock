@@ -129,3 +129,7 @@ void DisplayTM1637::setBrightness(uint8_t brightness)
   _brightness = (brightness <= 7) ? brightness : 7;
   TM1637Display::setBrightness(brightness, true);
 }
+
+// ===================================================
+
+DisplayTM1637 clkDisplay(DISPLAY_CLK_PIN, DISPLAY_DAT_PIN);

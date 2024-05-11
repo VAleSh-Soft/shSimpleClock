@@ -61,3 +61,11 @@ void shClockEvent::run()
 void shClockEvent::setState(bool _state) { state = _state; }
 
 bool shClockEvent::getState() { return state; }
+
+// ===================================================
+
+shClockEvent sscClockEvent;
+
+#if defined(USE_ALARM)
+shClockEvent sscAlarmEvent;
+#endif
