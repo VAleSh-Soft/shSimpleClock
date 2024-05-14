@@ -2658,6 +2658,13 @@ void _setDisplayForAutoShowData(uint8_t &n)
   {
 #if defined(USE_CALENDAR)
   case 0:
+#if defined(LCD_1602_I2C_DISPLAY)
+    clkDisplay.setDispData(0, 0x0d);
+    clkDisplay.setDispData(1, 0x0a);
+    clkDisplay.setDispData(2, 0x11);
+    clkDisplay.setDispData(3, 0x0e);
+    clkDisplay.setColon(false, LCD_COLON_NO_COLON);
+#else
     clkDisplay.setDispData(0, clkDisplay.encodeDigit(0x0d));
     clkDisplay.setDispData(1, clkDisplay.encodeDigit(0x0a));
 #if defined(TM1637_DISPLAY)
@@ -2666,6 +2673,7 @@ void _setDisplayForAutoShowData(uint8_t &n)
     clkDisplay.setDispData(2, 0b00001111);
 #endif
     clkDisplay.setDispData(3, clkDisplay.encodeDigit(0x0e));
+#endif
     break;
   case 1:
   case 2:
@@ -3250,11 +3258,17 @@ void sscSetTag(clkDataType _type)
   {
 #if __USE_AUTO_SHOW_DATA__
   case SET_AUTO_SHOW_PERIOD_TAG: // Au
+#if defined(LCD_1602_I2C_DISPLAY)
+    clkDisplay.setDispData(0, 0x0A);
+    clkDisplay.setDispData(1, 0x12);
+    clkDisplay.setColon(true, LCD_COLON_COLON_1);
+#else
     clkDisplay.setDispData(0, clkDisplay.encodeDigit(0x0A));
 #if defined(TM1637_DISPLAY)
     clkDisplay.setDispData(1, 0b10011100);
 #elif defined(MAX72XX_7SEGMENT_DISPLAY)
     clkDisplay.setDispData(1, 0b10011100);
+#endif
 #endif
     break;
 #endif
@@ -3342,13 +3356,22 @@ void sscShowTime(int8_t hour, int8_t minute, bool show_colon)
 #if defined(LCD_1602_I2C_DISPLAY)
     clkDisplay.setDispData(2, minute / 10);
     clkDisplay.setDispData(3, minute % 10);
-    if (ssc_display_mode == DISPLAY_MODE_SHOW_TIME)
+    switch (ssc_display_mode)
     {
+    case DISPLAY_MODE_SHOW_TIME:
       clkDisplay.setColon(show_colon);
-    }
-    else
-    {
+      break;
+    case DISPLAY_MODE_SET_DAY:
+    case DISPLAY_MODE_SET_MONTH:
+      clkDisplay.setColon(false, LCD_COLON_DOT);
+      break;
+    case DISPLAY_MODE_SET_HOUR:
+    case DISPLAY_MODE_SET_MINUTE:
+    case DISPLAY_MODE_SET_YEAR:
       clkDisplay.setColon(false, LCD_COLON_NO_COLON);
+      break;
+    default:
+      break;
     }
 #else
     clkDisplay.setDispData(2, clkDisplay.encodeDigit(minute / 10));
@@ -3367,9 +3390,15 @@ void sscShowDate(DateTime date)
   switch (n)
   {
   case 0:
+#if defined(LCD_1602_I2C_DISPLAY)
+    clkDisplay.setColon(false, LCD_COLON_DOT);
+#endif
     sscShowTime(date.day(), date.month(), true);
     break;
   case 1:
+#if defined(LCD_1602_I2C_DISPLAY)
+    clkDisplay.setColon(false, LCD_COLON_NO_COLON);
+#endif
     sscShowTime(20, date.year() % 100, false);
     break;
   }

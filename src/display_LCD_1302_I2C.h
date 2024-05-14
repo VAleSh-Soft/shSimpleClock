@@ -111,18 +111,21 @@ byte const PROGMEM nums[]{
     0x00, 0x01, 0x02, 0xFF, 0x01, 0xFF, // A
     0xFF, 0x04, 0x04, 0xFF, 0x04, 0x05, // b
     0x00, 0x01, 0x01, 0x03, 0x04, 0x04, // C
-    0x04, 0x04, 0xFF, 0x03, 0x04, 0xFF, // d
+    0xFF, 0x01, 0x02, 0xFF, 0x04, 0x05, // D
     0xFF, 0x06, 0x04, 0xFF, 0x04, 0x04, // E
     0xFF, 0x06, 0x04, 0xFF, 0x20, 0x20, // F
-    0x20, 0x20, 0x20, 0x20, 0x20, 0x20  // space
+    0x20, 0x20, 0x20, 0x20, 0x20, 0x20, // space
+    0x01, 0xFF, 0x01, 0x20, 0xFF, 0x20, // T
+    0x04, 0x20, 0x04, 0x03, 0x04, 0x05  // u
 };
 
 // ==== LCD_1602_I2C =================================
 LiquidCrystal_I2C sscLcdDisplay(BUS_DISPLAY_ADDRESS, 16, 2);
 
 #define LCD_COLON_NO_COLON 0 // нет двоеточия
-#define LCD_COLON_COLON 1    // двоеточие
+#define LCD_COLON_COLON 1    // часовое двоеточие - качающиеся плюсики
 #define LCD_COLON_DOT 2      // точка
+#define LCD_COLON_COLON_1 3  // обычное двоеточие
 
 struct LcdColon
 {
@@ -239,6 +242,12 @@ void LCD_1602_I2C::printColon()
     sscLcdDisplay.print("  ");
     sscLcdDisplay.setCursor(7, 1);
     sscLcdDisplay.print(". ");
+    break;
+  case LCD_COLON_COLON_1:
+    sscLcdDisplay.setCursor(7, 0);
+    sscLcdDisplay.print("+ ");
+    sscLcdDisplay.setCursor(7, 1);
+    sscLcdDisplay.print("+ ");
     break;
   default:
     sscLcdDisplay.setCursor(7, 0);
