@@ -273,6 +273,12 @@ void sscShowTemp(int temp);
 
 // ===================================================
 
+bool sscBlinkFlag = false; // флаг блинка, используется всем, что должно мигать
+
+clkDisplayMode ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
+
+// ===================================================
+
 #if defined(TM1637_DISPLAY)
 #include "display_TM1637.h"
 #elif defined(LCD_1602_I2C_DISPLAY)
@@ -296,12 +302,6 @@ void sscShowTemp(int temp);
 #if defined USE_CLOCK_EVENT
 #include "shClockEvent.h"
 #endif
-
-// ===================================================
-
-bool sscBlinkFlag = false; // флаг блинка, используется всем, что должно мигать
-
-clkDisplayMode ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
 
 // ===================================================
 
@@ -3428,33 +3428,50 @@ void sscShowTemp(int temp)
 {
   clkDisplay.clear();
 
+#if defined(LCD_1602_I2C_DISPLAY)
+  clkDisplay.setDispData(3, 0x17);
+
+  uint8_t minus = 0x16;
+  clkDisplay.setColon(false, LCD_COLON_NO_COLON);
+#else
   clkDisplay.setDispData(3, 0x63);
+
+  uint8_t minus = 0x40;
+#endif
 
   // если температура отрицательная, сформировать минус впереди
   if (temp < 0)
   {
     temp = -temp;
-    clkDisplay.setDispData(1, 0x40);
+    clkDisplay.setDispData(1, minus);
   }
   // если температура выходит за диапазон, сформировать строку минусов
   if (temp > 99)
   {
     for (uint8_t i = 0; i < 4; i++)
     {
-      clkDisplay.setDispData(i, 0x40);
+      clkDisplay.setDispData(i, minus);
     }
   }
   else
   {
     if (temp > 9)
     {
-      if (clkDisplay.getDispData(1) == 0x40)
+      if (clkDisplay.getDispData(1) == minus)
       { // если температура ниже -9, переместить минус на крайнюю левую позицию
-        clkDisplay.setDispData(0, 0x40);
+        clkDisplay.setDispData(0, minus);
       }
+#if defined(LCD_1602_I2C_DISPLAY)
+      clkDisplay.setDispData(1, temp / 10);
+#else
       clkDisplay.setDispData(1, clkDisplay.encodeDigit(temp / 10));
+#endif
     }
+#if defined(LCD_1602_I2C_DISPLAY)
+    clkDisplay.setDispData(2, temp % 10);
+#else
     clkDisplay.setDispData(2, clkDisplay.encodeDigit(temp % 10));
+#endif
   }
 }
 #endif
