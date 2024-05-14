@@ -5,10 +5,10 @@
 #else
 #include <avr/pgmspace.h>
 #endif
-#include <LiquidCrystal_I2C.h> // https://github.com/johnrickman/LiquidCrystal_I2C
+#include <LCD_I2C.h> // https://github.com/blackhack/LCD_I2C
 
 // массивы для отрисовки сегментов цифр
-byte const PROGMEM LT[8] = // 0x00
+static uint8_t const LT[8] PROGMEM = // 0x00
     {
         B00111,
         B01111,
@@ -19,7 +19,7 @@ byte const PROGMEM LT[8] = // 0x00
         B11111,
         B11111};
 
-byte const PROGMEM UB[8] = // 0x01
+static uint8_t const UB[8] PROGMEM = // 0x01
     {
         B11111,
         B11111,
@@ -30,7 +30,7 @@ byte const PROGMEM UB[8] = // 0x01
         B00000,
         B00000};
 
-byte const PROGMEM RT[8] = // 0x02
+static uint8_t const RT[8] PROGMEM = // 0x02
     {
         B11100,
         B11110,
@@ -41,7 +41,7 @@ byte const PROGMEM RT[8] = // 0x02
         B11111,
         B11111};
 
-byte const PROGMEM LL[8] = // 0x03
+static uint8_t const LL[8] PROGMEM = // 0x03
     {
         B11111,
         B11111,
@@ -52,7 +52,7 @@ byte const PROGMEM LL[8] = // 0x03
         B01111,
         B00111};
 
-byte const PROGMEM LB[8] = // 0x04
+static uint8_t const LB[8] PROGMEM = // 0x04
     {
         B00000,
         B00000,
@@ -63,7 +63,7 @@ byte const PROGMEM LB[8] = // 0x04
         B11111,
         B11111};
 
-byte const PROGMEM LR[8] = // 0x05
+static uint8_t const LR[8] PROGMEM = // 0x05
     {
         B11111,
         B11111,
@@ -74,7 +74,7 @@ byte const PROGMEM LR[8] = // 0x05
         B11110,
         B11100};
 
-byte const PROGMEM MB[8] = // 0x06
+static uint8_t const MB[8] PROGMEM = // 0x06
     {
         B11111,
         B11111,
@@ -85,7 +85,7 @@ byte const PROGMEM MB[8] = // 0x06
         B11111,
         B11111};
 
-byte const PROGMEM BM[8] = // 0x07
+static uint8_t const BM[8] PROGMEM = // 0x07
     {
         B11111,
         B11111,
@@ -95,9 +95,12 @@ byte const PROGMEM BM[8] = // 0x07
         B11111,
         B11111,
         B11111};
+#if __USE_ARDUINO_ESP__
+static const uint8_t *const arr_char[] PROGMEM = {LT, UB, RT, LL, LB, LR, MB, BM};
+#endif
 
 // массивы сегментов для отрисовки цифр
-byte const PROGMEM nums[]{
+uint8_t const PROGMEM nums[]{
     0x00, 0x01, 0x02, 0x03, 0x04, 0x05, // 0
     0x01, 0x02, 0x20, 0x04, 0xFF, 0x04, // 1
     0x01, 0x01, 0x02, 0x00, 0x07, 0x07, // 2
@@ -125,7 +128,7 @@ byte const PROGMEM nums[]{
 };
 
 // ==== LCD_1602_I2C =================================
-LiquidCrystal_I2C sscLcdDisplay(BUS_DISPLAY_ADDRESS, 16, 2);
+LCD_I2C sscLcdDisplay(BUS_DISPLAY_ADDRESS, 16, 2);
 
 #define LCD_COLON_NO_COLON 0 // нет двоеточия
 #define LCD_COLON_COLON 1    // часовое двоеточие - качающиеся плюсики
@@ -145,8 +148,13 @@ private:
   LcdColon col;
 
   void printChar(uint8_t offset, uint8_t x);
+#if __USE_ARDUINO_ESP__
+  void createChar();
+#else
   void createChar(uint8_t cell, uint8_t *data);
+#endif
   void printColon();
+  bool isDisplayPresent();
 
 public:
   LCD_1602_I2C() {}
@@ -194,6 +202,13 @@ public:
    * @param _type тип двоеточия: никакого, мигающее двоеточие, точка
    */
   void setColon(bool _show, uint8_t _type = LCD_COLON_COLON);
+
+  /**
+   * @brief включить или выключить подсветку экрана
+   *
+   * @param _state true - включить, false - выключить
+   */
+  void setBacklightState(bool _state);
 };
 
 // ---- private ---------------------------------
@@ -212,6 +227,20 @@ void LCD_1602_I2C::printChar(uint8_t offset, uint8_t x)
   }
 }
 
+#if __USE_ARDUINO_ESP__
+void LCD_1602_I2C::createChar()
+{
+  for (uint8_t j = 0; j < 8; j++)
+  {
+    uint8_t arr[8];
+    for (uint8_t i = 0; i < 8; i++)
+    {
+      arr[i] = pgm_read_byte(&arr_char[j][i]);
+    }
+    sscLcdDisplay.createChar(j, arr);
+  }
+}
+#else
 void LCD_1602_I2C::createChar(uint8_t cell, uint8_t *data)
 {
   uint8_t arr[8];
@@ -221,6 +250,7 @@ void LCD_1602_I2C::createChar(uint8_t cell, uint8_t *data)
   }
   sscLcdDisplay.createChar(cell, arr);
 }
+#endif
 
 void LCD_1602_I2C::printColon()
 {
@@ -262,21 +292,34 @@ void LCD_1602_I2C::printColon()
   }
 }
 
+bool LCD_1602_I2C::isDisplayPresent()
+{
+  Wire.beginTransmission(BUS_DISPLAY_ADDRESS);
+  return (Wire.endTransmission() == 0);
+}
+
 // ---- public ----------------------------------
 
 void LCD_1602_I2C::init()
 {
-  sscLcdDisplay.init();
-  sscLcdDisplay.backlight();
+  if (isDisplayPresent())
+  {
+    sscLcdDisplay.begin(false);
+    sscLcdDisplay.backlight();
 
-  createChar(0x00, LT);
-  createChar(0x01, UB);
-  createChar(0x02, RT);
-  createChar(0x03, LL);
-  createChar(0x04, LB);
-  createChar(0x05, LR);
-  createChar(0x06, MB);
-  createChar(0x07, BM);
+#if __USE_ARDUINO_ESP__
+    createChar();
+#else
+    createChar(0x00, LT);
+    createChar(0x01, UB);
+    createChar(0x02, RT);
+    createChar(0x03, LL);
+    createChar(0x04, LB);
+    createChar(0x05, LR);
+    createChar(0x06, MB);
+    createChar(0x07, BM);
+#endif
+  }
 }
 
 void LCD_1602_I2C::clear()
@@ -291,7 +334,10 @@ void LCD_1602_I2C::clear()
 void LCD_1602_I2C::sleep()
 {
   clear();
-  sscLcdDisplay.clear();
+  if (isDisplayPresent())
+  {
+    sscLcdDisplay.clear();
+  }
 }
 
 void LCD_1602_I2C::setDispData(uint8_t _index, uint8_t _data)
@@ -328,24 +374,34 @@ void LCD_1602_I2C::show()
   // отрисовка экрана происходит только если изменился хотя бы один разряд
   if (flag)
   {
-    // sscLcdDisplay.clear();
-    for (uint8_t i = 0; i < 4; i++)
-    {
-      _data[i] = data[i];
-      uint8_t offset = (i < 2) ? i * 4 : i * 4 + 1;
+    if (isDisplayPresent())
+    { // sscLcdDisplay.clear();
+      for (uint8_t i = 0; i < 4; i++)
+      {
+        _data[i] = data[i];
+        uint8_t offset = (i < 2) ? i * 4 : i * 4 + 1;
 
-      printChar(offset, data[i]);
+        printChar(offset, data[i]);
+      }
+      _col.lcdShow = col.lcdShow;
+      _col.lcdType = col.lcdType;
+      printColon();
     }
-    _col.lcdShow = col.lcdShow;
-    _col.lcdType = col.lcdType;
-    printColon();
   }
 }
 
-void LCD_1602_I2C::setColon(bool _show, uint8_t _type = LCD_COLON_COLON)
+void LCD_1602_I2C::setColon(bool _show, uint8_t _type)
 {
   col.lcdShow = _show;
   col.lcdType = _type;
+}
+
+void LCD_1602_I2C::setBacklightState(bool _state)
+{
+  if (isDisplayPresent())
+  {
+    (_state) ? sscLcdDisplay.backlight() : sscLcdDisplay.noBacklight();
+  }
 }
 
 // ===================================================

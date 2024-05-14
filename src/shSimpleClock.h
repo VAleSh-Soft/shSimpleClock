@@ -378,6 +378,15 @@ public:
    */
   void setDisplayMode(clkDisplayMode _mode);
 
+#if defined(LCD_1602_I2C_DISPLAY)
+  /**
+   * @brief включить или выключить подсветку экрана
+   *
+   * @param _state true - включить, false - выключить
+   */
+  void setBacklightState(bool _state);
+#endif
+
 #if defined USE_CLOCK_EVENT
   /**
    * @brief подключить callback-функцию к ежесекундному событию
@@ -946,6 +955,13 @@ void shSimpleClock::tick()
 clkDisplayMode shSimpleClock::getDisplayMode() { return ssc_display_mode; }
 
 void shSimpleClock::setDisplayMode(clkDisplayMode _mode) { ssc_display_mode = _mode; }
+
+#if defined(LCD_1602_I2C_DISPLAY)
+void shSimpleClock::setBacklightState(bool _state)
+{
+  clkDisplay.setBacklightState(_state);
+}
+#endif
 
 #if defined USE_CLOCK_EVENT
 void shSimpleClock::setClockEvent(uint16_t _interval,
@@ -1992,7 +2008,7 @@ void sscCheckUpDownButton()
 #else
       ssc_display_mode = DISPLAY_MODE_SET_BRIGHTNESS_MAX;
 #endif
-#elif defined(USE_LIGHT_SENSOR)
+#elif __USE_LIGHT_SENSOR__
       ssc_display_mode = DISPLAY_MODE_SET_LIGHT_THRESHOLD;
 #endif
     }
@@ -3374,13 +3390,15 @@ void sscShowTime(int8_t hour, int8_t minute, bool show_colon)
     case DISPLAY_MODE_SHOW_TIME:
       clkDisplay.setColon(show_colon);
       break;
+#if defined(USE_CALENDAR)
     case DISPLAY_MODE_SET_DAY:
     case DISPLAY_MODE_SET_MONTH:
       clkDisplay.setColon(false, LCD_COLON_DOT);
       break;
+    case DISPLAY_MODE_SET_YEAR:
+#endif
     case DISPLAY_MODE_SET_HOUR:
     case DISPLAY_MODE_SET_MINUTE:
-    case DISPLAY_MODE_SET_YEAR:
       clkDisplay.setColon(false, LCD_COLON_NO_COLON);
       break;
     default:

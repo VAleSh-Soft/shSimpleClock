@@ -62,6 +62,7 @@ getAnimationState	KEYWORD2
 setADCbitDepth	KEYWORD2
 setSecondColumnState	KEYWORD2
 getsetSecondColumnState	KEYWORD2
+setBacklightState	KEYWORD2
 
 #######################################
 # Constants (LITERAL1)
