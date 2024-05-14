@@ -3274,11 +3274,17 @@ void sscSetTag(clkDataType _type)
 #endif
 #if defined(USE_ALARM)
   case SET_ALARM_TAG: // AL
+#if defined(LCD_1602_I2C_DISPLAY)
+    clkDisplay.setDispData(0, 0x0A);
+    clkDisplay.setDispData(1, 0x13);
+    clkDisplay.setColon(true, LCD_COLON_COLON_1);
+#else
     clkDisplay.setDispData(0, clkDisplay.encodeDigit(0x0A));
 #if defined(TM1637_DISPLAY)
     clkDisplay.setDispData(1, 0b10111000);
 #elif defined(MAX72XX_7SEGMENT_DISPLAY)
     clkDisplay.setDispData(1, 0b10001110);
+#endif
 #endif
     break;
 #endif
@@ -3319,14 +3325,21 @@ void sscSetOnOffData(clkDataType _type, bool _state, bool _blink)
 {
   sscSetTag(_type);
 
+#if defined(LCD_1602_I2C_DISPLAY)
+  clkDisplay.setDispData(2, 0x10);
+  uint8_t x = 0x10;
+#else
   clkDisplay.setDispData(2, 0x00);
   uint8_t x = 0x00;
+#endif
   if (!_blink)
   {
 #if defined(TM1637_DISPLAY)
     x = (_state) ? 0b01011100 : 0b00001000;
 #elif defined(MAX72XX_7SEGMENT_DISPLAY)
     x = (_state) ? 0b00011101 : 0b00001000;
+#elif defined(LCD_1602_I2C_DISPLAY)
+    x = (_state) ? 0x14 : 0x15;
 #endif
   }
   clkDisplay.setDispData(3, x);
