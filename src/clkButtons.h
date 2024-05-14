@@ -120,7 +120,7 @@ public:
   bool isButtonClosed();
 
   // определение одновременного нажатия двух кнопок; возвращает true, если в момент возникновения события btn_state текущей кнопки кнопка _but уже нажата; если метод вернул true, состояние обеих кнопок сбрасывается;
-  bool isSecondButtonPressed(clkButton &_but, byte btn_state = BTN_DOWN);
+  bool isSecondButtonPressed(clkButton &_but, uint8_t btn_state = BTN_DOWN);
 
   // принудительный сброс состояния кнопки; может понадобиться, если по каким-то причинам нужно, например, исключить возникновение событий BTN_ONECLICK и BTN_DBLCLICK;
   void resetButtonState();
@@ -340,7 +340,7 @@ uint8_t clkButton::getLastState() { return (_btn_state); }
 
 bool clkButton::isButtonClosed() { return (getFlag(FLAG_BIT)); }
 
-bool clkButton::isSecondButtonPressed(clkButton &_but, byte btn_state)
+bool clkButton::isSecondButtonPressed(clkButton &_but, uint8_t btn_state)
 {
   bool result = false;
   if (getLastState() == btn_state && _but.isButtonClosed())

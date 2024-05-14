@@ -10,10 +10,11 @@
  */
 #pragma once
 #include <Arduino.h>
-#include "shSimpleRTC.h"   // https://github.com/NorthernWidget/DS3231
+#include "shSimpleRTC.h"   
 #include <TM1637Display.h> // https://github.com/avishorp/TM1637
 
-// ==== класс для вывода данных на экран =============
+// ==== DisplayTM1637 ================================
+
 class DisplayTM1637 : public TM1637Display
 {
 private:

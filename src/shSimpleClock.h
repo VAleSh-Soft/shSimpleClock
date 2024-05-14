@@ -28,12 +28,26 @@
 #define __USE_AUTO_SHOW_DATA__ 0
 #endif
 
+// регулировка яркости не доступна для экранов LCD 1602
+#if defined(USE_SET_BRIGHTNESS_MODE) && !defined(LCD_1602_I2C_DISPLAY)
+#define __USE_SET_BRIGHTNESS_MODE__ 1
+#else
+#define __USE_SET_BRIGHTNESS_MODE__ 0
+#endif
+
+// датчик освещенности не используется для экранов LCD 1602
+#if defined(USE_LIGHT_SENSOR) && !defined(LCD_1602_I2C_DISPLAY)
+#define __USE_LIGHT_SENSOR__ 1
+#else
+#define __USE_LIGHT_SENSOR__ 0
+#endif
+
 // дополнительные настройки; здесь настраиваются:
 //   - уровни яркости;
 //   - порог переключения яркости;
 //   - период автовывода даты и/или температуры;
 //   - выбор цвета символов для адресных светодиодов;
-#if defined(USE_SET_BRIGHTNESS_MODE) || defined(USE_LIGHT_SENSOR) || \
+#if __USE_SET_BRIGHTNESS_MODE__ || defined(USE_LIGHT_SENSOR) || \
     defined(WS2812_MATRIX_DISPLAY) || __USE_AUTO_SHOW_DATA__
 #define __USE_OTHER_SETTING__ 1
 #else
@@ -88,11 +102,11 @@ enum clkDataType : uint8_t
   ,
   SET_AUTO_SHOW_PERIOD_TAG
 #endif
-#if defined(USE_SET_BRIGHTNESS_MODE)
+#if __USE_SET_BRIGHTNESS_MODE__
   ,
   SET_BRIGHTNESS_TAG
 #endif
-#if defined(USE_LIGHT_SENSOR)
+#if __USE_LIGHT_SENSOR__
   ,
   SET_LIGHT_THRESHOLD_TAG
 #endif
@@ -138,12 +152,12 @@ enum clkDisplayMode : uint8_t
   DISPLAY_MODE_SHOW_DAY_AND_MONTH, // режим вывода числа и месяца
   DISPLAY_MODE_SHOW_YEAR           // режим вывода года
 #endif
-#if defined(USE_LIGHT_SENSOR)
+#if __USE_LIGHT_SENSOR__
   ,
   DISPLAY_MODE_SET_LIGHT_THRESHOLD // режим настройки порога переключения яркости
 #endif
-#if defined(USE_SET_BRIGHTNESS_MODE)
-#if defined(USE_LIGHT_SENSOR)
+#if __USE_SET_BRIGHTNESS_MODE__
+#if __USE_LIGHT_SENSOR__
   ,
   DISPLAY_MODE_SET_BRIGHTNESS_MIN // режим настройки минимального уровня яркости экрана
 #endif
@@ -190,7 +204,7 @@ void sscSetDisplayMode();
 void sscCheckAlarm();
 void sscRunAlarmBuzzer();
 #endif
-#if defined(USE_LIGHT_SENSOR)
+#if __USE_LIGHT_SENSOR__
 void sscSetBrightness();
 #endif
 #if __USE_TEMP_DATA__
@@ -261,6 +275,8 @@ void sscShowTemp(int temp);
 
 #if defined(TM1637_DISPLAY)
 #include "display_TM1637.h"
+#elif defined(LCD_1602_I2C_DISPLAY)
+#include "display_LCD_1302_I2C.h"
 #elif defined(MAX72XX_7SEGMENT_DISPLAY) || defined(MAX72XX_MATRIX_DISPLAY)
 #include "display_MAX72xx.h"
 #elif defined(WS2812_MATRIX_DISPLAY)
@@ -289,7 +305,7 @@ clkDisplayMode ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
 
 // ===================================================
 
-#if defined(USE_LIGHT_SENSOR)
+#if __USE_LIGHT_SENSOR__
 uint16_t light_threshold_step = 102;
 
 void sscGetLightThresholdStep(uint8_t _adc_bit_depth)
@@ -327,7 +343,7 @@ public:
    */
   shSimpleClock();
 
-#if defined(USE_LIGHT_SENSOR) || defined(USE_NTC)
+#if __USE_LIGHT_SENSOR__ || defined(USE_NTC)
   /**
    * @brief задать действующее разрешение АЦП микроконтроллера;
    *
@@ -589,7 +605,7 @@ public:
   void buzzerStop();
 #endif
 
-#if defined(USE_SET_BRIGHTNESS_MODE)
+#if __USE_SET_BRIGHTNESS_MODE__
   /**
    * @brief получение значения максимальной яркости экрана
    *
@@ -604,7 +620,7 @@ public:
    */
   void setBrightnessMax(uint8_t _br);
 
-#if defined(USE_LIGHT_SENSOR)
+#if __USE_LIGHT_SENSOR__
   /**
    * @brief получение значения минимальной яркости экрана
    *
@@ -621,7 +637,7 @@ public:
 #endif
 #endif
 
-#if defined(USE_LIGHT_SENSOR)
+#if __USE_LIGHT_SENSOR__
   /**
    * @brief получение текущего порога переключения яркости
    *
@@ -733,7 +749,7 @@ void shSimpleClock::eeprom_validate()
   }
 #endif
 
-#if defined(USE_LIGHT_SENSOR)
+#if __USE_LIGHT_SENSOR__
   uint8_t l = read_eeprom_8(LIGHT_THRESHOLD_EEPROM_INDEX);
   if (l > 9 || l == 0)
   {
@@ -769,7 +785,8 @@ void shSimpleClock::sensor_init()
 #if defined(USE_NTC)
   sscTempSensor.setADCbitDepth(BIT_DEPTH); // установить разрядность АЦП вашего МК, для AVR обычно равна 10 бит
 #endif
-#if defined(USE_LIGHT_SENSOR)
+#if !defined(LCD_1602_I2C_DISPLAY)
+#if __USE_LIGHT_SENSOR__
   sscGetLightThresholdStep(BIT_DEPTH);
 #endif
   // проверить корректность заданных уровней яркости
@@ -782,7 +799,7 @@ void shSimpleClock::sensor_init()
   x = ((x > 7) || (x == 0)) ? 7 : x;
 #endif
   write_eeprom_8(MAX_BRIGHTNESS_VALUE_EEPROM_INDEX, x);
-#if defined(USE_LIGHT_SENSOR)
+#if __USE_LIGHT_SENSOR__
   uint8_t y = read_eeprom_8(LIGHT_THRESHOLD_EEPROM_INDEX);
   if ((y > 9) || (y == 0))
   {
@@ -801,6 +818,7 @@ void shSimpleClock::sensor_init()
 #else
   clkDisplay.setBrightness(read_eeprom_8(MAX_BRIGHTNESS_VALUE_EEPROM_INDEX));
 #endif
+#endif
 }
 
 void shSimpleClock::display_init()
@@ -814,6 +832,8 @@ void shSimpleClock::display_init()
   clkDisplay.setDirection(2);
   clkDisplay.setFlip(false);
 #endif
+#elif defined(LCD_1602_I2C_DISPLAY)
+  clkDisplay.init();
 #endif
 
 // выставить яркость в минимум, чтобы при включении не сверкало максимальной яркостью
@@ -821,7 +841,7 @@ void shSimpleClock::display_init()
   FastLED.setBrightness(0);
 #elif defined(MAX72XX_MATRIX_DISPLAY) || defined(MAX72XX_7SEGMENT_DISPLAY)
   clkDisplay.setBrightness(0);
-#else
+#elif defined(TM1637_DISPLAY)
   clkDisplay.setBrightness(1);
 #endif
 }
@@ -838,7 +858,7 @@ void shSimpleClock::task_list_init()
 #if __USE_TEMP_DATA__ && defined(USE_DS18B20)
   task_count++;
 #endif
-#if defined(USE_LIGHT_SENSOR)
+#if __USE_LIGHT_SENSOR__
   task_count++;
 #endif
 #if __USE_OTHER_SETTING__
@@ -866,9 +886,9 @@ void shSimpleClock::task_list_init()
   clkTasks.alarm_buzzer = clkTasks.addTask(50ul, sscRunAlarmBuzzer, false);
 #endif
   clkTasks.display_guard = clkTasks.addTask(50ul, sscShowDisplay);
-#if defined(USE_LIGHT_SENSOR)
+#if __USE_LIGHT_SENSOR__
   clkTasks.light_sensor_guard = clkTasks.addTask(100ul, sscSetBrightness);
-#else
+#elif !defined(LCD_1602_I2C_DISPLAY)
   clkDisplay.setBrightness(read_eeprom_8(MAX_BRIGHTNESS_VALUE_EEPROM_INDEX));
 #endif
 #if __USE_OTHER_SETTING__
@@ -883,13 +903,13 @@ void shSimpleClock::task_list_init()
 
 shSimpleClock::shSimpleClock() {}
 
-#if defined(USE_LIGHT_SENSOR) || defined(USE_NTC)
+#if __USE_LIGHT_SENSOR__ || defined(USE_NTC)
 void shSimpleClock::setADCbitDepth(uint8_t bit_depth)
 {
 #if defined(USE_NTC)
   sscTempSensor.setADCbitDepth(bit_depth);
 #endif
-#if defined(USE_LIGHT_SENSOR)
+#if __USE_LIGHT_SENSOR__
   sscGetLightThresholdStep(bit_depth);
 #endif
 }
@@ -906,11 +926,11 @@ void shSimpleClock::init()
   // ==== датчики ==================================
   sensor_init();
 
-  // ==== экраны ===================================
-  display_init();
-
   // ==== RTC ======================================
   rtc_init();
+
+  // ==== экраны ===================================
+  display_init();
 
   // ==== задачи ===================================
   task_list_init();
@@ -1066,7 +1086,7 @@ void shSimpleClock::buzzerStop()
 }
 #endif
 
-#if defined(USE_SET_BRIGHTNESS_MODE)
+#if __USE_SET_BRIGHTNESS_MODE__
 uint8_t shSimpleClock::getBrightnessMax()
 {
   return (read_eeprom_8(MAX_BRIGHTNESS_VALUE_EEPROM_INDEX));
@@ -1081,7 +1101,7 @@ void shSimpleClock::setBrightnessMax(uint8_t _br)
   clkDisplay.setBrightness(_br);
 }
 
-#if defined(USE_LIGHT_SENSOR)
+#if __USE_LIGHT_SENSOR__
 uint8_t shSimpleClock::getBrightnessMin()
 {
   return (read_eeprom_8(MIN_BRIGHTNESS_VALUE_EEPROM_INDEX));
@@ -1098,7 +1118,7 @@ void shSimpleClock::setBrightnessMin(uint8_t _br)
 #endif
 #endif
 
-#if defined(USE_LIGHT_SENSOR)
+#if __USE_LIGHT_SENSOR__
 uint8_t shSimpleClock::getLightThresholdValue()
 {
   return (read_eeprom_8(LIGHT_THRESHOLD_EEPROM_INDEX));
@@ -1245,11 +1265,11 @@ void sscReturnToDefMode()
   case DISPLAY_MODE_SET_ALARM_MINUTE:
   case DISPLAY_MODE_ALARM_ON_OFF:
 #endif
-#if defined(USE_LIGHT_SENSOR)
+#if __USE_LIGHT_SENSOR__
   case DISPLAY_MODE_SET_LIGHT_THRESHOLD:
 #endif
-#if defined(USE_SET_BRIGHTNESS_MODE)
-#if defined(USE_LIGHT_SENSOR)
+#if __USE_SET_BRIGHTNESS_MODE__
+#if __USE_LIGHT_SENSOR__
   case DISPLAY_MODE_SET_BRIGHTNESS_MIN:
 #endif
   case DISPLAY_MODE_SET_BRIGHTNESS_MAX:
@@ -1788,13 +1808,13 @@ void sscCheckSetButton()
     case DISPLAY_MODE_SET_ALARM_MINUTE:
     case DISPLAY_MODE_ALARM_ON_OFF:
 #endif
-#if defined(USE_SET_BRIGHTNESS_MODE)
-#if defined(USE_LIGHT_SENSOR)
+#if __USE_SET_BRIGHTNESS_MODE__
+#if __USE_LIGHT_SENSOR__
     case DISPLAY_MODE_SET_BRIGHTNESS_MIN:
 #endif
     case DISPLAY_MODE_SET_BRIGHTNESS_MAX:
 #endif
-#if defined(USE_LIGHT_SENSOR)
+#if __USE_LIGHT_SENSOR__
     case DISPLAY_MODE_SET_LIGHT_THRESHOLD:
 #endif
 #if defined(USE_TICKER_FOR_DATA)
@@ -1872,7 +1892,7 @@ void sscCheckSetButton()
 #if __USE_AUTO_SHOW_DATA__
     case DISPLAY_MODE_SET_AUTO_SHOW_PERIOD:
 #endif
-#if defined(USE_LIGHT_SENSOR)
+#if __USE_LIGHT_SENSOR__
     case DISPLAY_MODE_SET_LIGHT_THRESHOLD:
 #endif
 #if defined(WS2812_MATRIX_DISPLAY)
@@ -1966,8 +1986,8 @@ void sscCheckUpDownButton()
     if (clkButtons.isSecondButtonPressed(CLK_BTN_UP, CLK_BTN_DOWN, BTN_LONGCLICK) ||
         clkButtons.isSecondButtonPressed(CLK_BTN_DOWN, CLK_BTN_UP, BTN_LONGCLICK))
     {
-#if defined(USE_SET_BRIGHTNESS_MODE)
-#if defined(USE_LIGHT_SENSOR)
+#if __USE_SET_BRIGHTNESS_MODE__
+#if __USE_LIGHT_SENSOR__
       ssc_display_mode = DISPLAY_MODE_SET_BRIGHTNESS_MIN;
 #else
       ssc_display_mode = DISPLAY_MODE_SET_BRIGHTNESS_MAX;
@@ -1989,11 +2009,11 @@ void sscCheckUpDownButton()
   case DISPLAY_MODE_SET_ALARM_MINUTE:
   case DISPLAY_MODE_ALARM_ON_OFF:
 #endif
-#if defined(USE_LIGHT_SENSOR)
+#if __USE_LIGHT_SENSOR__
   case DISPLAY_MODE_SET_LIGHT_THRESHOLD:
 #endif
-#if defined(USE_SET_BRIGHTNESS_MODE)
-#if defined(USE_LIGHT_SENSOR)
+#if __USE_SET_BRIGHTNESS_MODE__
+#if __USE_LIGHT_SENSOR__
   case DISPLAY_MODE_SET_BRIGHTNESS_MIN:
 #endif
   case DISPLAY_MODE_SET_BRIGHTNESS_MAX:
@@ -2095,11 +2115,11 @@ void sscSetDisplayMode()
 #if __USE_AUTO_SHOW_DATA__
   case DISPLAY_MODE_SET_AUTO_SHOW_PERIOD:
 #endif
-#if defined(USE_LIGHT_SENSOR)
+#if __USE_LIGHT_SENSOR__
   case DISPLAY_MODE_SET_LIGHT_THRESHOLD:
 #endif
-#if defined(USE_SET_BRIGHTNESS_MODE)
-#if defined(USE_LIGHT_SENSOR)
+#if __USE_SET_BRIGHTNESS_MODE__
+#if __USE_LIGHT_SENSOR__
   case DISPLAY_MODE_SET_BRIGHTNESS_MIN:
 #endif
   case DISPLAY_MODE_SET_BRIGHTNESS_MAX:
@@ -2189,10 +2209,10 @@ void sscRunAlarmBuzzer()
 
 #endif
 
-#if defined(USE_LIGHT_SENSOR)
+#if __USE_LIGHT_SENSOR__
 void sscSetBrightness()
 {
-#if defined(USE_SET_BRIGHTNESS_MODE)
+#if __USE_SET_BRIGHTNESS_MODE__
   if (clkTasks.getTaskState(clkTasks.other_setting_mode))
   {
     if (ssc_display_mode == DISPLAY_MODE_SET_BRIGHTNESS_MAX ||
@@ -2205,7 +2225,7 @@ void sscSetBrightness()
 #endif
 
   uint8_t x = 1;
-#if defined(USE_LIGHT_SENSOR)
+#if __USE_LIGHT_SENSOR__
   static uint16_t b;
   b = (b * 2 + analogRead(LIGHT_SENSOR_PIN)) / 3;
   if (b < read_eeprom_8(LIGHT_THRESHOLD_EEPROM_INDEX) * light_threshold_step)
@@ -2254,16 +2274,16 @@ void _startOtherSettingMode(uint8_t &x)
   sscClearButtonFlag();
   switch (ssc_display_mode)
   {
-#if defined(USE_LIGHT_SENSOR)
+#if __USE_LIGHT_SENSOR__
   case DISPLAY_MODE_SET_LIGHT_THRESHOLD:
     x = read_eeprom_8(LIGHT_THRESHOLD_EEPROM_INDEX);
     break;
 #endif
-#if defined(USE_SET_BRIGHTNESS_MODE)
+#if __USE_SET_BRIGHTNESS_MODE__
   case DISPLAY_MODE_SET_BRIGHTNESS_MAX:
     x = read_eeprom_8(MAX_BRIGHTNESS_VALUE_EEPROM_INDEX);
     break;
-#if defined(USE_LIGHT_SENSOR)
+#if __USE_LIGHT_SENSOR__
   case DISPLAY_MODE_SET_BRIGHTNESS_MIN:
     x = read_eeprom_8(MIN_BRIGHTNESS_VALUE_EEPROM_INDEX);
     break;
@@ -2297,17 +2317,17 @@ void _checkBtnSetForOthSet(uint8_t &x)
     bool _next = clkButtons.getButtonFlag(CLK_BTN_SET, true) == CLK_BTN_FLAG_NEXT;
     switch (ssc_display_mode)
     {
-#if defined(USE_LIGHT_SENSOR)
+#if __USE_LIGHT_SENSOR__
     case DISPLAY_MODE_SET_LIGHT_THRESHOLD:
       write_eeprom_8(LIGHT_THRESHOLD_EEPROM_INDEX, x);
       ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
       sscStopSetting(clkTasks.other_setting_mode);
       break;
 #endif
-#if defined(USE_SET_BRIGHTNESS_MODE)
+#if __USE_SET_BRIGHTNESS_MODE__
     case DISPLAY_MODE_SET_BRIGHTNESS_MAX:
       write_eeprom_8(MAX_BRIGHTNESS_VALUE_EEPROM_INDEX, x);
-#if defined(USE_LIGHT_SENSOR)
+#if __USE_LIGHT_SENSOR__
       if (_next)
       {
         ssc_display_mode = DISPLAY_MODE_SET_LIGHT_THRESHOLD;
@@ -2319,7 +2339,7 @@ void _checkBtnSetForOthSet(uint8_t &x)
       }
       sscStopSetting(clkTasks.other_setting_mode);
       break;
-#if defined(USE_LIGHT_SENSOR)
+#if __USE_LIGHT_SENSOR__
     case DISPLAY_MODE_SET_BRIGHTNESS_MIN:
       write_eeprom_8(MIN_BRIGHTNESS_VALUE_EEPROM_INDEX, x);
       if (_next)
@@ -2388,13 +2408,13 @@ void _checkBtnUpDownForOthSet(uint8_t &x)
     bool dir = (clkButtons.getButtonFlag(CLK_BTN_UP, true) == CLK_BTN_FLAG_NEXT);
     switch (ssc_display_mode)
     {
-#if defined(USE_LIGHT_SENSOR)
+#if __USE_LIGHT_SENSOR__
     case DISPLAY_MODE_SET_LIGHT_THRESHOLD:
       sscCheckData(x, 9, dir, 1, false);
       break;
 #endif
-#if defined(USE_SET_BRIGHTNESS_MODE)
-#if defined(USE_LIGHT_SENSOR)
+#if __USE_SET_BRIGHTNESS_MODE__
+#if __USE_LIGHT_SENSOR__
     case DISPLAY_MODE_SET_BRIGHTNESS_MIN:
 #endif
     case DISPLAY_MODE_SET_BRIGHTNESS_MAX:
@@ -2442,7 +2462,7 @@ void _setDisplayDataForOthSet(uint8_t &x)
                  !clkButtons.isButtonClosed(CLK_BTN_DOWN);
     switch (ssc_display_mode)
     {
-#if defined(USE_LIGHT_SENSOR)
+#if __USE_LIGHT_SENSOR__
     case DISPLAY_MODE_SET_LIGHT_THRESHOLD:
 #if __USE_MATRIX_DISPLAY__
       sscSetOtherDataString(SET_LIGHT_THRESHOLD_TAG, 1, x, blink);
@@ -2451,8 +2471,8 @@ void _setDisplayDataForOthSet(uint8_t &x)
 #endif
       break;
 #endif
-#if defined(USE_SET_BRIGHTNESS_MODE)
-#if defined(USE_LIGHT_SENSOR)
+#if __USE_SET_BRIGHTNESS_MODE__
+#if __USE_LIGHT_SENSOR__
     case DISPLAY_MODE_SET_BRIGHTNESS_MIN:
 #endif
     case DISPLAY_MODE_SET_BRIGHTNESS_MAX:
@@ -2799,17 +2819,17 @@ void sscSetOtherDataString(clkDataType _type,
 
   switch (_type)
   {
-#if defined(USE_SET_BRIGHTNESS_MODE)
+#if __USE_SET_BRIGHTNESS_MODE__
   case SET_BRIGHTNESS_TAG:
     sscSetTag(offset, DISP_BRIGHTNESS_TAG, 5, toStringData);
-#if defined(USE_LIGHT_SENSOR)
+#if __USE_LIGHT_SENSOR__
     uint8_t x;
     x = (ssc_display_mode == DISPLAY_MODE_SET_BRIGHTNESS_MIN) ? 0x30 : 0x31;
     sscSetChar(offset + 12, x, 5, toStringData);
 #endif
     break;
 #endif
-#if defined(USE_LIGHT_SENSOR)
+#if __USE_LIGHT_SENSOR__
   case SET_LIGHT_THRESHOLD_TAG:
     sscSetTag(offset, DISP_LIGHT_THRESHOLD_TAG, 5, toStringData);
     break;
@@ -2989,9 +3009,9 @@ void sscAssembleString(clkDisplayMode data_type, uint8_t lenght)
     break;
 #endif
 
-#if defined(USE_SET_BRIGHTNESS_MODE)
+#if __USE_SET_BRIGHTNESS_MODE__
   case DISPLAY_MODE_SET_BRIGHTNESS_MAX: // настройка яркости
-#if defined(USE_LIGHT_SENSOR)
+#if __USE_LIGHT_SENSOR__
   case DISPLAY_MODE_SET_BRIGHTNESS_MIN:
 #endif
     uint8_t x;
@@ -2999,7 +3019,7 @@ void sscAssembleString(clkDisplayMode data_type, uint8_t lenght)
     {
       x = read_eeprom_8(MAX_BRIGHTNESS_VALUE_EEPROM_INDEX);
     }
-#if defined(USE_LIGHT_SENSOR)
+#if __USE_LIGHT_SENSOR__
     else
     {
       x = read_eeprom_8(MIN_BRIGHTNESS_VALUE_EEPROM_INDEX);
@@ -3009,7 +3029,7 @@ void sscAssembleString(clkDisplayMode data_type, uint8_t lenght)
     break;
 #endif
 
-#if defined(USE_LIGHT_SENSOR)
+#if __USE_LIGHT_SENSOR__
   case DISPLAY_MODE_SET_LIGHT_THRESHOLD: // настройка порога переключения яркости
     uint8_t y;
     y = read_eeprom_8(LIGHT_THRESHOLD_EEPROM_INDEX);
@@ -3211,10 +3231,17 @@ void sscSetOtherData(clkDataType _type, uint8_t _data, bool blink)
 
   sscSetTag(_type);
 
+#if defined(LCD_1602_I2C_DISPLAY)
+  clkDisplay.setDispData(2, ((_data / 10 == 0 || blink) ? 0x10
+                                                        : _data / 10));
+  clkDisplay.setDispData(3, ((blink) ? 0x10
+                                     : _data % 10));
+#else
   clkDisplay.setDispData(2, ((_data / 10 == 0 || blink) ? 0x00
                                                         : clkDisplay.encodeDigit(_data / 10)));
   clkDisplay.setDispData(3, ((blink) ? 0x00
                                      : clkDisplay.encodeDigit(_data % 10)));
+#endif
 }
 
 void sscSetTag(clkDataType _type)
@@ -3241,7 +3268,7 @@ void sscSetTag(clkDataType _type)
 #endif
     break;
 #endif
-#if defined(USE_LIGHT_SENSOR)
+#if __USE_LIGHT_SENSOR__
   case SET_LIGHT_THRESHOLD_TAG: // th
 #if defined(TM1637_DISPLAY)
     clkDisplay.setDispData(0, 0b01111000);
@@ -3252,7 +3279,7 @@ void sscSetTag(clkDataType _type)
 #endif
     break;
 #endif
-#if defined(USE_SET_BRIGHTNESS_MODE)
+#if __USE_SET_BRIGHTNESS_MODE__
   case SET_BRIGHTNESS_TAG: // br, b0, b1
     clkDisplay.setDispData(0, clkDisplay.encodeDigit(0x0B));
 #if defined(TM1637_DISPLAY)
@@ -3260,7 +3287,7 @@ void sscSetTag(clkDataType _type)
 #elif defined(MAX72XX_7SEGMENT_DISPLAY)
     clkDisplay.setDispData(1, 0b10000101);
 #endif
-#if defined(USE_LIGHT_SENSOR)
+#if __USE_LIGHT_SENSOR__
     uint8_t x;
     x = (ssc_display_mode == DISPLAY_MODE_SET_BRIGHTNESS_MIN) ? clkDisplay.encodeDigit(0)
                                                               : clkDisplay.encodeDigit(1);
@@ -3297,6 +3324,10 @@ void sscShowTime(int8_t hour, int8_t minute, bool show_colon)
 
   if (hour >= 0)
   {
+#if defined(LCD_1602_I2C_DISPLAY)
+    clkDisplay.setDispData(0, hour / 10);
+    clkDisplay.setDispData(1, hour % 10);
+#else
     clkDisplay.setDispData(0, clkDisplay.encodeDigit(hour / 10));
     uint8_t x = clkDisplay.encodeDigit(hour % 10);
     if (show_colon)
@@ -3304,11 +3335,18 @@ void sscShowTime(int8_t hour, int8_t minute, bool show_colon)
       x |= 0x80; // для показа двоеточия установить старший бит во второй цифре
     }
     clkDisplay.setDispData(1, x);
+#endif
   }
   if (minute >= 0)
   {
+#if defined(LCD_1602_I2C_DISPLAY)
+    clkDisplay.setDispData(2, minute / 10);
+    clkDisplay.setDispData(3, minute % 10);
+    clkDisplay.setColon(show_colon);
+#else
     clkDisplay.setDispData(2, clkDisplay.encodeDigit(minute / 10));
     clkDisplay.setDispData(3, clkDisplay.encodeDigit(minute % 10));
+#endif
   }
 }
 

@@ -51,7 +51,7 @@ public:
 #if __USE_TEMP_DATA__ && defined(USE_DS18B20)
   clkHandle ds18b20_guard; // опрос датчика DS18b20
 #endif
-#if defined(USE_LIGHT_SENSOR)
+#if __USE_LIGHT_SENSOR__
   clkHandle light_sensor_guard; // отслеживание показаний датчика света
 #endif
 #if __USE_OTHER_SETTING__
