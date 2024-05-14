@@ -3342,7 +3342,14 @@ void sscShowTime(int8_t hour, int8_t minute, bool show_colon)
 #if defined(LCD_1602_I2C_DISPLAY)
     clkDisplay.setDispData(2, minute / 10);
     clkDisplay.setDispData(3, minute % 10);
-    clkDisplay.setColon(show_colon);
+    if (ssc_display_mode == DISPLAY_MODE_SHOW_TIME)
+    {
+      clkDisplay.setColon(show_colon);
+    }
+    else
+    {
+      clkDisplay.setColon(false, LCD_COLON_NO_COLON);
+    }
 #else
     clkDisplay.setDispData(2, clkDisplay.encodeDigit(minute / 10));
     clkDisplay.setDispData(3, clkDisplay.encodeDigit(minute % 10));

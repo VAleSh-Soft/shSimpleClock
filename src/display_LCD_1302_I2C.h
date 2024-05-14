@@ -108,6 +108,12 @@ byte const PROGMEM nums[]{
     0x01, 0x01, 0x05, 0x20, 0x00, 0x20, // 7
     0x00, 0x06, 0x02, 0x03, 0x04, 0x05, // 8
     0x00, 0x01, 0x02, 0x07, 0x07, 0x05, // 9
+    0x00, 0x01, 0x02, 0xFF, 0x01, 0xFF, // A
+    0xFF, 0x04, 0x04, 0xFF, 0x04, 0x05, // b
+    0x00, 0x01, 0x01, 0x03, 0x04, 0x04, // C
+    0x04, 0x04, 0xFF, 0x03, 0x04, 0xFF, // d
+    0xFF, 0x06, 0x04, 0xFF, 0x04, 0x04, // E
+    0xFF, 0x06, 0x04, 0xFF, 0x20, 0x20, // F
     0x20, 0x20, 0x20, 0x20, 0x20, 0x20  // space
 };
 
@@ -186,7 +192,6 @@ public:
 
 void LCD_1602_I2C::printChar(uint8_t offset, uint8_t x)
 {
-Serial.print(offset); Serial.print(": "); Serial.println(x);
   sscLcdDisplay.setCursor(offset, 0);
   for (uint8_t i = 0; i < 3; i++)
   {
@@ -230,9 +235,16 @@ void LCD_1602_I2C::printColon()
     }
     break;
   case LCD_COLON_DOT:
+    sscLcdDisplay.setCursor(7, 0);
+    sscLcdDisplay.print("  ");
     sscLcdDisplay.setCursor(7, 1);
-    sscLcdDisplay.print(".");
+    sscLcdDisplay.print(". ");
     break;
+  default:
+    sscLcdDisplay.setCursor(7, 0);
+    sscLcdDisplay.print("  ");
+    sscLcdDisplay.setCursor(7, 1);
+    sscLcdDisplay.print("  ");
   }
 }
 
@@ -258,7 +270,7 @@ void LCD_1602_I2C::clear()
   col.lcdShow = false;
   for (uint8_t i = 0; i < 4; i++)
   {
-    data[i] = 0x00;
+    data[i] = 0x10;
   }
 }
 
