@@ -1,3 +1,14 @@
+/**
+ * @file display_LCD_I2C.h
+ * @author Vladimir Shatalov (valesh-soft@yandex.ru)
+ * @brief модуль, реализующий работу часов с текстовыми LCD  экранами,
+ *        подключаемыми с помощью адаптера I2C на базе чипа PCF8574
+ * @version 1.0
+ * @date 17.05.2024
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
 #pragma once
 #include <Arduino.h>
 #if defined(ARDUINO_ARCH_ESP32)
@@ -128,7 +139,9 @@ uint8_t const PROGMEM nums[]{
 };
 
 // ==== LCD_1602_I2C =================================
-LCD_I2C sscLcdDisplay(BUS_DISPLAY_ADDRESS, 16, 2);
+LCD_I2C sscLcdDisplay(BUS_DISPLAY_ADDRESS,
+                      NUMBER_OF_CHAR_PER_LINE,
+                      NUMBER_OF_LINE_PER_DISPLAY);
 
 #define LCD_COLON_NO_COLON 0 // нет двоеточия
 #define LCD_COLON_COLON 1    // часовое двоеточие - качающиеся плюсики
@@ -215,12 +228,14 @@ public:
 
 void LCD_1602_I2C::printChar(uint8_t offset, uint8_t x)
 {
-  sscLcdDisplay.setCursor(offset, 0);
+  offset += OFFSET_FOR_FIRST_CHAR;
+
+  sscLcdDisplay.setCursor(offset, FIRST_LINE_NUMBER);
   for (uint8_t i = 0; i < 3; i++)
   {
     sscLcdDisplay.write(pgm_read_byte(&nums[x * 6 + i]));
   }
-  sscLcdDisplay.setCursor(offset, 1);
+  sscLcdDisplay.setCursor(offset, SECOND_LINE_NUMBER);
   for (uint8_t i = 3; i < 6; i++)
   {
     sscLcdDisplay.write(pgm_read_byte(&nums[x * 6 + i]));
@@ -254,40 +269,41 @@ void LCD_1602_I2C::createChar(uint8_t cell, uint8_t *data)
 
 void LCD_1602_I2C::printColon()
 {
+  uint8_t offset = OFFSET_FOR_FIRST_CHAR + 7;
   switch (col.lcdType)
   {
   case LCD_COLON_COLON:
     if (col.lcdShow)
     {
-      sscLcdDisplay.setCursor(7, 0);
+      sscLcdDisplay.setCursor(offset, FIRST_LINE_NUMBER);
       sscLcdDisplay.print(" +");
-      sscLcdDisplay.setCursor(7, 1);
+      sscLcdDisplay.setCursor(offset, SECOND_LINE_NUMBER);
       sscLcdDisplay.print("+ ");
     }
     else
     {
-      sscLcdDisplay.setCursor(7, 0);
+      sscLcdDisplay.setCursor(offset, FIRST_LINE_NUMBER);
       sscLcdDisplay.print("+ ");
-      sscLcdDisplay.setCursor(7, 1);
+      sscLcdDisplay.setCursor(offset, SECOND_LINE_NUMBER);
       sscLcdDisplay.print(" +");
     }
     break;
   case LCD_COLON_DOT:
-    sscLcdDisplay.setCursor(7, 0);
+    sscLcdDisplay.setCursor(offset, FIRST_LINE_NUMBER);
     sscLcdDisplay.print("  ");
-    sscLcdDisplay.setCursor(7, 1);
+    sscLcdDisplay.setCursor(offset, SECOND_LINE_NUMBER);
     sscLcdDisplay.print(". ");
     break;
   case LCD_COLON_COLON_1:
-    sscLcdDisplay.setCursor(7, 0);
+    sscLcdDisplay.setCursor(offset, FIRST_LINE_NUMBER);
     sscLcdDisplay.print("* ");
-    sscLcdDisplay.setCursor(7, 1);
+    sscLcdDisplay.setCursor(offset, SECOND_LINE_NUMBER);
     sscLcdDisplay.print("* ");
     break;
   default:
-    sscLcdDisplay.setCursor(7, 0);
+    sscLcdDisplay.setCursor(offset, FIRST_LINE_NUMBER);
     sscLcdDisplay.print("  ");
-    sscLcdDisplay.setCursor(7, 1);
+    sscLcdDisplay.setCursor(offset, SECOND_LINE_NUMBER);
     sscLcdDisplay.print("  ");
   }
 }

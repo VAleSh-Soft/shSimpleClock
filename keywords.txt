@@ -63,6 +63,7 @@ setADCbitDepth	KEYWORD2
 setSecondColumnState	KEYWORD2
 getsetSecondColumnState	KEYWORD2
 setBacklightState	KEYWORD2
+printTextForScreen	KEYWORD2
 
 #######################################
 # Constants (LITERAL1)

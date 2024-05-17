@@ -28,15 +28,15 @@
 #define __USE_AUTO_SHOW_DATA__ 0
 #endif
 
-// регулировка яркости не доступна для экранов LCD 1602
-#if defined(USE_SET_BRIGHTNESS_MODE) && !defined(LCD_1602_I2C_DISPLAY)
+// регулировка яркости не доступна для экранов LCD 1602/2004
+#if defined(USE_SET_BRIGHTNESS_MODE) && !defined(LCD_I2C_DISPLAY)
 #define __USE_SET_BRIGHTNESS_MODE__ 1
 #else
 #define __USE_SET_BRIGHTNESS_MODE__ 0
 #endif
 
-// датчик освещенности не используется для экранов LCD 1602
-#if defined(USE_LIGHT_SENSOR) && !defined(LCD_1602_I2C_DISPLAY)
+// датчик освещенности не используется для экранов LCD 1602/2004
+#if defined(USE_LIGHT_SENSOR) && !defined(LCD_I2C_DISPLAY     )
 #define __USE_LIGHT_SENSOR__ 1
 #else
 #define __USE_LIGHT_SENSOR__ 0
@@ -281,8 +281,8 @@ clkDisplayMode ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
 
 #if defined(TM1637_DISPLAY)
 #include "display_TM1637.h"
-#elif defined(LCD_1602_I2C_DISPLAY)
-#include "display_LCD_1302_I2C.h"
+#elif defined(LCD_I2C_DISPLAY     )
+#include "display_LCD_I2C.h"
 #elif defined(MAX72XX_7SEGMENT_DISPLAY) || defined(MAX72XX_MATRIX_DISPLAY)
 #include "display_MAX72xx.h"
 #elif defined(WS2812_MATRIX_DISPLAY)
@@ -378,13 +378,22 @@ public:
    */
   void setDisplayMode(clkDisplayMode _mode);
 
-#if defined(LCD_1602_I2C_DISPLAY)
+#if defined(LCD_I2C_DISPLAY     )
   /**
    * @brief включить или выключить подсветку экрана
    *
    * @param _state true - включить, false - выключить
    */
   void setBacklightState(bool _state);
+
+  /**
+   * @brief вывести произвольный текст на экран
+   * 
+   * @param _col позиция курсора для первого символа текста
+   * @param _line номер строки для вывода
+   * @param _str текст для вывода
+   */
+  void printTextForScreen(uint8_t _col, uint8_t _line, char *_str);
 #endif
 
 #if defined USE_CLOCK_EVENT
@@ -794,7 +803,7 @@ void shSimpleClock::sensor_init()
 #if defined(USE_NTC)
   sscTempSensor.setADCbitDepth(BIT_DEPTH); // установить разрядность АЦП вашего МК, для AVR обычно равна 10 бит
 #endif
-#if !defined(LCD_1602_I2C_DISPLAY)
+#if !defined(LCD_I2C_DISPLAY     )
 #if __USE_LIGHT_SENSOR__
   sscGetLightThresholdStep(BIT_DEPTH);
 #endif
@@ -841,7 +850,7 @@ void shSimpleClock::display_init()
   clkDisplay.setDirection(2);
   clkDisplay.setFlip(false);
 #endif
-#elif defined(LCD_1602_I2C_DISPLAY)
+#elif defined(LCD_I2C_DISPLAY     )
   clkDisplay.init();
 #endif
 
@@ -897,7 +906,7 @@ void shSimpleClock::task_list_init()
   clkTasks.display_guard = clkTasks.addTask(50ul, sscShowDisplay);
 #if __USE_LIGHT_SENSOR__
   clkTasks.light_sensor_guard = clkTasks.addTask(100ul, sscSetBrightness);
-#elif !defined(LCD_1602_I2C_DISPLAY)
+#elif !defined(LCD_I2C_DISPLAY     )
   clkDisplay.setBrightness(read_eeprom_8(MAX_BRIGHTNESS_VALUE_EEPROM_INDEX));
 #endif
 #if __USE_OTHER_SETTING__
@@ -956,10 +965,16 @@ clkDisplayMode shSimpleClock::getDisplayMode() { return ssc_display_mode; }
 
 void shSimpleClock::setDisplayMode(clkDisplayMode _mode) { ssc_display_mode = _mode; }
 
-#if defined(LCD_1602_I2C_DISPLAY)
+#if defined(LCD_I2C_DISPLAY     )
 void shSimpleClock::setBacklightState(bool _state)
 {
   clkDisplay.setBacklightState(_state);
+}
+
+void shSimpleClock::printTextForScreen(uint8_t _col, uint8_t _line, char *_str)
+{
+  sscLcdDisplay.setCursor(_col, _line);
+  sscLcdDisplay.print(_str);
 }
 #endif
 
@@ -2674,7 +2689,7 @@ void _setDisplayForAutoShowData(uint8_t &n)
   {
 #if defined(USE_CALENDAR)
   case 0:
-#if defined(LCD_1602_I2C_DISPLAY)
+#if defined(LCD_I2C_DISPLAY     )
     clkDisplay.setDispData(0, 0x0d);
     clkDisplay.setDispData(1, 0x0a);
     clkDisplay.setDispData(2, 0x11);
@@ -3255,7 +3270,7 @@ void sscSetOtherData(clkDataType _type, uint8_t _data, bool blink)
 
   sscSetTag(_type);
 
-#if defined(LCD_1602_I2C_DISPLAY)
+#if defined(LCD_I2C_DISPLAY     )
   clkDisplay.setDispData(2, ((_data / 10 == 0 || blink) ? 0x10
                                                         : _data / 10));
   clkDisplay.setDispData(3, ((blink) ? 0x10
@@ -3274,7 +3289,7 @@ void sscSetTag(clkDataType _type)
   {
 #if __USE_AUTO_SHOW_DATA__
   case SET_AUTO_SHOW_PERIOD_TAG: // Au
-#if defined(LCD_1602_I2C_DISPLAY)
+#if defined(LCD_I2C_DISPLAY     )
     clkDisplay.setDispData(0, 0x0A);
     clkDisplay.setDispData(1, 0x12);
     clkDisplay.setColon(true, LCD_COLON_COLON_1);
@@ -3290,7 +3305,7 @@ void sscSetTag(clkDataType _type)
 #endif
 #if defined(USE_ALARM)
   case SET_ALARM_TAG: // AL
-#if defined(LCD_1602_I2C_DISPLAY)
+#if defined(LCD_I2C_DISPLAY     )
     clkDisplay.setDispData(0, 0x0A);
     clkDisplay.setDispData(1, 0x13);
     clkDisplay.setColon(true, LCD_COLON_COLON_1);
@@ -3341,7 +3356,7 @@ void sscSetOnOffData(clkDataType _type, bool _state, bool _blink)
 {
   sscSetTag(_type);
 
-#if defined(LCD_1602_I2C_DISPLAY)
+#if defined(LCD_I2C_DISPLAY     )
   clkDisplay.setDispData(2, 0x10);
   uint8_t x = 0x10;
 #else
@@ -3354,7 +3369,7 @@ void sscSetOnOffData(clkDataType _type, bool _state, bool _blink)
     x = (_state) ? 0b01011100 : 0b00001000;
 #elif defined(MAX72XX_7SEGMENT_DISPLAY)
     x = (_state) ? 0b00011101 : 0b00001000;
-#elif defined(LCD_1602_I2C_DISPLAY)
+#elif defined(LCD_I2C_DISPLAY     )
     x = (_state) ? 0x14 : 0x15;
 #endif
   }
@@ -3367,7 +3382,7 @@ void sscShowTime(int8_t hour, int8_t minute, bool show_colon)
 
   if (hour >= 0)
   {
-#if defined(LCD_1602_I2C_DISPLAY)
+#if defined(LCD_I2C_DISPLAY     )
     clkDisplay.setDispData(0, hour / 10);
     clkDisplay.setDispData(1, hour % 10);
 #else
@@ -3382,7 +3397,7 @@ void sscShowTime(int8_t hour, int8_t minute, bool show_colon)
   }
   if (minute >= 0)
   {
-#if defined(LCD_1602_I2C_DISPLAY)
+#if defined(LCD_I2C_DISPLAY     )
     clkDisplay.setDispData(2, minute / 10);
     clkDisplay.setDispData(3, minute % 10);
     switch (ssc_display_mode)
@@ -3421,13 +3436,13 @@ void sscShowDate(DateTime date)
   switch (n)
   {
   case 0:
-#if defined(LCD_1602_I2C_DISPLAY)
+#if defined(LCD_I2C_DISPLAY     )
     clkDisplay.setColon(false, LCD_COLON_DOT);
 #endif
     sscShowTime(date.day(), date.month(), true);
     break;
   case 1:
-#if defined(LCD_1602_I2C_DISPLAY)
+#if defined(LCD_I2C_DISPLAY     )
     clkDisplay.setColon(false, LCD_COLON_NO_COLON);
 #endif
     sscShowTime(20, date.year() % 100, false);
@@ -3446,7 +3461,7 @@ void sscShowTemp(int temp)
 {
   clkDisplay.clear();
 
-#if defined(LCD_1602_I2C_DISPLAY)
+#if defined(LCD_I2C_DISPLAY     )
   clkDisplay.setDispData(3, 0x17);
 
   uint8_t minus = 0x16;
@@ -3479,13 +3494,13 @@ void sscShowTemp(int temp)
       { // если температура ниже -9, переместить минус на крайнюю левую позицию
         clkDisplay.setDispData(0, minus);
       }
-#if defined(LCD_1602_I2C_DISPLAY)
+#if defined(LCD_I2C_DISPLAY     )
       clkDisplay.setDispData(1, temp / 10);
 #else
       clkDisplay.setDispData(1, clkDisplay.encodeDigit(temp / 10));
 #endif
     }
-#if defined(LCD_1602_I2C_DISPLAY)
+#if defined(LCD_I2C_DISPLAY     )
     clkDisplay.setDispData(2, temp % 10);
 #else
     clkDisplay.setDispData(2, clkDisplay.encodeDigit(temp % 10));
