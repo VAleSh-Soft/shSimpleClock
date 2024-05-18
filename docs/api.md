@@ -126,7 +126,7 @@ void setBacklightState(bool _state);
 
 Метод
 ```
-void printTextForScreen(uint8_t _col, uint8_t _line, char *)
+void printTextForScreen(uint8_t _col, uint8_t _line, char *_str)
 ```
 позволяет выводить произвольный текст в произвольном месте экрана; здесь `_col` - позиция первого символа строки , `_line` - строка для вывода текста , `_str` - собственно, текст для вывода;
 
