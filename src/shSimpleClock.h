@@ -720,7 +720,7 @@ public:
    * @return true отображается
    * @return false отключен
    */
-  bool getsetSecondColumnState();
+  bool getSecondColumnState();
 #endif
 
 #endif
@@ -1196,7 +1196,7 @@ void shSimpleClock::setSecondColumnState(bool _state)
   write_eeprom_8(SECOND_COLUMN_ON_OF_DATA_EEPROM_INDEX, (uint8_t)_state);
 }
 
-bool shSimpleClock::getsetSecondColumnState()
+bool shSimpleClock::getSecondColumnState()
 {
   return ((bool)read_eeprom_8(SECOND_COLUMN_ON_OF_DATA_EEPROM_INDEX));
 }

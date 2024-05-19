@@ -61,7 +61,7 @@ setAnimationState	KEYWORD2
 getAnimationState	KEYWORD2
 setADCbitDepth	KEYWORD2
 setSecondColumnState	KEYWORD2
-getsetSecondColumnState	KEYWORD2
+getSecondColumnState	KEYWORD2
 setBacklightState	KEYWORD2
 printTextForScreen	KEYWORD2
 

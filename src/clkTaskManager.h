@@ -52,7 +52,7 @@ public:
   clkHandle ds18b20_guard; // опрос датчика DS18b20
 #endif
 #if __USE_LIGHT_SENSOR__
-  clkHandle light_sensor_guard; // отслеживание показаний датчика света
+  clkHandle light_sensor_guard; // отслеживание показаний датчика освещенности
 #endif
 #if __USE_OTHER_SETTING__
   clkHandle other_setting_mode; // режим настроек цифровых данных
