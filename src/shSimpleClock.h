@@ -393,7 +393,7 @@ public:
    * @param _line номер строки для вывода
    * @param _str текст для вывода
    */
-  void printTextForScreen(uint8_t _col, uint8_t _line, char *_str);
+  void printTextForScreen(uint8_t _col, uint8_t _line, const char *_str);
 #endif
 
 #if defined USE_CLOCK_EVENT
@@ -971,7 +971,7 @@ void shSimpleClock::setBacklightState(bool _state)
   clkDisplay.setBacklightState(_state);
 }
 
-void shSimpleClock::printTextForScreen(uint8_t _col, uint8_t _line, char *_str)
+void shSimpleClock::printTextForScreen(uint8_t _col, uint8_t _line, const char *_str)
 {
   sscLcdDisplay.setCursor(_col, _line);
   sscLcdDisplay.print(_str);
@@ -1379,15 +1379,15 @@ void sscShowTimeData(int8_t hour, int8_t minute)
 
   clkDisplay.clear();
 
-  bool toDate = false;
   bool toColon = ssc_display_mode <= DISPLAY_MODE_SET_MINUTE;
 #if defined(USE_CALENDAR)
-  toDate = (ssc_display_mode >= DISPLAY_MODE_SET_DAY &&
-            ssc_display_mode <= DISPLAY_MODE_SET_YEAR);
   toColon = ssc_display_mode != DISPLAY_MODE_SET_YEAR;
 #endif
 #if __USE_MATRIX_DISPLAY__
+  bool toDate = false;
 #if defined(USE_CALENDAR)
+  toDate = (ssc_display_mode >= DISPLAY_MODE_SET_DAY &&
+            ssc_display_mode <= DISPLAY_MODE_SET_YEAR);
   if (ssc_display_mode == DISPLAY_MODE_SET_YEAR)
   {
     sscSetYearString(1, minute);
@@ -1476,6 +1476,11 @@ void _startTimeSettingMode(uint8_t &curHour, uint8_t &curMinute)
   sscClearButtonFlag();
   switch (ssc_display_mode)
   {
+    case DISPLAY_MODE_SET_HOUR:
+    case DISPLAY_MODE_SET_MINUTE:
+      curHour = clkClock.getCurTime().hour();
+      curMinute = clkClock.getCurTime().minute();
+      break;
 #if defined(USE_ALARM)
   case DISPLAY_MODE_SET_ALARM_HOUR:
   case DISPLAY_MODE_SET_ALARM_MINUTE:

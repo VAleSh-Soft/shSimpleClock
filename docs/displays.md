@@ -115,7 +115,7 @@ constexpr uint8_t OFFSET_FOR_FIRST_CHAR = 0;
 - `void setColorOfBackground(CRGB _color);`
 
 Для ограничения потребляемого матрицей тока можно задать параметры блока питания. Для этого используется метод:
-- `void setMaxPSP(uint8_t volts, uint32_t milliamps)` - установить напряжение (В) и максимальный ток блока питания (мА);
+- `void setMaxPSP(uint8_t volts, uint32_t milliamps);` - установить напряжение (В) и максимальный ток блока питания (мА);
 
 Для текстовых экранов **LCD 1602/2004** есть возможность управлять подсветкой экрана (включить/выключить)
 ```
@@ -123,7 +123,7 @@ void setBacklightState(bool _state);
 ```
 А так же выводить произвольный текст на экран (кириллица не поддерживается)
 ```
-void printTextForScreen(uint8_t _col, uint8_t _line, char *_str)
+void printTextForScreen(uint8_t _col, uint8_t _line, const char *_str);
 ```
 здесь: `_col` - столбец для первого символа текста (смещение от левого края); `_line` - номер строки для вывода текста; `*_str` - указатель на текст для вывода.
 
