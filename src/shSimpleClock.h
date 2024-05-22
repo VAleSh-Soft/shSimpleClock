@@ -730,6 +730,10 @@ public:
 
 void shSimpleClock::rtc_init()
 {
+#if defined(ARDUINO_ARCH_RP2040)
+  Wire.setSDA(RTC_SDA_PIN);
+  Wire.setSCL(RTC_SCL_PIN);
+#endif
   Wire.begin();
 
   // если часовой модуль не запущен, запускаем его, для чего нужно установить время
@@ -1476,11 +1480,11 @@ void _startTimeSettingMode(uint8_t &curHour, uint8_t &curMinute)
   sscClearButtonFlag();
   switch (ssc_display_mode)
   {
-    case DISPLAY_MODE_SET_HOUR:
-    case DISPLAY_MODE_SET_MINUTE:
-      curHour = clkClock.getCurTime().hour();
-      curMinute = clkClock.getCurTime().minute();
-      break;
+  case DISPLAY_MODE_SET_HOUR:
+  case DISPLAY_MODE_SET_MINUTE:
+    curHour = clkClock.getCurTime().hour();
+    curMinute = clkClock.getCurTime().minute();
+    break;
 #if defined(USE_ALARM)
   case DISPLAY_MODE_SET_ALARM_HOUR:
   case DISPLAY_MODE_SET_ALARM_MINUTE:

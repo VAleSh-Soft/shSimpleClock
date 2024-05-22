@@ -5,7 +5,15 @@
 
 // ===================================================
 
-#if __USE_ARDUINO_ESP__
+#if __USE_ARDUINO_ESP__ || defined(ARDUINO_ARCH_RP2040)
+#define __EEPROM_IN_FLASH__ 1
+#else
+#define __EEPROM_IN_FLASH__ 0
+#endif
+
+// ===================================================
+
+#if __EEPROM_IN_FLASH__
 #define EEPROM_SIZE 256
 #endif
 
@@ -15,7 +23,7 @@
 
 // ===================================================
 
-#if __USE_ARDUINO_ESP__
+#if __EEPROM_IN_FLASH__
 void eeprom_update(uint16_t _index, uint8_t _data)
 {
   if (EEPROM.read(_index) != _data)
@@ -27,13 +35,13 @@ void eeprom_update(uint16_t _index, uint8_t _data)
 
 uint8_t read_eeprom_8(uint16_t _index)
 {
-#if __USE_ARDUINO_ESP__
+#if __EEPROM_IN_FLASH__
   EEPROM.begin(EEPROM_SIZE);
 #endif
 
   uint8_t result = EEPROM.read(_index);
 
-#if __USE_ARDUINO_ESP__
+#if __EEPROM_IN_FLASH__
   EEPROM.end();
 #endif
 
@@ -42,14 +50,14 @@ uint8_t read_eeprom_8(uint16_t _index)
 
 uint16_t read_eeprom_16(uint16_t _index)
 {
-#if __USE_ARDUINO_ESP__
+#if __EEPROM_IN_FLASH__
   EEPROM.begin(EEPROM_SIZE);
 #endif
 
   uint16_t _data;
   EEPROM.get(_index, _data);
 
-#if __USE_ARDUINO_ESP__
+#if __EEPROM_IN_FLASH__
   EEPROM.end();
 #endif
 
@@ -58,7 +66,7 @@ uint16_t read_eeprom_16(uint16_t _index)
 
 void read_eeprom_crgb(uint16_t _index, CRGB &_color)
 {
-#if __USE_ARDUINO_ESP__
+#if __EEPROM_IN_FLASH__
   EEPROM.begin(EEPROM_SIZE);
 #endif
 
@@ -66,14 +74,14 @@ void read_eeprom_crgb(uint16_t _index, CRGB &_color)
   _color.g = EEPROM.read(_index + 2);
   _color.b = EEPROM.read(_index + 3);
 
-#if __USE_ARDUINO_ESP__
+#if __EEPROM_IN_FLASH__
   EEPROM.end();
 #endif
 }
 
 void write_eeprom_8(uint16_t _index, uint8_t _data)
 {
-#if __USE_ARDUINO_ESP__
+#if __EEPROM_IN_FLASH__
   EEPROM.begin(EEPROM_SIZE);
   eeprom_update(_index, _data);
   EEPROM.commit();
@@ -87,13 +95,13 @@ void write_eeprom_8(uint16_t _index, uint8_t _data)
 
 void write_eeprom_16(uint16_t _index, uint16_t _data)
 {
-#if __USE_ARDUINO_ESP__
+#if __EEPROM_IN_FLASH__
   EEPROM.begin(EEPROM_SIZE);
 #endif
 
   EEPROM.put(_index, _data);
 
-#if __USE_ARDUINO_ESP__
+#if __EEPROM_IN_FLASH__
   EEPROM.commit();
   EEPROM.end();
 #endif
@@ -101,7 +109,7 @@ void write_eeprom_16(uint16_t _index, uint16_t _data)
 
 void write_eeprom_crgb(uint16_t _index, CRGB _color)
 {
-#if __USE_ARDUINO_ESP__
+#if __EEPROM_IN_FLASH__
   EEPROM.begin(EEPROM_SIZE);
 
   eeprom_update(_index + 1, _color.r);
