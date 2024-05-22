@@ -54,7 +54,7 @@ public:
 NTCSensor::NTCSensor(uint8_t _sensor_pin,
                      uint16_t resistor_std,
                      uint16_t balance_resistor,
-                     uint16_t beta_coefficient = 3950)
+                     uint16_t beta_coefficient)
 {
   sensor_pin = _sensor_pin;
   balance = balance_resistor;

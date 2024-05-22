@@ -939,6 +939,10 @@ void shSimpleClock::setADCbitDepth(uint8_t bit_depth)
 
 void shSimpleClock::init()
 {
+#if defined(USE_ALARM)
+  clkAlarm.init();
+#endif
+
   // ==== кнопки ===================================
   clkButtons.init();
 
@@ -1675,7 +1679,7 @@ void _checkBtnUpDownForTmSet(uint8_t &curHour,
 #endif
       sscCheckData(curMinute, 59, dir);
       break;
-#if defined(USE_ALARM) || defined(USE_TICKER_FOR_DATA) || defined(SHOW_SECOND_COLUMN)
+#if __USE_ON_OFF_DATA__
 #if defined(USE_ALARM)
     case DISPLAY_MODE_ALARM_ON_OFF:
 #endif
@@ -2177,9 +2181,6 @@ void sscSetDisplayMode()
     break;
   }
 }
-
-#if defined(USE_CALENDAR)
-#endif
 
 #if defined(USE_ALARM)
 void sscCheckAlarm()

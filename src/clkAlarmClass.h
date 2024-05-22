@@ -47,6 +47,12 @@ public:
   clkAlarmClass(int8_t _led_pin, uint16_t _eeprom_index);
 
   /**
+   * @brief инициализация будильника
+   * 
+   */
+  void init();
+
+  /**
    * @brief получение текущего состояния будильника
    *
    * @return AlarmState
@@ -134,6 +140,10 @@ clkAlarmClass::clkAlarmClass(int8_t _led_pin, uint16_t _eeprom_index)
 #endif
 
   eeprom_index = _eeprom_index;
+}
+
+void clkAlarmClass::init()
+{
   if (read_eeprom_8(eeprom_index + ALARM_STATE) > 1)
   {
     write_eeprom_8(eeprom_index + ALARM_STATE, 0);
