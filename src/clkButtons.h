@@ -416,12 +416,7 @@ public:
 
 bool clkButtonGroup::isValidButton(clkButtonType _btn)
 {
-  if (buttons != NULL)
-  {
-    return (buttons[(uint8_t)_btn] != NULL);
-  }
-
-  return false;
+  return (buttons[(uint8_t)_btn] != NULL);
 }
 
 // ---- clkButtonGroup public -------------------

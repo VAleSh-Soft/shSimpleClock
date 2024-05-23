@@ -23,8 +23,6 @@ void setup()
 {
   // инициализируем часы
   simple_clock.init();
-  // устанавливаем разрешение АЦП 12 бит
-  simple_clock.setADCbitDepth(12);
 }
 
 void loop()

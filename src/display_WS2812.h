@@ -21,7 +21,15 @@
 
 // ===================================================
 
-#define __ESPICHIPSET__ defined CHIPSET_LPD6803 || defined CHIPSET_LPD8806 || defined CHIPSET_WS2801 || defined CHIPSET_WS2803 || defined CHIPSET_SM16716 || defined CHIPSET_P9813 || defined CHIPSET_APA102 || defined CHIPSET_SK9822 || defined CHIPSET_DOTSTAR
+#if defined CHIPSET_LPD6803 || defined CHIPSET_LPD8806 || \
+    defined CHIPSET_WS2801 || defined CHIPSET_WS2803 ||   \
+    defined CHIPSET_SM16716 || defined CHIPSET_P9813 ||   \
+    defined CHIPSET_APA102 || defined CHIPSET_SK9822 ||   \
+    defined CHIPSET_DOTSTAR
+#define __ESPICHIPSET__ 1
+#else
+#define __ESPICHIPSET__ 0
+#endif
 
 // ===================================================
 
@@ -60,7 +68,7 @@ enum MatrixType : uint8_t
   BY_LINE
 };
 
-  uint16_t const LEDS_COUNT = 256;
+uint16_t const LEDS_COUNT = 256;
 
 class DisplayWS2812Matrix
 {
@@ -84,7 +92,6 @@ private:
 #if __ESPICHIPSET__
   void setESpiLedsData(CRGB *data, uint16_t leds_count);
 #else
-
   void setLedsData(CRGB *data, uint16_t leds_count);
 #endif
 
@@ -287,7 +294,6 @@ void DisplayWS2812Matrix::setESpiLedsData(CRGB *data, uint16_t leds_count)
 #endif
 }
 #else
-
 void DisplayWS2812Matrix::setLedsData(CRGB *data, uint16_t leds_count)
 {
 #if defined CHIPSET_NEOPIXEL

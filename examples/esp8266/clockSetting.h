@@ -292,7 +292,7 @@ int8_t constexpr NTC_PIN = A0;
 
 #if defined(USE_LIGHT_SENSOR) || defined(USE_NTC)
 
-uint8_t constexpr BIT_DEPTH = 10; // разрядность АЦП используемого микроконтроллера; для Ардуино UNO, Nano, Pro Mini BIT_DEPTH = 10
+uint8_t constexpr BIT_DEPTH = 12; // разрядность АЦП используемого микроконтроллера; для Ардуино UNO, Nano, Pro Mini BIT_DEPTH = 10
 
 #endif
 
