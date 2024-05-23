@@ -264,7 +264,7 @@ void sscSetTag(clkDataType _type);
 void sscSetOnOffData(clkDataType _type, bool _state, bool _blink);
 void sscShowTime(int8_t hour, int8_t minute, bool show_colon);
 #if defined(USE_CALENDAR)
-void sscShowDate(DateTime date);
+void sscShowDate(shDateTime date);
 #endif
 #if __USE_TEMP_DATA__
 void sscShowTemp(int temp);
@@ -294,7 +294,11 @@ clkDisplayMode ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
 #endif
 #if __USE_TEMP_DATA__
 #if defined(USE_DS18B20)
+#if defined(ARDUINO_ARCH_RP2040)
+#include "ds1820_new.h"
+#else
 #include "ds1820.h"
+#endif
 #elif defined(USE_NTC)
 #include "ntc.h"
 #endif
@@ -506,9 +510,9 @@ public:
   /**
    * @brief получение текущих даты и времени
    *
-   * @return DateTime
+   * @return shDateTime
    */
-  DateTime getCurrentDateTime();
+  shDateTime getCurrentDateTime();
 
   /**
    * @brief установка текущего времени
@@ -804,7 +808,9 @@ void shSimpleClock::eeprom_validate()
 
 void shSimpleClock::sensor_init()
 {
-#if defined(USE_NTC)
+#if defined(USE_DS18B20)
+  sscTempSensor.init(DS18B20_PIN);
+#elif defined(USE_NTC)
   sscTempSensor.setADCbitDepth(BIT_DEPTH); // установить разрядность АЦП вашего МК, для AVR обычно равна 10 бит
 #endif
 #if !defined(LCD_I2C_DISPLAY)
@@ -1055,7 +1061,7 @@ void shSimpleClock::setMaxPSP(uint8_t volts, uint32_t milliamps)
 }
 #endif
 
-DateTime shSimpleClock::getCurrentDateTime()
+shDateTime shSimpleClock::getCurrentDateTime()
 {
   return (clkClock.getCurTime());
 }
@@ -2718,12 +2724,8 @@ void _setDisplayForAutoShowData(uint8_t &n)
     break;
   case 1:
   case 2:
-  {
-    DateTime dt;
-    dt = clkClock.getCurTime();
-    sscShowDate(dt);
-  }
-  break;
+    sscShowDate(clkClock.getCurTime()); 
+    break;
 #endif
 #if __USE_TEMP_DATA__
   case 3:
@@ -3437,7 +3439,7 @@ void sscShowTime(int8_t hour, int8_t minute, bool show_colon)
 }
 
 #if defined(USE_CALENDAR)
-void sscShowDate(DateTime date)
+void sscShowDate(shDateTime date)
 {
   static uint8_t n = 0;
 

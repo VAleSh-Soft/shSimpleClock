@@ -1,20 +1,16 @@
 /**
- * @file TM1637.ino
+ * @file rp2040.ino
  * @author Vladimir Shatalov (valesh-soft@yandex.ru)
  * 
- * @brief Пример быстрого создания часов с помощью библиотеки shSimpleClock
- *        с использованием часового модуля DS3231 и семисегментного экрана
- *        на драйвере TM1637; настройки часов указываются в файле 
- *        clockSetting.h, который следует разместить в папке со скетчем;
+ * @brief Пример быстрого создания часов на базе rp2040; в файле clockSetting.h
+ *        приведены примерные варианты подключения периферии с учетом 
+ *        доступности пинов  микроконтроллера;
  * 
- *        ВАЖНО: объявление файла clockSetting.h в скетче должно быть ДО
- *               объявления библиотеки shSimpleClock.h (см. скетч ниже)
+ *        Для компиляции скетча используйте аддон Raspberry Pi RP2040 Boards - 
+ * https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json
  * 
- *        В скетче так же показан способ использования кнопок, предназначенных
- *        для управления часами, в своих целях;
- * 
- * @version 1.5
- * @date 01.05.2024
+ * @version 1.0
+ * @date 23.05.2024
  * 
  * @copyright Copyright (c) 2024
  * 
@@ -28,8 +24,6 @@ shSimpleClock simple_clock;
 
 void setup()
 {
-  Serial.begin(9600);
-
   // инициализируем часы
   simple_clock.init();
 }
@@ -38,11 +32,4 @@ void loop()
 {
   // обработка событий часов
   simple_clock.tick();
-
-  // пример использования событий кнопок управления часами в своих целях
-  if (simple_clock.getButtonState(CLK_BTN_UP) == BTN_DBLCLICK)
-  {
-    // например, обрабатываем событие двойного клика кнопкой Up
-    Serial.println("Double click of button Up");
-  }
 }

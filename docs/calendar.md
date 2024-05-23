@@ -16,7 +16,7 @@
 ### Взаимодействие с внешним кодом
 
 Библиотека позволяет как получить текущую дату, так и задать ее. Для этого используются методы:
-- `DateTime getCurrentDateTime()` - получение текущих даты и времени;
+- `shDateTime getCurrentDateTime()` - получение текущих даты и времени;
 - `void setCurrentDate(uint8_t _date, uint8_t _month)` - установка даты (день и месяц);
 - `void setCurrentYear(uint8_t _year)` - установка года;
 

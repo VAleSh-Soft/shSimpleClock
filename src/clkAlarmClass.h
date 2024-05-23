@@ -100,7 +100,7 @@ public:
    *
    * @param _time текущее время
    */
-  void tick(DateTime _time);
+  void tick(shDateTime _time);
 };
 
 // ---- clkAlarmClass private -------------------
@@ -171,7 +171,7 @@ uint16_t clkAlarmClass::getAlarmPoint() { return (read_eeprom_16(eeprom_index + 
 
 void clkAlarmClass::setAlarmPoint(uint16_t _time) { write_eeprom_16(eeprom_index + ALARM_POINT, _time); }
 
-void clkAlarmClass::tick(DateTime _time)
+void clkAlarmClass::tick(shDateTime _time)
 {
 #if ALARM_LED_PIN >= 0
   setLed();

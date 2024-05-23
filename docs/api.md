@@ -213,7 +213,7 @@ clkButtonFlag getButtonFlag(clkButtonType _btn, bool _clear = false);
 
 Метод
 ```
-DateTime getCurrentDateTime();
+shDateTime getCurrentDateTime();
 ```
 позволяет получить текущие дату и время. 
 
