@@ -391,7 +391,7 @@ void LCD_I2C_Display::show()
   if (flag)
   {
     if (isDisplayPresent())
-    { // sscLcdDisplay.clear();
+    { 
       for (uint8_t i = 0; i < 4; i++)
       {
         _data[i] = data[i];

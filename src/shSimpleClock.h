@@ -1775,7 +1775,7 @@ void sscShowTimeSetting()
   {
     _startTimeSettingMode(curHour, curMinute);
     time_checked = false;
-#if !__USE_MATRIX_DISPLAY__
+#if !__USE_MATRIX_DISPLAY__ && !defined(LCD_I2C_DISPLAY)
     clkDisplay.sleep(); // слегка мигнуть экраном при входе в настройки
     return;
 #endif
@@ -2558,7 +2558,7 @@ void sscShowOtherSetting()
   if (!clkTasks.getTaskState(clkTasks.other_setting_mode))
   {
     _startOtherSettingMode(x);
-#if !__USE_MATRIX_DISPLAY__
+#if !__USE_MATRIX_DISPLAY__ && !defined(LCD_I2C_DISPLAY)
     clkDisplay.sleep(); // слегка мигнуть экраном при входе в настройки
     return;
 #endif
