@@ -1,7 +1,9 @@
 #pragma once
 
 #include <EEPROM.h>
+#if defined(WS2812_MATRIX_DISPLAY)
 #include <FastLED.h>
+#endif
 
 // ===================================================
 
@@ -64,21 +66,6 @@ uint16_t read_eeprom_16(uint16_t _index)
   return (_data);
 }
 
-void read_eeprom_crgb(uint16_t _index, CRGB &_color)
-{
-#if __EEPROM_IN_FLASH__
-  EEPROM.begin(EEPROM_SIZE);
-#endif
-
-  _color.r = EEPROM.read(_index + 1);
-  _color.g = EEPROM.read(_index + 2);
-  _color.b = EEPROM.read(_index + 3);
-
-#if __EEPROM_IN_FLASH__
-  EEPROM.end();
-#endif
-}
-
 void write_eeprom_8(uint16_t _index, uint8_t _data)
 {
 #if __EEPROM_IN_FLASH__
@@ -92,7 +79,6 @@ void write_eeprom_8(uint16_t _index, uint8_t _data)
 
 #endif
 }
-
 void write_eeprom_16(uint16_t _index, uint16_t _data)
 {
 #if __EEPROM_IN_FLASH__
@@ -103,6 +89,22 @@ void write_eeprom_16(uint16_t _index, uint16_t _data)
 
 #if __EEPROM_IN_FLASH__
   EEPROM.commit();
+  EEPROM.end();
+#endif
+}
+
+#if defined(WS2812_MATRIX_DISPLAY)
+void read_eeprom_crgb(uint16_t _index, CRGB &_color)
+{
+#if __EEPROM_IN_FLASH__
+  EEPROM.begin(EEPROM_SIZE);
+#endif
+
+  _color.r = EEPROM.read(_index + 1);
+  _color.g = EEPROM.read(_index + 2);
+  _color.b = EEPROM.read(_index + 3);
+
+#if __EEPROM_IN_FLASH__
   EEPROM.end();
 #endif
 }
@@ -128,3 +130,4 @@ void write_eeprom_crgb(uint16_t _index, CRGB _color)
 
 #endif
 }
+#endif
