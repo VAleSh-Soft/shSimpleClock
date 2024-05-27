@@ -57,7 +57,12 @@ uint16_t read_eeprom_16(uint16_t _index)
 #endif
 
   uint16_t _data;
+
+#if defined(__STM32F1__) 
+  _data = EEPROM.read(_index);
+#else
   EEPROM.get(_index, _data);
+#endif
 
 #if __EEPROM_IN_FLASH__
   EEPROM.end();
@@ -85,7 +90,11 @@ void write_eeprom_16(uint16_t _index, uint16_t _data)
   EEPROM.begin(EEPROM_SIZE);
 #endif
 
+#if defined(__STM32F1__)
+  EEPROM.update(_index, _data);
+#else
   EEPROM.put(_index, _data);
+#endif
 
 #if __EEPROM_IN_FLASH__
   EEPROM.commit();

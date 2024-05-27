@@ -297,7 +297,13 @@ void shSimpleRTC::write_register(uint8_t reg, uint8_t data)
 
 // ---- shSimpleRTC public ----------------------
 
-shSimpleRTC::shSimpleRTC() {}
+shSimpleRTC::shSimpleRTC()
+{
+#if !defined(RTC_DS3231) && !defined(RTC_DS1307) && \
+    !defined(RTC_PCF8523) && !defined(RTC_PCF8563)
+#error "Unknown RTC module specified. Set the supported RTC module in clockSetting.h"
+#endif
+}
 
 void shSimpleRTC::now()
 {

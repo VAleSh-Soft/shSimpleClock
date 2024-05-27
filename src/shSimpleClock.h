@@ -288,6 +288,8 @@ clkDisplayMode ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
 #elif defined(WS2812_MATRIX_DISPLAY)
 #include <FastLED.h> // https://github.com/FastLED/FastLED
 #include "display_WS2812.h"
+#else
+#error "Unknown display specified. Set the supported display in clockSetting.h"
 #endif
 #if defined(USE_ALARM)
 #include "clkAlarmClass.h"
