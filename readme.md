@@ -142,7 +142,7 @@
 
 #### RP2040
 
-Для работы с **RP2040** используется аддон **Raspberry Pi RP2040 Boards**, ссылка для установки:
+Для работы с **RP2040** используется аддон **Raspberry Pi Pico/RP2040**, ссылка для установки:
 - https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json
 
 <hr>

@@ -14,7 +14,7 @@
  *
  *        Методы библиотеки
  *
- *        DS1820 temp_sensor() - конструктор;
+ *        DS1820_ng temp_sensor - конструктор;
  * 
  *        void init(int8_t data_pin) - инициализация датчика; здесь:
  *           data_pin - пин, к которому подключен датчик (наличие резистора 
@@ -46,7 +46,7 @@
 
 static Placeholder<OneWireNg_CurrentPlatform> ow;
 
-class DS1820
+class DS1820_ng
 {
 private:
   int16_t temp = ERROR_TEMP;
@@ -54,7 +54,7 @@ private:
   bool checkData(const DSTherm::Scratchpad &scrpd);
 
 public:
-  DS1820();
+  DS1820_ng();
 
   /**
    * @brief инициализация датчика
@@ -79,7 +79,7 @@ public:
 
 // ---- private ---------------------------------
 
-bool DS1820::checkData(const DSTherm::Scratchpad &scrpd)
+bool DS1820_ng::checkData(const DSTherm::Scratchpad &scrpd)
 {
   int16_t t = scrpd.getTemp2();
   bool result = t;
@@ -104,9 +104,9 @@ bool DS1820::checkData(const DSTherm::Scratchpad &scrpd)
 
 // ---- public ----------------------------------
 
-DS1820::DS1820() {}
+DS1820_ng::DS1820_ng() {}
 
-void DS1820::init(int8_t data_pin)
+void DS1820_ng::init(int8_t data_pin)
 {
   new (&ow) OneWireNg_CurrentPlatform(data_pin, false);
 
@@ -127,7 +127,7 @@ void DS1820::init(int8_t data_pin)
   }
 }
 
-void DS1820::readData()
+void DS1820_ng::readData()
 {
   DSTherm drv(ow);
   static Placeholder<DSTherm::Scratchpad> scrpd;
@@ -147,8 +147,8 @@ void DS1820::readData()
   }
 }
 
-int16_t DS1820::getTemp() { return (temp); }
+int16_t DS1820_ng::getTemp() { return (temp); }
 
 // ===================================================
 
-DS1820 sscTempSensor;
+DS1820_ng sscTempSensor;
