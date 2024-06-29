@@ -1280,7 +1280,7 @@ void sscRtcNow()
 void sscBlink()
 {
   static uint8_t cur_sec = clkClock.getCurTime().second();
-  static uint32_t tmr = 0;
+  static unsigned long tmr = 0;
   if (cur_sec != clkClock.getCurTime().second())
   {
 #if defined USE_CLOCK_EVENT
@@ -2265,23 +2265,23 @@ void sscSetBrightness()
   if (clkTasks.getTaskState(clkTasks.other_setting_mode))
   {
     if (ssc_display_mode == DISPLAY_MODE_SET_BRIGHTNESS_MAX ||
-        ssc_display_mode == DISPLAY_MODE_SET_BRIGHTNESS_MIN ||
-        ssc_display_mode == DISPLAY_MODE_SET_LIGHT_THRESHOLD)
+        ssc_display_mode == DISPLAY_MODE_SET_BRIGHTNESS_MIN)
     {
-      return; // в режиме настройки яркости и порога переключения ничего не регулировать
+      return; // в режиме настройки яркости ничего не регулировать
     }
   }
 #endif
 
   uint8_t x = 1;
-#if __USE_LIGHT_SENSOR__
-  static uint16_t b;
-  b = (b * 2 + analogRead(LIGHT_SENSOR_PIN)) / 3;
-  if (b < read_eeprom_8(LIGHT_THRESHOLD_EEPROM_INDEX) * light_threshold_step)
-  {
-    x = read_eeprom_8(MIN_BRIGHTNESS_VALUE_EEPROM_INDEX);
-  }
-  else if (b > (read_eeprom_8(LIGHT_THRESHOLD_EEPROM_INDEX) * light_threshold_step + light_threshold_step / 2))
+#if __USE_LIGHT_SENSOR__ && LIGHT_SENSOR_PIN >= 0
+    uint8_t _pin = LIGHT_SENSOR_PIN; // иначе на stm32duino зависает analogRead()
+    static uint16_t b = analogRead(_pin);
+    b = (b * 2 + analogRead(_pin)) / 3;
+    if (b < read_eeprom_8(LIGHT_THRESHOLD_EEPROM_INDEX) * light_threshold_step)
+    {
+      x = read_eeprom_8(MIN_BRIGHTNESS_VALUE_EEPROM_INDEX);
+    }
+    else if (b > (read_eeprom_8(LIGHT_THRESHOLD_EEPROM_INDEX) * light_threshold_step + light_threshold_step / 2))
 #endif
   {
     x = read_eeprom_8(MAX_BRIGHTNESS_VALUE_EEPROM_INDEX);
@@ -2726,7 +2726,7 @@ void _setDisplayForAutoShowData(uint8_t &n)
     break;
   case 1:
   case 2:
-    sscShowDate(clkClock.getCurTime()); 
+    sscShowDate(clkClock.getCurTime());
     break;
 #endif
 #if __USE_TEMP_DATA__
@@ -2745,7 +2745,7 @@ void sscAutoShowData()
 {
   static uint8_t n = 0;
   static uint8_t n_max = 0;
-  static uint32_t timer = 0;
+  static unsigned long timer = 0;
 
   if (!clkTasks.getTaskState(clkTasks.auto_show_mode))
   {

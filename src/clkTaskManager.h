@@ -21,10 +21,10 @@ static const clkHandle CLK_INVALID_HANDLE = -1;
 
 struct clkTask // структура, описывающая задачу
 {
-  bool status;          // статус задачи
-  uint32_t timer;       // таймер задачи
-  uint32_t interval;    // интервал срабатывания задачи
-  clkCallback callback; // функция, вызываемая при срабатывании таймера задачи
+  bool status;            // статус задачи
+  unsigned long timer;    // таймер задачи
+  unsigned long interval; // интервал срабатывания задачи
+  clkCallback callback;   // функция, вызываемая при срабатывании таймера задачи
 };
 
 class clkTaskManager
@@ -67,7 +67,7 @@ public:
 
   void tick();
 
-  clkHandle addTask(uint32_t _interval, clkCallback _callback, bool isActive = true);
+  clkHandle addTask(unsigned long _interval, clkCallback _callback, bool isActive = true);
 
   void startTask(clkHandle _handle);
 
@@ -75,7 +75,7 @@ public:
 
   bool getTaskState(clkHandle _handle);
 
-  void setTaskInterval(clkHandle _handle, uint32_t _interval, bool _restart = true);
+  void setTaskInterval(clkHandle _handle, unsigned long _interval, bool _restart = true);
 };
 
 // ---- clkTaskManager private ------------------
@@ -113,7 +113,7 @@ void clkTaskManager::tick()
   }
 }
 
-clkHandle clkTaskManager::addTask(uint32_t _interval, clkCallback _callback, bool isActive)
+clkHandle clkTaskManager::addTask(unsigned long _interval, clkCallback _callback, bool isActive)
 {
   for (uint8_t i = 0; i < TASKCOUNT; i++)
   {
@@ -156,7 +156,7 @@ bool clkTaskManager::getTaskState(clkHandle _handle)
   return (false);
 }
 
-void clkTaskManager::setTaskInterval(clkHandle _handle, uint32_t _interval, bool _restart)
+void clkTaskManager::setTaskInterval(clkHandle _handle, unsigned long _interval, bool _restart)
 {
   if (isValidHandle(_handle))
   {

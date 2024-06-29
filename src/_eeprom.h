@@ -58,7 +58,7 @@ uint16_t read_eeprom_16(uint16_t _index)
 
   uint16_t _data;
 
-#if defined(__STM32F1__) 
+#if defined(__STM32F1__) || defined(__STM32F4__) 
   _data = EEPROM.read(_index);
 #else
   EEPROM.get(_index, _data);
@@ -90,7 +90,7 @@ void write_eeprom_16(uint16_t _index, uint16_t _data)
   EEPROM.begin(EEPROM_SIZE);
 #endif
 
-#if defined(__STM32F1__)
+#if defined(__STM32F1__) || defined(__STM32F4__)
   EEPROM.update(_index, _data);
 #else
   EEPROM.put(_index, _data);

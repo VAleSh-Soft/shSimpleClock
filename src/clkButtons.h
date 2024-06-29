@@ -88,8 +88,8 @@ private:
    * 7 бит - флаг длинного клика, 0 - не было, 1 - был длинный клик
    */
 
-  uint32_t btn_timer = 0; // таймер отработки подавления дребезга контактов и длинного клика
-  uint32_t dbl_timer = 0; // таймер двойного клика
+  unsigned long btn_timer = 0; // таймер отработки подавления дребезга контактов и длинного клика
+  unsigned long dbl_timer = 0; // таймер двойного клика
 
   // получение состояния бита
   bool getFlag(uint8_t _bit);
@@ -100,7 +100,7 @@ private:
   bool getContactsState();
 
   // установка кнопке состояния "только что нажата" или "только что отпущена"
-  void setBtnUpDown(bool flag, uint32_t thisMls);
+  void setBtnUpDown(bool flag, unsigned long thisMls);
 
   // дополнительная обработка клика
   void setAdditionalOptions();
@@ -161,7 +161,7 @@ bool clkButton::getContactsState()
   return (val);
 }
 
-void clkButton::setBtnUpDown(bool flag, uint32_t thisMls)
+void clkButton::setBtnUpDown(bool flag, unsigned long thisMls)
 {
   setFlag(DEBOUNCE_BIT, false);
   setFlag(FLAG_BIT, flag);
@@ -232,7 +232,7 @@ clkButton::clkButton(uint8_t pin, bool serial_mode)
 
 uint8_t clkButton::getButtonState()
 {
-  uint32_t thisMls = millis();
+  unsigned long thisMls = millis();
 
   // если поднят флаг подавления дребезга и интервал еще не вышел, больше ничего не делать
   if (_debounce_timeout > 0 &&
