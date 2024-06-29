@@ -736,9 +736,11 @@ public:
 
 void shSimpleClock::rtc_init()
 {
-#if defined(ARDUINO_ARCH_RP2040)
+#if defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_ARCH_STM32)
   Wire.setSDA(RTC_SDA_PIN);
   Wire.setSCL(RTC_SCL_PIN);
+#elif defined(ARDUINO_ARCH_ESP32)
+  Wire.setPins(RTC_SDA_PIN, RTC_SCL_PIN);
 #endif
   Wire.begin();
 
@@ -817,6 +819,9 @@ void shSimpleClock::sensor_init()
 #endif
 #if !defined(LCD_I2C_DISPLAY)
 #if __USE_LIGHT_SENSOR__
+#if defined(__STM32F1__) || defined(__STM32F4__)
+  pinMode((uint8_t)LIGHT_SENSOR_PIN, INPUT_ANALOG);
+#endif
   sscGetLightThresholdStep(BIT_DEPTH);
 #endif
   // проверить корректность заданных уровней яркости
@@ -2274,14 +2279,14 @@ void sscSetBrightness()
 
   uint8_t x = 1;
 #if __USE_LIGHT_SENSOR__ && LIGHT_SENSOR_PIN >= 0
-    uint8_t _pin = LIGHT_SENSOR_PIN; // иначе на stm32duino зависает analogRead()
-    static uint16_t b = analogRead(_pin);
-    b = (b * 2 + analogRead(_pin)) / 3;
-    if (b < read_eeprom_8(LIGHT_THRESHOLD_EEPROM_INDEX) * light_threshold_step)
-    {
-      x = read_eeprom_8(MIN_BRIGHTNESS_VALUE_EEPROM_INDEX);
-    }
-    else if (b > (read_eeprom_8(LIGHT_THRESHOLD_EEPROM_INDEX) * light_threshold_step + light_threshold_step / 2))
+  uint8_t _pin = LIGHT_SENSOR_PIN; // иначе на stm32duino зависает analogRead()
+  static uint16_t b = analogRead(_pin);
+  b = (b * 2 + analogRead(_pin)) / 3;
+  if (b < read_eeprom_8(LIGHT_THRESHOLD_EEPROM_INDEX) * light_threshold_step)
+  {
+    x = read_eeprom_8(MIN_BRIGHTNESS_VALUE_EEPROM_INDEX);
+  }
+  else if (b > (read_eeprom_8(LIGHT_THRESHOLD_EEPROM_INDEX) * light_threshold_step + light_threshold_step / 2))
 #endif
   {
     x = read_eeprom_8(MAX_BRIGHTNESS_VALUE_EEPROM_INDEX);

@@ -57,6 +57,9 @@ NTCSensor::NTCSensor(uint8_t _sensor_pin,
                      uint16_t beta_coefficient)
 {
   sensor_pin = _sensor_pin;
+#if  defined(__STM32F1__) || defined(__STM32F4__) 
+pinMode(sensor_pin, INPUT_ANALOG);
+#endif
   balance = balance_resistor;
   resistor_room_temp = resistor_std;
   beta = beta_coefficient;
