@@ -3,6 +3,7 @@
 #include <EEPROM.h>
 #if defined(WS2812_MATRIX_DISPLAY)
 #include <FastLED.h>
+#define CRGB_UPDATE_DATA 0x7F
 #endif
 
 // ===================================================
@@ -18,10 +19,6 @@
 #if __EEPROM_IN_FLASH__
 #define EEPROM_SIZE 256
 #endif
-
-// ===================================================
-
-#define CRGB_UPDATE_DATA 0x7F
 
 // ===================================================
 
@@ -58,7 +55,7 @@ uint16_t read_eeprom_16(uint16_t _index)
 
   uint16_t _data;
 
-#if defined(__STM32F1__) || defined(__STM32F4__) 
+#if defined(__STM32F1__)  
   _data = EEPROM.read(_index);
 #else
   EEPROM.get(_index, _data);
@@ -70,6 +67,8 @@ uint16_t read_eeprom_16(uint16_t _index)
 
   return (_data);
 }
+
+// TODO: для stm32f4 под stm32duino наблюдается довольно длительная запись в EEPROM
 
 void write_eeprom_8(uint16_t _index, uint8_t _data)
 {
@@ -90,7 +89,7 @@ void write_eeprom_16(uint16_t _index, uint16_t _data)
   EEPROM.begin(EEPROM_SIZE);
 #endif
 
-#if defined(__STM32F1__) || defined(__STM32F4__)
+#if defined(__STM32F1__) 
   EEPROM.update(_index, _data);
 #else
   EEPROM.put(_index, _data);

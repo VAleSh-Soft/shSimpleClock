@@ -46,13 +46,13 @@ constexpr uint8_t FIRST_LINE_NUMBER = 0;
 constexpr uint8_t SECOND_LINE_NUMBER = 1;
 
 // ---- количеств символов в строке --------
-constexpr uint8_t NUMBER_OF_CHAR_PER_LINE = 16;
+constexpr uint8_t NUMBER_OF_CHAR_PER_LINE = 20;
 
 // ---- количеств строк на экране ----------
-constexpr uint8_t NUMBER_OF_LINE_PER_DISPLAY = 2;
+constexpr uint8_t NUMBER_OF_LINE_PER_DISPLAY = 4;
 
 // ---- смещение первой цифры от левого края 
-constexpr uint8_t OFFSET_FOR_FIRST_CHAR = 0;
+constexpr uint8_t OFFSET_FOR_FIRST_CHAR = 2;
 
 // ---- пины для подключения экрана --------
 #define LCD_SDA_PIN A4 // пин для подключения вывода SDA экрана (для Atmega168/328 не менять!!!)
@@ -252,24 +252,22 @@ int8_t constexpr LIGHT_SENSOR_PIN = A3;
 #endif
 
 #if defined(USE_TEMP_DATA)
-// ---- датчики температуры ---------------------
 
+// ---- датчики температуры ---------------------
 
 // ---- DS18B20 ----------------------------
 // #define USE_DS18B20 // использовать для вывода температуры датчик DS18b20
+
+// ---- NTC термистор ----------------------
+// #define USE_NTC     // использовать для вывода температуры NTC термистор
+
 
 #if defined(USE_DS18B20)
 
 // ---- DS18B20 - пин ----------------------
 int8_t constexpr DS18B20_PIN = 8; 
 
-#endif
-
-
-// ---- NTC термистор ----------------------
-// #define USE_NTC     // использовать для вывода температуры NTC термистор
-
-#if defined(USE_NTC)
+#elif defined(USE_NTC)
 
 // ---- параметры NTC термистора ----------------
 uint16_t constexpr RESISTOR_STD = 10000;    // сопротивление датчика при комнатной температуре (25 градусов Цельсия) в омах;

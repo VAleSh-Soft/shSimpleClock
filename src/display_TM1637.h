@@ -13,6 +13,14 @@
 #include "shSimpleRTC.h"   
 #include <TM1637Display.h> // https://github.com/avishorp/TM1637
 
+#if defined(__STM32F1__)
+// значение увеличено, иначе при использовании analogRead() при использовании
+// аддона от Кларка дисплей начинает вести себя непредсказуемо
+#define BIT_DELAY 150ul 
+#else
+#define BIT_DELAY 100ul
+#endif
+
 // ==== DisplayTM1637 ================================
 
 class DisplayTM1637 : public TM1637Display
@@ -22,7 +30,7 @@ private:
   uint8_t _brightness = 1;
 
 public:
-  DisplayTM1637(uint8_t clk_pin, uint8_t dat_pin) : TM1637Display(clk_pin, dat_pin)
+  DisplayTM1637(uint8_t clk_pin, uint8_t dat_pin) : TM1637Display(clk_pin, dat_pin, BIT_DELAY)
   {
     clear();
   }
