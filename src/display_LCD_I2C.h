@@ -1,13 +1,15 @@
 /**
  * @file display_LCD_I2C.h
  * @author Vladimir Shatalov (valesh-soft@yandex.ru)
+ * 
  * @brief модуль, реализующий работу часов с текстовыми LCD  экранами,
  *        подключаемыми с помощью адаптера I2C на базе чипа PCF8574
- * @version 1.0
- * @date 17.05.2024
  * 
+ * @version 1.8
+ * @date 1.06.2024
+ *
  * @copyright Copyright (c) 2024
- * 
+ *
  */
 #pragma once
 #include <Arduino.h>
@@ -16,7 +18,7 @@
 #else
 #include <avr/pgmspace.h>
 #endif
-#include <LCD_I2C.h> // https://github.com/blackhack/LCD_I2C
+#include <LiquidCrystal_PCF8574.h> // https://github.com/mathertel/LiquidCrystal_PCF8574
 
 // массивы для отрисовки сегментов цифр
 static uint8_t const LT[8] PROGMEM = // 0x00
@@ -139,9 +141,11 @@ uint8_t const PROGMEM nums[]{
 };
 
 // ==== LCD_I2C_Display ==============================
-LCD_I2C sscLcdDisplay(BUS_DISPLAY_ADDRESS,
-                      NUMBER_OF_CHAR_PER_LINE,
-                      NUMBER_OF_LINE_PER_DISPLAY);
+// LCD_I2C sscLcdDisplay(BUS_DISPLAY_ADDRESS,
+//                       NUMBER_OF_CHAR_PER_LINE,
+//                       NUMBER_OF_LINE_PER_DISPLAY);
+
+LiquidCrystal_PCF8574 sscLcdDisplay(BUS_DISPLAY_ADDRESS);
 
 #define LCD_COLON_NO_COLON 0 // нет двоеточия
 #define LCD_COLON_COLON 1    // часовое двоеточие - качающиеся плюсики
@@ -167,12 +171,18 @@ private:
   void createChar(uint8_t cell, const uint8_t *data);
 #endif
   void printColon();
-  bool isDisplayPresent();
 
 public:
   LCD_I2C_Display() {}
 
   void init();
+
+/**
+ * @brief проверка доступности дисплея
+ * 
+ * @return true если дисплей подключен и отвечает, иначе false 
+ */
+  bool isDisplayPresent();
 
   /**
    * @brief очистка буфера экрана, сам экран при этом не очищается
@@ -320,8 +330,9 @@ void LCD_I2C_Display::init()
 {
   if (isDisplayPresent())
   {
-    sscLcdDisplay.begin(false);
-    sscLcdDisplay.backlight();
+    sscLcdDisplay.begin(NUMBER_OF_CHAR_PER_LINE,
+                        NUMBER_OF_LINE_PER_DISPLAY);
+    sscLcdDisplay.setBacklight(true);
 
 #if __USE_ARDUINO_ESP__
     createChar();
@@ -391,7 +402,7 @@ void LCD_I2C_Display::show()
   if (flag)
   {
     if (isDisplayPresent())
-    { 
+    {
       for (uint8_t i = 0; i < 4; i++)
       {
         _data[i] = data[i];
@@ -414,10 +425,11 @@ void LCD_I2C_Display::setColon(bool _show, uint8_t _type)
 
 void LCD_I2C_Display::setBacklightState(bool _state)
 {
-  if (isDisplayPresent())
-  {
-    (_state) ? sscLcdDisplay.backlight() : sscLcdDisplay.noBacklight();
-  }
+  sscLcdDisplay.setBacklight(_state);
+  // if (isDisplayPresent())
+  // {
+  //   (_state) ? sscLcdDisplay.backlight() : sscLcdDisplay.noBacklight();
+  // }
 }
 
 // ===================================================

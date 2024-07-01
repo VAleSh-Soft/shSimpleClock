@@ -953,25 +953,26 @@ void shSimpleClock::setADCbitDepth(uint8_t bit_depth)
 void shSimpleClock::init()
 {
 #if defined(USE_ALARM)
+  // ==== будильник ==================================
   clkAlarm.init();
 #endif
 
-  // ==== кнопки ===================================
+  // ==== кнопки =====================================
   clkButtons.init();
 
-  // ==== валидация EEPROM =========================
+  // ==== валидация EEPROM ===========================
   eeprom_validate();
 
-  // ==== датчики ==================================
+  // ==== датчики ====================================
   sensor_init();
 
-  // ==== RTC ======================================
+  // ==== RTC ========================================
   rtc_init();
 
-  // ==== экраны ===================================
+  // ==== экраны =====================================
   display_init();
 
-  // ==== задачи ===================================
+  // ==== задачи =====================================
   task_list_init();
 }
 
@@ -994,15 +995,18 @@ void shSimpleClock::setBacklightState(bool _state)
 
 void shSimpleClock::printTextForScreen(uint8_t _col, uint8_t _line, const char *_str)
 {
-  sscLcdDisplay.setCursor(_col, _line);
-  sscLcdDisplay.print(_str);
+  if (clkDisplay.isDisplayPresent())
+  {
+    sscLcdDisplay.setCursor(_col, _line);
+    sscLcdDisplay.print(_str);
+  }
 }
 #endif
 
 #if defined USE_CLOCK_EVENT
 void shSimpleClock::setClockEvent(uint16_t _interval,
                                   sceCallback _callback,
-                                  bool _active = true)
+                                  bool _active)
 {
   sscClockEvent.init(_interval, _callback, _active);
 }
@@ -1104,7 +1108,7 @@ int8_t shSimpleClock::getTemperature()
 #if defined(USE_ALARM)
 
 #if defined USE_CLOCK_EVENT
-void shSimpleClock::setAlarmEvent(sceCallback _callback, bool _active = true)
+void shSimpleClock::setAlarmEvent(sceCallback _callback, bool _active)
 {
   sscAlarmEvent.init(_callback, _active);
 }

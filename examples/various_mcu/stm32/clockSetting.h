@@ -46,13 +46,13 @@ constexpr uint8_t FIRST_LINE_NUMBER = 0;
 constexpr uint8_t SECOND_LINE_NUMBER = 1;
 
 // ---- количеств символов в строке --------
-constexpr uint8_t NUMBER_OF_CHAR_PER_LINE = 20;
+constexpr uint8_t NUMBER_OF_CHAR_PER_LINE = 16;
 
 // ---- количеств строк на экране ----------
-constexpr uint8_t NUMBER_OF_LINE_PER_DISPLAY = 4;
+constexpr uint8_t NUMBER_OF_LINE_PER_DISPLAY = 2;
 
 // ---- смещение первой цифры от левого края 
-constexpr uint8_t OFFSET_FOR_FIRST_CHAR = 2;
+constexpr uint8_t OFFSET_FOR_FIRST_CHAR = 0;
 
 // ---- пины для подключения экрана --------
 #define LCD_SDA_PIN PB7 // пин для подключения вывода SDA экрана (не менять!!!)
