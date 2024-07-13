@@ -1,10 +1,10 @@
 /**
  * @file display_LCD_I2C.h
  * @author Vladimir Shatalov (valesh-soft@yandex.ru)
- * 
+ *
  * @brief модуль, реализующий работу часов с текстовыми LCD  экранами,
  *        подключаемыми с помощью адаптера I2C на базе чипа PCF8574
- * 
+ *
  * @version 1.8
  * @date 1.06.2024
  *
@@ -141,9 +141,6 @@ uint8_t const PROGMEM nums[]{
 };
 
 // ==== LCD_I2C_Display ==============================
-// LCD_I2C sscLcdDisplay(BUS_DISPLAY_ADDRESS,
-//                       NUMBER_OF_CHAR_PER_LINE,
-//                       NUMBER_OF_LINE_PER_DISPLAY);
 
 LiquidCrystal_PCF8574 sscLcdDisplay(BUS_DISPLAY_ADDRESS);
 
@@ -177,11 +174,11 @@ public:
 
   void init();
 
-/**
- * @brief проверка доступности дисплея
- * 
- * @return true если дисплей подключен и отвечает, иначе false 
- */
+  /**
+   * @brief проверка доступности дисплея
+   *
+   * @return true если дисплей подключен и отвечает, иначе false
+   */
   bool isDisplayPresent();
 
   /**
@@ -238,83 +235,95 @@ public:
 
 void LCD_I2C_Display::printChar(uint8_t offset, uint8_t x)
 {
-  offset += OFFSET_FOR_FIRST_CHAR;
+  if (isDisplayPresent())
+  {
+    offset += OFFSET_FOR_FIRST_CHAR;
 
-  sscLcdDisplay.setCursor(offset, FIRST_LINE_NUMBER);
-  for (uint8_t i = 0; i < 3; i++)
-  {
-    sscLcdDisplay.write(pgm_read_byte(&nums[x * 6 + i]));
-  }
-  sscLcdDisplay.setCursor(offset, SECOND_LINE_NUMBER);
-  for (uint8_t i = 3; i < 6; i++)
-  {
-    sscLcdDisplay.write(pgm_read_byte(&nums[x * 6 + i]));
+    sscLcdDisplay.setCursor(offset, FIRST_LINE_NUMBER);
+    for (uint8_t i = 0; i < 3; i++)
+    {
+      sscLcdDisplay.write(pgm_read_byte(&nums[x * 6 + i]));
+    }
+    sscLcdDisplay.setCursor(offset, SECOND_LINE_NUMBER);
+    for (uint8_t i = 3; i < 6; i++)
+    {
+      sscLcdDisplay.write(pgm_read_byte(&nums[x * 6 + i]));
+    }
   }
 }
 
 #if __USE_ARDUINO_ESP__
 void LCD_I2C_Display::createChar()
 {
-  for (uint8_t j = 0; j < 8; j++)
+  if (isDisplayPresent())
   {
-    uint8_t arr[8];
-    for (uint8_t i = 0; i < 8; i++)
+    for (uint8_t j = 0; j < 8; j++)
     {
-      arr[i] = pgm_read_byte(&arr_char[j][i]);
+      uint8_t arr[8];
+      for (uint8_t i = 0; i < 8; i++)
+      {
+        arr[i] = pgm_read_byte(&arr_char[j][i]);
+      }
+      sscLcdDisplay.createChar(j, arr);
     }
-    sscLcdDisplay.createChar(j, arr);
   }
 }
 #else
 void LCD_I2C_Display::createChar(uint8_t cell, const uint8_t *data)
 {
-  uint8_t arr[8];
-  for (uint8_t i = 0; i < 8; i++)
+  if (isDisplayPresent())
   {
-    arr[i] = pgm_read_byte(&data[i]);
+    uint8_t arr[8];
+    for (uint8_t i = 0; i < 8; i++)
+    {
+      arr[i] = pgm_read_byte(&data[i]);
+    }
+    sscLcdDisplay.createChar(cell, arr);
   }
-  sscLcdDisplay.createChar(cell, arr);
 }
 #endif
 
 void LCD_I2C_Display::printColon()
 {
-  uint8_t offset = OFFSET_FOR_FIRST_CHAR + 7;
-  switch (col.lcdType)
+  if (isDisplayPresent())
   {
-  case LCD_COLON_COLON:
-    if (col.lcdShow)
+    uint8_t offset = OFFSET_FOR_FIRST_CHAR + 7;
+    switch (col.lcdType)
     {
+    case LCD_COLON_COLON:
+      if (col.lcdShow)
+      {
+        sscLcdDisplay.setCursor(offset, FIRST_LINE_NUMBER);
+        sscLcdDisplay.print(" +");
+        sscLcdDisplay.setCursor(offset, SECOND_LINE_NUMBER);
+        sscLcdDisplay.print("+ ");
+      }
+      else
+      {
+        sscLcdDisplay.setCursor(offset, FIRST_LINE_NUMBER);
+        sscLcdDisplay.print("+ ");
+        sscLcdDisplay.setCursor(offset, SECOND_LINE_NUMBER);
+        sscLcdDisplay.print(" +");
+      }
+      break;
+    case LCD_COLON_DOT:
       sscLcdDisplay.setCursor(offset, FIRST_LINE_NUMBER);
-      sscLcdDisplay.print(" +");
+      sscLcdDisplay.print("  ");
       sscLcdDisplay.setCursor(offset, SECOND_LINE_NUMBER);
-      sscLcdDisplay.print("+ ");
-    }
-    else
-    {
+      sscLcdDisplay.print(". ");
+      break;
+    case LCD_COLON_COLON_1:
       sscLcdDisplay.setCursor(offset, FIRST_LINE_NUMBER);
-      sscLcdDisplay.print("+ ");
+      sscLcdDisplay.print("* ");
       sscLcdDisplay.setCursor(offset, SECOND_LINE_NUMBER);
-      sscLcdDisplay.print(" +");
+      sscLcdDisplay.print("* ");
+      break;
+    default:
+      sscLcdDisplay.setCursor(offset, FIRST_LINE_NUMBER);
+      sscLcdDisplay.print("  ");
+      sscLcdDisplay.setCursor(offset, SECOND_LINE_NUMBER);
+      sscLcdDisplay.print("  ");
     }
-    break;
-  case LCD_COLON_DOT:
-    sscLcdDisplay.setCursor(offset, FIRST_LINE_NUMBER);
-    sscLcdDisplay.print("  ");
-    sscLcdDisplay.setCursor(offset, SECOND_LINE_NUMBER);
-    sscLcdDisplay.print(". ");
-    break;
-  case LCD_COLON_COLON_1:
-    sscLcdDisplay.setCursor(offset, FIRST_LINE_NUMBER);
-    sscLcdDisplay.print("* ");
-    sscLcdDisplay.setCursor(offset, SECOND_LINE_NUMBER);
-    sscLcdDisplay.print("* ");
-    break;
-  default:
-    sscLcdDisplay.setCursor(offset, FIRST_LINE_NUMBER);
-    sscLcdDisplay.print("  ");
-    sscLcdDisplay.setCursor(offset, SECOND_LINE_NUMBER);
-    sscLcdDisplay.print("  ");
   }
 }
 
@@ -364,6 +373,7 @@ void LCD_I2C_Display::sleep()
   if (isDisplayPresent())
   {
     sscLcdDisplay.clear();
+    sscLcdDisplay.setBacklight(false);
   }
 }
 
@@ -425,11 +435,10 @@ void LCD_I2C_Display::setColon(bool _show, uint8_t _type)
 
 void LCD_I2C_Display::setBacklightState(bool _state)
 {
-  sscLcdDisplay.setBacklight(_state);
-  // if (isDisplayPresent())
-  // {
-  //   (_state) ? sscLcdDisplay.backlight() : sscLcdDisplay.noBacklight();
-  // }
+  if (isDisplayPresent())
+  {
+    sscLcdDisplay.setBacklight(_state);
+  }
 }
 
 // ===================================================
