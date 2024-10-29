@@ -71,6 +71,16 @@
 #define __USE_ON_OFF_DATA__ 0
 #endif
 
+// используется ли EEPROM на флеш-памяти (esp32, esp8266, rp2040):
+//   - задействованы ли сохраняемые в EEPROM параметры
+#if (__USE_ARDUINO_ESP__ || defined(ARDUINO_ARCH_RP2040)) && \
+    (__USE_OTHER_SETTING__ || __USE_ON_OFF_DATA__)
+#define __USE_EEPROM_IN_FLASH__ 1
+#define EEPROM_SIZE 256
+#else
+#define __USE_EEPROM_IN_FLASH__ 0
+#endif
+
 // ===================================================
 
 #include <Arduino.h>
@@ -358,11 +368,20 @@ public:
   void setADCbitDepth(uint8_t bit_depth);
 #endif
 
+#if __USE_EEPROM_IN_FLASH__
+  /**
+   * @brief инициализация часов
+   *
+   * @param _eeprom_size размер EEPROM в байтах
+   */
+  void init(uint16_t _eeprom_size = EEPROM_SIZE);
+#else
   /**
    * @brief инициализация часов
    *
    */
   void init();
+#endif
 
   /**
    * @brief обработка событий часов
@@ -950,8 +969,22 @@ void shSimpleClock::setADCbitDepth(uint8_t bit_depth)
 }
 #endif
 
+#if __USE_EEPROM_IN_FLASH__
+void shSimpleClock::init(uint16_t _eeprom_size)
+#else
 void shSimpleClock::init()
+#endif
 {
+#if __USE_EEPROM_IN_FLASH__
+  // ==== инициализация EEPROM во флеш-памяти ========
+  EEPROM.end();
+  if (_eeprom_size > 4096u || _eeprom_size == 0)
+  {
+    _eeprom_size = 4096;
+  }
+  EEPROM.begin(_eeprom_size);
+#endif
+
 #if defined(USE_ALARM)
   // ==== будильник ==================================
   clkAlarm.init();
@@ -978,9 +1011,14 @@ void shSimpleClock::init()
 
 void shSimpleClock::tick()
 {
-  sscCheckButton();
-  clkTasks.tick();
-  sscSetDisplayMode();
+  static unsigned long last_tick = 0;
+  if (millis() - last_tick >= 1) // опрос делаем не чаще одного раза в милисекунду
+  {
+    last_tick = millis();
+    sscCheckButton();
+    clkTasks.tick();
+    sscSetDisplayMode();
+  }
 }
 
 clkDisplayMode shSimpleClock::getDisplayMode() { return ssc_display_mode; }

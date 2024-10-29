@@ -102,9 +102,10 @@ void clkTaskManager::tick()
 {
   for (uint8_t i = 0; i < TASKCOUNT; i++)
   {
+   unsigned long now = millis();
     if (taskList[i].status && taskList[i].callback != NULL)
     {
-      if (millis() - taskList[i].timer >= taskList[i].interval)
+      if (now - taskList[i].timer >= taskList[i].interval)
       {
         taskList[i].timer += taskList[i].interval;
         taskList[i].callback();

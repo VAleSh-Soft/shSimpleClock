@@ -28,7 +28,7 @@ shSimpleClock simple_clock;
 
 void setup()
 {
-  Serial.begin(9600);
+  Serial.begin(115200);
 
   // инициализируем часы
   simple_clock.init();

@@ -29,7 +29,7 @@ shSimpleClock simple_clock;
 
 void setup()
 {
-  Serial.begin(9600);
+  Serial.begin(115200);
 
   // устанавливаем, если нужно, поворот изображения на матрице (значение 0..3)
   simple_clock.setMatrixDirection(2);

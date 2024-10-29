@@ -39,7 +39,7 @@ void alarmEventExample()
 
 void setup()
 {
-  Serial.begin(9600);
+  Serial.begin(115200);
 
   // подключаем событие часов - вызывается через каждые пять секунд
   simple_clock.setClockEvent(5, clockEventExample);
