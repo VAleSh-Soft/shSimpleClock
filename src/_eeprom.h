@@ -54,7 +54,10 @@ void write_eeprom_16(uint16_t _index, uint16_t _data)
 #else
   EEPROM.put(_index, _data);
 #endif
+
+#if __USE_EEPROM_IN_FLASH__
   EEPROM.commit();
+#endif
 }
 
 #if defined(WS2812_MATRIX_DISPLAY)

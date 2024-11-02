@@ -26,9 +26,9 @@
     defined CHIPSET_SM16716 || defined CHIPSET_P9813 ||   \
     defined CHIPSET_APA102 || defined CHIPSET_SK9822 ||   \
     defined CHIPSET_DOTSTAR
-#define __ESPICHIPSET__ 1
+#define __ESPI_CHIPSET__ 1
 #else
-#define __ESPICHIPSET__ 0
+#define __ESPI_CHIPSET__ 0
 #endif
 
 // ===================================================
@@ -89,7 +89,7 @@ private:
   void setChar(uint8_t offset, uint8_t chr,
                uint8_t width = 6, uint8_t *_arr = NULL, uint8_t _arr_length = 0);
 
-#if __ESPICHIPSET__
+#if __ESPI_CHIPSET__
   void setESpiLedsData(CRGB *data, uint16_t leds_count);
 #else
   void setLedsData(CRGB *data, uint16_t leds_count);
@@ -264,7 +264,7 @@ void DisplayWS2812Matrix::setChar(uint8_t offset, uint8_t chr,
   }
 }
 
-#if __ESPICHIPSET__
+#if __ESPI_CHIPSET__
 void DisplayWS2812Matrix::setESpiLedsData(CRGB *data, uint16_t leds_count)
 {
 #if defined CHIPSET_LPD6803
@@ -494,7 +494,7 @@ void DisplayWS2812Matrix::setMaxPSP(uint8_t volts, uint32_t milliamps)
 
 void DisplayWS2812Matrix::init()
 {
-#if __ESPICHIPSET__
+#if __ESPI_CHIPSET__
   setESpiLedsData(leds, LEDS_COUNT);
 #else
   setLedsData(leds, LEDS_COUNT);
