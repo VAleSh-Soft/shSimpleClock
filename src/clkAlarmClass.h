@@ -108,20 +108,14 @@ public:
 #if ALARM_LED_PIN >= 0
 void clkAlarmClass::setLed()
 {
-  static uint8_t n = 0;
   uint8_t led_state = LOW;
   switch (state)
   {
   case ALARM_ON: // при включенном будильнике светодиод горит
     led_state = HIGH;
-    n = 0;
     break;
   case ALARM_YES: // при сработавшем будильнике светодиод мигает с частотой вызова метода tick()
-    led_state = n != 0;
-    if (++n > 1)
-    {
-      n = 0;
-    }
+    led_state = !led_state;
     break;
   default:
     break;

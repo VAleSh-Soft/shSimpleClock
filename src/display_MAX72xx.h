@@ -28,6 +28,8 @@ class DisplayMAX72xx7segment : public shMAX72xx7Segment<cs_pin, 1, NUM_DIGITS>
 {
 private:
   uint8_t data[4];
+  // контрольные данные
+  uint8_t _data[4] = {0x00, 0x00, 0x00, 0x00};
 
   void setSegments(uint8_t *data);
 
@@ -127,7 +129,6 @@ template <uint8_t cs_pin>
 void DisplayMAX72xx7segment<cs_pin>::show()
 {
   bool flag = false;
-  static uint8_t _data[4] = {0x00, 0x00, 0x00, 0x00};
   for (uint8_t i = 0; i < 4; i++)
   {
     flag = _data[i] != data[i];

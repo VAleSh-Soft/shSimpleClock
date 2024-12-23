@@ -342,6 +342,8 @@ void sscGetLightThresholdStep(uint8_t _adc_bit_depth)
 class shSimpleClock
 {
 private:
+  unsigned long last_tick = 0;
+
   void rtc_init();
 
   void eeprom_validate();
@@ -1011,7 +1013,6 @@ void shSimpleClock::init()
 
 void shSimpleClock::tick()
 {
-  static unsigned long last_tick = 0;
   if (millis() - last_tick >= 1) // опрос делаем не чаще одного раза в милисекунду
   {
     last_tick = millis();

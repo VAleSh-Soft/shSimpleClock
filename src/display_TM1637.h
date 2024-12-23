@@ -28,6 +28,9 @@ class DisplayTM1637 : public TM1637Display
 private:
   uint8_t data[4];
   uint8_t _brightness = 1;
+  // контрольные данные
+  uint8_t _data[4] = {0x00, 0x00, 0x00, 0x00};
+  uint8_t br = 0;
 
 public:
   DisplayTM1637(uint8_t clk_pin, uint8_t dat_pin) : TM1637Display(clk_pin, dat_pin, BIT_DELAY)
@@ -107,8 +110,6 @@ uint8_t DisplayTM1637::getDispData(uint8_t _index)
 void DisplayTM1637::show()
 {
   bool flag = false;
-  static uint8_t _data[4] = {0x00, 0x00, 0x00, 0x00};
-  static uint8_t br = 0;
   for (uint8_t i = 0; i < 4; i++)
   {
     flag = _data[i] != data[i];

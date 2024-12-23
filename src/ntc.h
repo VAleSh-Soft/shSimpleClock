@@ -29,6 +29,7 @@ private:
   uint32_t room_temp = 29815;
   int16_t cur_temp;
   uint8_t sensor_pin;
+  uint16_t adcAverage = 0;
 
 public:
   NTCSensor(uint8_t _sensor_pin,
@@ -57,9 +58,10 @@ NTCSensor::NTCSensor(uint8_t _sensor_pin,
                      uint16_t beta_coefficient)
 {
   sensor_pin = _sensor_pin;
-#if  defined(__STM32F1__) || defined(__STM32F4__) 
-pinMode(sensor_pin, INPUT_ANALOG);
+#if defined(__STM32F1__) || defined(__STM32F4__)
+  pinMode(sensor_pin, INPUT_ANALOG);
 #endif
+  adcAverage = analogRead(sensor_pin);
   balance = balance_resistor;
   resistor_room_temp = resistor_std;
   beta = beta_coefficient;
@@ -67,8 +69,6 @@ pinMode(sensor_pin, INPUT_ANALOG);
 
 uint16_t NTCSensor::getTemp()
 {
-  static uint16_t adcAverage = analogRead(sensor_pin);
-
   adcAverage = (adcAverage * 2 + analogRead(sensor_pin)) / 3;
   // определяем текущее сопротивление термистора
   uint16_t rThermistor = balance * ((max_adc * 100 / adcAverage) - 100) / 100;

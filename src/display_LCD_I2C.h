@@ -160,6 +160,9 @@ class LCD_I2C_Display
 private:
   uint8_t data[4];
   LcdColon col;
+  // контрольные данные
+  uint8_t _data[4] = {0x00, 0x00, 0x00, 0x00};
+  LcdColon _col = col;
 
   void printChar(uint8_t offset, uint8_t x);
 #if __USE_ARDUINO_ESP__
@@ -393,8 +396,6 @@ uint8_t LCD_I2C_Display::getDispData(uint8_t _index)
 void LCD_I2C_Display::show()
 {
   bool flag = false;
-  static uint8_t _data[4];
-  static LcdColon _col = col;
   for (uint8_t i = 0; i < 4; i++)
   {
     flag = _data[i] != data[i];

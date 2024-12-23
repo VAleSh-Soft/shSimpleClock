@@ -50,6 +50,7 @@ class DS1820_ng
 {
 private:
   int16_t temp = ERROR_TEMP;
+  Placeholder<DSTherm::Scratchpad> scrpd;
 
   bool checkData(const DSTherm::Scratchpad &scrpd);
 
@@ -130,7 +131,6 @@ void DS1820_ng::init(int8_t data_pin)
 void DS1820_ng::readData()
 {
   DSTherm drv(ow);
-  static Placeholder<DSTherm::Scratchpad> scrpd;
 
   OneWireNg::ErrorCode ec = drv.readScratchpadSingle(scrpd);
   if (ec == OneWireNg::EC_SUCCESS)
