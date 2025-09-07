@@ -1,5 +1,5 @@
 /**
- * @file custom_display.ino
+ * @file custom_screen.ino
  * @author Vladimir Shatalov (valesh-soft@yandex.ru)
  * @brief Пример вывода пользовательской информации на экран часов;
  *
@@ -12,10 +12,10 @@
  *        ВАЖНО: объявление файла clockSetting.h в скетче должно быть ДО
  *               объявления библиотеки shSimpleClock.h (см. скетч ниже)
 
- * @version 1.5
- * @date 01.05.2024
+ * @version 1.6
+ * @date 03.09.2025
  *
- * @copyright Copyright (c) 2024
+ * @copyright Copyright (c) 2025
  *
  */
 

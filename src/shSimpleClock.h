@@ -61,6 +61,13 @@
 #define __USE_MATRIX_DISPLAY__ 0
 #endif
 
+// используются семисегментные индикаторы
+#if defined(MAX72XX_7SEGMENT_DISPLAY) || defined(TM1637_DISPLAY)
+#define __USE_7SEMENT_DISPLAY__ 1
+#else
+#define __USE_7SEMENT_DISPLAY__ 0
+#endif
+
 // используются опции с параметрами вкл/откл:
 //   - включение/отключение будильника
 //   - включение/отключение анимации
@@ -1831,7 +1838,7 @@ void sscShowTimeSetting()
   {
     _startTimeSettingMode(curHour, curMinute);
     time_checked = false;
-#if !__USE_MATRIX_DISPLAY__ && !defined(LCD_I2C_DISPLAY)
+#if __USE_7SEMENT_DISPLAY__
     clkDisplay.sleep(); // слегка мигнуть экраном при входе в настройки
     return;
 #endif
@@ -2614,7 +2621,7 @@ void sscShowOtherSetting()
   if (!clkTasks.getTaskState(clkTasks.other_setting_mode))
   {
     _startOtherSettingMode(x);
-#if !__USE_MATRIX_DISPLAY__ && !defined(LCD_I2C_DISPLAY)
+#if __USE_7SEMENT_DISPLAY__
     clkDisplay.sleep(); // слегка мигнуть экраном при входе в настройки
     return;
 #endif
