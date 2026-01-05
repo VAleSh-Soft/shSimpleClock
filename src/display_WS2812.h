@@ -77,6 +77,7 @@ private:
   MatrixType matrix_type = BY_COLUMNS;
   uint8_t row_count = 8;
   uint8_t col_count = 32;
+  uint8_t _brightness = 0;
   CRGB color = CRGB::Red;
   CRGB bg_color = CRGB::Black;
 
@@ -156,6 +157,13 @@ public:
    * @param brightness значение яркости (0..25)
    */
   void setBrightness(uint8_t brightness);
+
+  /**
+   * @brief получение текущей яркости экрана
+   * 
+   * @return uint8_t 
+   */
+  uint8_t getBrightness();
 
   /**
    * @brief установка цвета символов
@@ -463,8 +471,13 @@ void DisplayWS2812Matrix::show()
 
 void DisplayWS2812Matrix::setBrightness(uint8_t brightness)
 {
-  brightness = (brightness <= 25) ? brightness : 25;
+  _brightness = (brightness <= 25) ? brightness : 25;
   FastLED.setBrightness(brightness * 10);
+}
+
+uint8_t DisplayWS2812Matrix::getBrightness()
+{
+  return (_brightness);
 }
 
 void DisplayWS2812Matrix::setColorOfNumber(CRGB _color)

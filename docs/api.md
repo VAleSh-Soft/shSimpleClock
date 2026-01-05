@@ -209,7 +209,7 @@ clkButtonFlag getButtonFlag(clkButtonType _btn, bool _clear = false);
 ```
 где `btn` - идентификатор кнопки, может принимать значения `CLK_BTN_SET`, `CLK_BTN_UP`, `CLK_BTN_DOWN`; `_clear` - если **true**, то флаг кнопки после считывания будет очищен (установлено значение `CLK_BTN_FLAG_NONE`).
 
-Образец работы с пользовательскими экранами пожно посмотреть в [примерах](../examples/custom_display/custom_display.ino).
+Образец работы с пользовательскими экранами пожно посмотреть в [примерах](../examples/other_examples/custom_screen/custom_screen.ino).
 
 
 
@@ -428,7 +428,7 @@ bool getAlarmEventState();
 ```
 задает и возвращает текущий статус события соответственно - при `_state = false` callback-функция вызываться не будет.
 
-Образец использования событий см. в [примерах](../examples/clock_event/clock_event.ino).
+Образец использования событий см. в [примерах](../examples/other_examples/clock_event/clock_event.ino).
 
 
 ### Разрядность АЦП микроконтроллера

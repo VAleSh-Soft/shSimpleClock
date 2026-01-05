@@ -78,6 +78,13 @@ public:
    * @param brightness значение яркости (1..7)
    */
   void setBrightness(uint8_t brightness);
+
+  /**
+   * @brief получение текущей яркости экрана
+   * 
+   * @return uint8_t 
+   */
+  uint8_t getBrightness();
 };
 
 void DisplayTM1637::clear()
@@ -138,6 +145,11 @@ void DisplayTM1637::setBrightness(uint8_t brightness)
 {
   _brightness = (brightness <= 7) ? brightness : 7;
   TM1637Display::setBrightness(brightness, true);
+}
+
+uint8_t DisplayTM1637::getBrightness()
+{
+  return _brightness;
 }
 
 // ===================================================

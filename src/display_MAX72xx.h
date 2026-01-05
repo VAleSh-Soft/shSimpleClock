@@ -30,6 +30,7 @@ private:
   uint8_t data[4];
   // контрольные данные
   uint8_t _data[4] = {0x00, 0x00, 0x00, 0x00};
+  uint8_t _brightness = 0;
 
   void setSegments(uint8_t *data);
 
@@ -73,9 +74,16 @@ public:
   /**
    * @brief установка яркости экрана
    *
-   * @param brightness значение яркости (1..7)
+   * @param brightness значение яркости (0..15)
    */
   void setBrightness(uint8_t brightness);
+
+  /**
+   * @brief получение текущей яркости экрана
+   * 
+   * @return uint8_t 
+   */
+  uint8_t getBrightness();
 };
 
 // ---- DisplayMAX72xx7segment private ----------
@@ -151,8 +159,14 @@ void DisplayMAX72xx7segment<cs_pin>::show()
 template <uint8_t cs_pin>
 void DisplayMAX72xx7segment<cs_pin>::setBrightness(uint8_t brightness)
 {
-  brightness = (brightness <= 15) ? brightness : 15;
+  _brightness = (brightness <= 15) ? brightness : 15;
   shMAX72xxMini<cs_pin, 1>::setBrightness(0, brightness);
+}
+
+template <uint8_t cs_pin>
+uint8_t DisplayMAX72xx7segment<cs_pin>::getBrightness()
+{
+  return _brightness;
 }
 
 // ==== класс для матрицы 8х8х4 MAX72xx ==============
@@ -161,6 +175,8 @@ template <uint8_t cs_pin>
 class DisplayMAX72xxMatrix : public shMAX72xxMini<cs_pin, 4>
 {
 private:
+  uint8_t _brightness = 0;
+
   // void setNumString(uint8_t offset, uint8_t num,
   //                   uint8_t width = 6, uint8_t space = 1,
   //                   uint8_t *_data = NULL, uint8_t _data_count = 0);
@@ -222,6 +238,13 @@ public:
    * @param brightness значение яркости (0..15)
    */
   void setBrightness(uint8_t brightness);
+
+  /**
+   * @brief получение текущей яркости экрана
+   * 
+   * @return uint8_t 
+   */
+  uint8_t getBrightness();
 };
 
 // ---- DisplayMAX72xxMatrix private ------------
@@ -323,11 +346,17 @@ void DisplayMAX72xxMatrix<cs_pin>::show()
 template <uint8_t cs_pin>
 void DisplayMAX72xxMatrix<cs_pin>::setBrightness(uint8_t brightness)
 {
-  brightness = (brightness <= 15) ? brightness : 15;
+  _brightness = (brightness <= 15) ? brightness : 15;
   for (uint8_t i = 0; i < 4; i++)
   {
     shMAX72xxMini<cs_pin, 4>::setBrightness(i, brightness);
   }
+}
+
+template <uint8_t cs_pin>
+uint8_t DisplayMAX72xxMatrix<cs_pin>::getBrightness()
+{
+  return _brightness;
 }
 
 // ====================================================
