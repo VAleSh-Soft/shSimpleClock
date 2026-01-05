@@ -209,7 +209,7 @@ clkButtonFlag getButtonFlag(clkButtonType _btn, bool _clear = false);
 ```
 где `btn` - идентификатор кнопки, может принимать значения `CLK_BTN_SET`, `CLK_BTN_UP`, `CLK_BTN_DOWN`; `_clear` - если **true**, то флаг кнопки после считывания будет очищен (установлено значение `CLK_BTN_FLAG_NONE`).
 
-Образец работы с пользовательскими экранами пожно посмотреть в [примерах](../examples/other_examples/custom_screen/custom_screen.ino).
+Образец работы с пользовательскими экранами можно посмотреть в [примерах](../examples/other_examples/custom_screen/custom_screen.ino).
 
 
 
@@ -309,7 +309,7 @@ void setIntervalForAutoShowData(uint8_t _index);
 ```
 simple_clock.setIntervalForAutoShowData(2);
 ```
-задаст интервал автовывода в 5 минут; если установить 0, автовывод будет отключена.
+задаст интервал автовывода в 5 минут; если установить 0, автовывод будет отключен.
 
 Метод
 ```
@@ -399,7 +399,7 @@ void setButtonFlag(clkButtonType _btn, clkButtonFlag _flag);
 
 #### Ежесекундное событие
 
-Библиотека позволяет задавать callback-функции на свои события. Всего есть два события: ежесекундное и событие будильника. Ежесекундное событие, как следует из его названия, происходит каждый раз при смене секунды. К нему относятся методы:
+Библиотека позволяет задавать callback-функции на ежесекундное событие и событие будильника. Ежесекундное событие, как следует из его названия, происходит каждый раз при смене секунды. К нему относятся методы:
 ```
 void setClockEvent(uint16_t _interval, sceCallback _callback, bool _active = true);
 ```
