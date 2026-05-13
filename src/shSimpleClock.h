@@ -461,7 +461,7 @@ public:
   /**
    * @brief получить текущее состояние или событие кнопки
    *
-   * @param _btn идентификатор кнопки, может иметь значение: CLK_BTN_SET, CLK_BTN_UP, CLK_BTN_DOWN;
+   * @param _btn идентификатор кнопки, может иметь значение: CLK_BTN_SET, CLK_BTN_UP, CLK_BTN_DOWN, CLK_BTN_ADD1, CLK_BTN_ADD2;
    * @return uint8_t
    */
   uint8_t getButtonState(clkButtonType _btn);
@@ -2175,6 +2175,8 @@ void sscCheckButton()
 {
   sscCheckSetButton();
   sscCheckUpDownButton();
+  clkButtons.getButtonState(CLK_BTN_ADD1);
+  clkButtons.getButtonState(CLK_BTN_ADD2);
 }
 
 void sscSetDisplayMode()
