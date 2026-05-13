@@ -2175,6 +2175,7 @@ void sscCheckButton()
 {
   sscCheckSetButton();
   sscCheckUpDownButton();
+  // опрос дополнительных кнопок, при их наличии
   clkButtons.getButtonState(CLK_BTN_ADD1);
   clkButtons.getButtonState(CLK_BTN_ADD2);
 }
