@@ -1,5 +1,5 @@
 /**
- * @file matrix_data.h
+ * @file clkMatrix_data.h
  * @author Vladimir Shatalov (valesh-soft@yandex.ru)
  * @brief Модуль для работы с матричными экранами
  * @version 1.5
@@ -420,14 +420,14 @@ uint8_t reverseByte(uint8_t b)
  * @brief класс для формирования данных бегущей строки
  *
  */
-class StringData
+class clkStringData
 {
 private:
   uint8_t *data;
   uint8_t data_count = 0;
 
 public:
-  StringData();
+  clkStringData();
 
   /**
    * @brief инициализация строки
@@ -468,9 +468,9 @@ public:
   uint8_t getDataLenght();
 };
 
-StringData::StringData() {}
+clkStringData::clkStringData() {}
 
-bool StringData::stringInit(uint8_t _data_count)
+bool clkStringData::stringInit(uint8_t _data_count)
 {
   bool result = false;
   stringFree();
@@ -491,7 +491,7 @@ bool StringData::stringInit(uint8_t _data_count)
   return (result);
 }
 
-void StringData::stringFree()
+void clkStringData::stringFree()
 {
   if (data != NULL)
   {
@@ -502,7 +502,7 @@ void StringData::stringFree()
   }
 }
 
-uint8_t StringData::getData(uint8_t index)
+uint8_t clkStringData::getData(uint8_t index)
 {
   uint8_t result = 0;
   if (data != NULL)
@@ -512,7 +512,7 @@ uint8_t StringData::getData(uint8_t index)
   return (result);
 }
 
-void StringData::setData(uint8_t index, uint8_t _data)
+void clkStringData::setData(uint8_t index, uint8_t _data)
 
 {
   if ((data != NULL) && (index < data_count))
@@ -521,9 +521,9 @@ void StringData::setData(uint8_t index, uint8_t _data)
   }
 }
 
-uint8_t StringData::getDataLenght()
+uint8_t clkStringData::getDataLenght()
 {
   return (data_count);
 }
 
-StringData sData; // данные бегущей строки
+clkStringData sData; // данные бегущей строки

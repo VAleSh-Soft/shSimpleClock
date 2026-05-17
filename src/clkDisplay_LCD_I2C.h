@@ -1,5 +1,5 @@
 /**
- * @file display_LCD_I2C.h
+ * @file clkDisplay_LCD_I2C.h
  * @author Vladimir Shatalov (valesh-soft@yandex.ru)
  *
  * @brief модуль, реализующий работу часов с текстовыми LCD  экранами,
@@ -140,7 +140,7 @@ uint8_t const PROGMEM nums[]{
     0x67, 0x72, 0x64, 0x20, 0x43, 0x20  // grad
 };
 
-// ==== LCD_I2C_Display ==============================
+// ==== clkDisplayLCD_I2C ==============================
 
 LiquidCrystal_PCF8574 sscLcdDisplay(BUS_DISPLAY_ADDRESS);
 
@@ -155,7 +155,7 @@ struct LcdColon
   uint8_t lcdType;
 };
 
-class LCD_I2C_Display
+class clkDisplayLCD_I2C
 {
 private:
   uint8_t data[4];
@@ -173,7 +173,7 @@ private:
   void printColon();
 
 public:
-  LCD_I2C_Display() {}
+  clkDisplayLCD_I2C() {}
 
   void init();
 
@@ -236,7 +236,7 @@ public:
 
 // ---- private ---------------------------------
 
-void LCD_I2C_Display::printChar(uint8_t offset, uint8_t x)
+void clkDisplayLCD_I2C::printChar(uint8_t offset, uint8_t x)
 {
   if (isDisplayPresent())
   {
@@ -256,7 +256,7 @@ void LCD_I2C_Display::printChar(uint8_t offset, uint8_t x)
 }
 
 #if __USE_ARDUINO_ESP__
-void LCD_I2C_Display::createChar()
+void clkDisplayLCD_I2C::createChar()
 {
   if (isDisplayPresent())
   {
@@ -272,7 +272,7 @@ void LCD_I2C_Display::createChar()
   }
 }
 #else
-void LCD_I2C_Display::createChar(uint8_t cell, const uint8_t *data)
+void clkDisplayLCD_I2C::createChar(uint8_t cell, const uint8_t *data)
 {
   if (isDisplayPresent())
   {
@@ -286,7 +286,7 @@ void LCD_I2C_Display::createChar(uint8_t cell, const uint8_t *data)
 }
 #endif
 
-void LCD_I2C_Display::printColon()
+void clkDisplayLCD_I2C::printColon()
 {
   if (isDisplayPresent())
   {
@@ -330,7 +330,7 @@ void LCD_I2C_Display::printColon()
   }
 }
 
-bool LCD_I2C_Display::isDisplayPresent()
+bool clkDisplayLCD_I2C::isDisplayPresent()
 {
   Wire.beginTransmission(BUS_DISPLAY_ADDRESS);
   return (Wire.endTransmission() == 0);
@@ -338,7 +338,7 @@ bool LCD_I2C_Display::isDisplayPresent()
 
 // ---- public ----------------------------------
 
-void LCD_I2C_Display::init()
+void clkDisplayLCD_I2C::init()
 {
   if (isDisplayPresent())
   {
@@ -361,7 +361,7 @@ void LCD_I2C_Display::init()
   }
 }
 
-void LCD_I2C_Display::clear()
+void clkDisplayLCD_I2C::clear()
 {
   col.lcdShow = false;
   for (uint8_t i = 0; i < 4; i++)
@@ -370,7 +370,7 @@ void LCD_I2C_Display::clear()
   }
 }
 
-void LCD_I2C_Display::sleep()
+void clkDisplayLCD_I2C::sleep()
 {
   clear();
   if (isDisplayPresent())
@@ -380,7 +380,7 @@ void LCD_I2C_Display::sleep()
   }
 }
 
-void LCD_I2C_Display::setDispData(uint8_t _index, uint8_t _data)
+void clkDisplayLCD_I2C::setDispData(uint8_t _index, uint8_t _data)
 {
   if (_index < 4)
   {
@@ -388,12 +388,12 @@ void LCD_I2C_Display::setDispData(uint8_t _index, uint8_t _data)
   }
 }
 
-uint8_t LCD_I2C_Display::getDispData(uint8_t _index)
+uint8_t clkDisplayLCD_I2C::getDispData(uint8_t _index)
 {
   return ((_index < 4) ? data[_index] : 0);
 }
 
-void LCD_I2C_Display::show()
+void clkDisplayLCD_I2C::show()
 {
   bool flag = false;
   for (uint8_t i = 0; i < 4; i++)
@@ -428,13 +428,13 @@ void LCD_I2C_Display::show()
   }
 }
 
-void LCD_I2C_Display::setColon(bool _show, uint8_t _type)
+void clkDisplayLCD_I2C::setColon(bool _show, uint8_t _type)
 {
   col.lcdShow = _show;
   col.lcdType = _type;
 }
 
-void LCD_I2C_Display::setBacklightState(bool _state)
+void clkDisplayLCD_I2C::setBacklightState(bool _state)
 {
   if (isDisplayPresent())
   {
@@ -444,4 +444,4 @@ void LCD_I2C_Display::setBacklightState(bool _state)
 
 // ===================================================
 
-LCD_I2C_Display clkDisplay;
+clkDisplayLCD_I2C clkDisplay;

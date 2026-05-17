@@ -1,5 +1,5 @@
 /**
- * @file shSimpleRTC.h
+ * @file clkSimpleRTC.h
  * @author Vladimir Shatalov (valesh-soft@yandex.ru)
  * @brief Небольшой модуль для работы с модулями часов реального времени DS3231/DS1307/PCF8563/PCF8523
  * @version 1.5
@@ -22,21 +22,21 @@
 
 static const uint8_t daysInMonth[] PROGMEM = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
-// ==== shDateTime ===================================
+// ==== clkDateTime ===================================
 
 // Простой класс даты/времени общего назначения (без обработки TZ/DST/дополнительных секунд!)
 // на основе класса DateTime от JeeLabs/Adafruit
-class shDateTime
+class clkDateTime
 {
 public:
-  shDateTime(uint32_t t = 0);
+  clkDateTime(uint32_t t = 0);
 
-  shDateTime(uint16_t year, uint8_t month, uint8_t day,
+  clkDateTime(uint16_t year, uint8_t month, uint8_t day,
              uint8_t hour = 0, uint8_t min = 0, uint8_t sec = 0);
 
-  shDateTime(const shDateTime &copy);
+  clkDateTime(const clkDateTime &copy);
 
-  shDateTime(const char *date, const char *time);
+  clkDateTime(const char *date, const char *time);
   uint16_t year() const;
   uint8_t month() const;
   uint8_t day() const;
@@ -57,7 +57,7 @@ public:
    */
   uint32_t unixtime(void) const;
 
-  void copyDateTime(const shDateTime &_source);
+  void copyDateTime(const clkDateTime &_source);
 
 protected:
   uint8_t yOff, m, d, hh, mm, ss;
@@ -68,9 +68,9 @@ private:
   static long time2long(uint16_t days, uint8_t h, uint8_t m, uint8_t s);
 };
 
-// ---- shDateTime private ------------------------
+// ---- clkDateTime private ------------------------
 
-uint16_t shDateTime::date2days(uint16_t y, uint8_t m, uint8_t d)
+uint16_t clkDateTime::date2days(uint16_t y, uint8_t m, uint8_t d)
 {
   if (y >= 2000)
     y -= 2000;
@@ -82,14 +82,14 @@ uint16_t shDateTime::date2days(uint16_t y, uint8_t m, uint8_t d)
   return days + 365 * y + (y + 3) / 4 - 1;
 }
 
-long shDateTime::time2long(uint16_t days, uint8_t h, uint8_t m, uint8_t s)
+long clkDateTime::time2long(uint16_t days, uint8_t h, uint8_t m, uint8_t s)
 {
   return ((days * 24L + h) * 60 + m) * 60 + s;
 }
 
-// ---- shDateTime public -------------------------
+// ---- clkDateTime public -------------------------
 
-shDateTime::shDateTime(uint32_t t)
+clkDateTime::clkDateTime(uint32_t t)
 {
   t -= SECONDS_FROM_1970_TO_2000; // переместить точку времени с 1970 года на 2000
 
@@ -119,7 +119,7 @@ shDateTime::shDateTime(uint32_t t)
   d = days + 1;
 }
 
-shDateTime::shDateTime(uint16_t year, uint8_t month, uint8_t day,
+clkDateTime::clkDateTime(uint16_t year, uint8_t month, uint8_t day,
                        uint8_t hour, uint8_t min, uint8_t sec)
 {
   yOff = year % 100;
@@ -130,15 +130,15 @@ shDateTime::shDateTime(uint16_t year, uint8_t month, uint8_t day,
   ss = (sec <= 59) ? sec : 0;
 }
 
-shDateTime::shDateTime(const shDateTime &copy) : yOff(copy.yOff), m(copy.m), d(copy.d),
+clkDateTime::clkDateTime(const clkDateTime &copy) : yOff(copy.yOff), m(copy.m), d(copy.d),
                                                  hh(copy.hh), mm(copy.mm), ss(copy.ss) {}
 
-uint16_t shDateTime::year() const { return yOff; }
-uint8_t shDateTime::month() const { return m; }
-uint8_t shDateTime::day() const { return d; }
-uint8_t shDateTime::hour() const { return hh; }
-uint8_t shDateTime::minute() const { return mm; }
-uint8_t shDateTime::second() const { return ss; }
+uint16_t clkDateTime::year() const { return yOff; }
+uint8_t clkDateTime::month() const { return m; }
+uint8_t clkDateTime::day() const { return d; }
+uint8_t clkDateTime::hour() const { return hh; }
+uint8_t clkDateTime::minute() const { return mm; }
+uint8_t clkDateTime::second() const { return ss; }
 
 /*
  * 32-битное время в секундах с 01.01.1970
@@ -147,7 +147,7 @@ uint8_t shDateTime::second() const { return ss; }
  * ЭТОТ МЕТОД ДЛЯ ПОЛУЧЕНИЯ ПРАВИЛЬНОГО ВРЕМЕНИ UNIX, ВЫ ДОЛЖНЫ
  * ВЫЗВАТЬ ЭТОТ МЕТОД ПОСЛЕ УСТАНОВКИ ЧАСОВ В UTC.
  */
-uint32_t shDateTime::unixtime(void) const
+uint32_t clkDateTime::unixtime(void) const
 {
   uint32_t t;
   uint16_t days = date2days(yOff, m, d);
@@ -157,7 +157,7 @@ uint32_t shDateTime::unixtime(void) const
   return t;
 }
 
-void shDateTime::copyDateTime(const shDateTime &_source)
+void clkDateTime::copyDateTime(const clkDateTime &_source)
 {
   yOff = _source.yOff;
   m = _source.m;
@@ -167,14 +167,14 @@ void shDateTime::copyDateTime(const shDateTime &_source)
   ss = _source.ss;
 }
 
-// ==== end shDateTime ===============================
+// ==== end clkDateTime ===============================
 
-// ==== shSimpleRTC ==================================
+// ==== clkSimpleRTC ==================================
 
-class shSimpleRTC
+class clkSimpleRTC
 {
 private:
-  shDateTime cur_time;
+  clkDateTime cur_time;
 
   uint8_t decToBcd(uint8_t val);
   uint8_t bcdToDec(uint8_t val);
@@ -190,7 +190,7 @@ public:
    * @brief конструктор объекта RTC
    *
    */
-  shSimpleRTC();
+  clkSimpleRTC();
 
   /**
    * @brief запрос текущих времени и даты из RTC и сохранение их во внутреннем буфере
@@ -201,9 +201,9 @@ public:
   /**
    * @brief получение текущего времени и даты из внутреннего буфера
    *
-   * @return shDateTime
+   * @return clkDateTime
    */
-  shDateTime getCurTime();
+  clkDateTime getCurTime();
 
   /**
    * @brief установка текущего времени
@@ -267,18 +267,18 @@ public:
 #endif
 };
 
-// ---- shSimpleRTC private ---------------------
+// ---- clkSimpleRTC private ---------------------
 
-uint8_t shSimpleRTC::decToBcd(uint8_t val) { return ((val / 10 * 16) + (val % 10)); }
-uint8_t shSimpleRTC::bcdToDec(uint8_t val) { return ((val / 16 * 10) + (val % 16)); }
+uint8_t clkSimpleRTC::decToBcd(uint8_t val) { return ((val / 10 * 16) + (val % 10)); }
+uint8_t clkSimpleRTC::bcdToDec(uint8_t val) { return ((val / 16 * 10) + (val % 16)); }
 
-bool shSimpleRTC::isClockPresent()
+bool clkSimpleRTC::isClockPresent()
 {
   Wire.beginTransmission(CLOCK_ADDRESS);
   return (Wire.endTransmission() == 0);
 }
 
-uint8_t shSimpleRTC::read_register(uint8_t reg)
+uint8_t clkSimpleRTC::read_register(uint8_t reg)
 {
   Wire.beginTransmission(CLOCK_ADDRESS);
   Wire.write(reg);
@@ -287,7 +287,7 @@ uint8_t shSimpleRTC::read_register(uint8_t reg)
   return Wire.read();
 }
 
-void shSimpleRTC::write_register(uint8_t reg, uint8_t data)
+void clkSimpleRTC::write_register(uint8_t reg, uint8_t data)
 {
   Wire.beginTransmission(CLOCK_ADDRESS);
   Wire.write(reg);
@@ -295,9 +295,9 @@ void shSimpleRTC::write_register(uint8_t reg, uint8_t data)
   Wire.endTransmission();
 }
 
-// ---- shSimpleRTC public ----------------------
+// ---- clkSimpleRTC public ----------------------
 
-shSimpleRTC::shSimpleRTC()
+clkSimpleRTC::clkSimpleRTC()
 {
 #if !defined(RTC_DS3231) && !defined(RTC_DS1307) && \
     !defined(RTC_PCF8523) && !defined(RTC_PCF8563)
@@ -305,7 +305,7 @@ shSimpleRTC::shSimpleRTC()
 #endif
 }
 
-void shSimpleRTC::now()
+void clkSimpleRTC::now()
 {
   if (isClockPresent())
   {
@@ -331,34 +331,34 @@ void shSimpleRTC::now()
     uint16_t b6 = read_register(++reg);
 
 #if defined(RTC_DS3231)
-    cur_time.copyDateTime(shDateTime(bcdToDec(b6), bcdToDec(b5 & 0x7F),
+    cur_time.copyDateTime(clkDateTime(bcdToDec(b6), bcdToDec(b5 & 0x7F),
                                      bcdToDec(b4), bcdToDec(b2),
                                      bcdToDec(b1), bcdToDec(b0 & 0x7F)));
 #elif defined(RTC_DS1307)
-    cur_time.copyDateTime(shDateTime(bcdToDec(b6), bcdToDec(b5),
+    cur_time.copyDateTime(clkDateTime(bcdToDec(b6), bcdToDec(b5),
                                      bcdToDec(b4), bcdToDec(b2),
                                      bcdToDec(b1), bcdToDec(b0 & 0x7F)));
 #elif defined(RTC_PCF8563)
-    cur_time.copyDateTime(shDateTime(bcdToDec(b6), bcdToDec(b5 & 0x1F),
+    cur_time.copyDateTime(clkDateTime(bcdToDec(b6), bcdToDec(b5 & 0x1F),
                                      bcdToDec(b3 & 0x3f), bcdToDec(b2 & 0x3f),
                                      bcdToDec(b1 & 0x7f), bcdToDec(b0 & 0x7F)));
 #elif defined(RTC_PCF8523)
-    cur_time.copyDateTime(shDateTime(bcdToDec(b6), bcdToDec(b5),
+    cur_time.copyDateTime(clkDateTime(bcdToDec(b6), bcdToDec(b5),
                                      bcdToDec(b3), bcdToDec(b2),
                                      bcdToDec(b1), bcdToDec(b0 & 0x7F)));
 #else
-    cur_time.copyDateTime(shDateTime(0, 1, 1, 0, 0, 0));
+    cur_time.copyDateTime(clkDateTime(0, 1, 1, 0, 0, 0));
 #endif
   }
   else
   {
-    cur_time.copyDateTime(shDateTime(0, 1, 1, 0, 0, 0));
+    cur_time.copyDateTime(clkDateTime(0, 1, 1, 0, 0, 0));
   }
 }
 
-shDateTime shSimpleRTC::getCurTime() { return (cur_time); }
+clkDateTime clkSimpleRTC::getCurTime() { return (cur_time); }
 
-void shSimpleRTC::setCurTime(uint8_t _hour, uint8_t _minute, uint8_t _second)
+void clkSimpleRTC::setCurTime(uint8_t _hour, uint8_t _minute, uint8_t _second)
 {
   if (isClockPresent())
   {
@@ -406,7 +406,7 @@ void shSimpleRTC::setCurTime(uint8_t _hour, uint8_t _minute, uint8_t _second)
   }
 }
 
-void shSimpleRTC::setCurDate(uint8_t _date, uint8_t _month)
+void clkSimpleRTC::setCurDate(uint8_t _date, uint8_t _month)
 {
   if (isClockPresent())
   {
@@ -423,7 +423,7 @@ void shSimpleRTC::setCurDate(uint8_t _date, uint8_t _month)
   }
 }
 
-void shSimpleRTC::setCurYear(uint8_t _year)
+void clkSimpleRTC::setCurYear(uint8_t _year)
 {
   if (isClockPresent())
   {
@@ -438,7 +438,7 @@ void shSimpleRTC::setCurYear(uint8_t _year)
 }
 
 #if defined(RTC_DS3231)
-int16_t shSimpleRTC::getTemperature()
+int16_t clkSimpleRTC::getTemperature()
 {
   uint8_t tMSB, tLSB;
   int16_t temp3231 = -127;
@@ -455,7 +455,7 @@ int16_t shSimpleRTC::getTemperature()
   return (temp3231);
 }
 
-void shSimpleRTC::setClockMode(bool h12)
+void clkSimpleRTC::setClockMode(bool h12)
 {
   if (isClockPresent())
   {
@@ -480,7 +480,7 @@ void shSimpleRTC::setClockMode(bool h12)
 }
 #endif
 
-bool shSimpleRTC::isRunning()
+bool clkSimpleRTC::isRunning()
 {
   bool result = false;
 
@@ -505,7 +505,7 @@ bool shSimpleRTC::isRunning()
 }
 
 #if !defined(RTC_DS1307)
-void shSimpleRTC::startRTC()
+void clkSimpleRTC::startRTC()
 {
 #if defined(RTC_DS3231)
   uint8_t temp_buffer = read_register(0x0e) & 0b11100111;
@@ -526,6 +526,6 @@ void shSimpleRTC::startRTC()
 }
 #endif
 
-// ==== end shSimpleRTC ==============================
+// ==== end clkSimpleRTC ==============================
 
-shSimpleRTC clkClock;
+clkSimpleRTC clkClock;

@@ -110,6 +110,19 @@ private:
 public:
   clkButton(uint8_t pin, bool serial_mode = false);
 
+  void setButtonType(uint8_t btn_type);
+
+  void setButtonInputType(uint8_t btn_type);
+
+#if (BTN_ADD1_PIN >= 0) || (BTN_ADD2_PIN >= 0)
+  void setButtonTimeouts(uint8_t _timeout_of_debounce,
+                         uint8_t _timeout_of_dblclick);
+
+  void setButtonLongClickTimeouts(bool _serial_on,
+                                  uint8_t _of_longclick,
+                                  uint8_t _of_serial);
+#endif
+
   // получение текущего состояния кнопки
   uint8_t getButtonState();
 
@@ -222,13 +235,41 @@ clkButton::clkButton(uint8_t pin, bool serial_mode)
 {
   _PIN = pin;
   setFlag(INPUTTYPE_BIT, BTN_INPUT_TYPE);
-  (BTN_INPUT_TYPE == PULL_UP) ? pinMode(_PIN, INPUT_PULLUP) : pinMode(_PIN, INPUT);
-  setFlag(BTNTYPE_BIT, BTN_TYPE);
+  setButtonInputType(BTN_INPUT_TYPE);
+  setButtonType(BTN_TYPE);
   if (serial_mode)
   {
     _longclick_mode = LCM_CLICKSERIES;
   }
 }
+
+void clkButton::setButtonType(uint8_t btn_type)
+{
+  setFlag(BTNTYPE_BIT, btn_type);
+}
+
+void clkButton::setButtonInputType(uint8_t btn_type)
+{
+  (btn_type == PULL_UP) ? pinMode(_PIN, INPUT_PULLUP) : pinMode(_PIN, INPUT);
+}
+
+#if (BTN_ADD1_PIN >= 0) || (BTN_ADD2_PIN >= 0)
+void clkButton::setButtonTimeouts(uint8_t _timeout_of_debounce,
+                                  uint8_t _timeout_of_dblclick)
+{
+  _debounce_timeout = _timeout_of_debounce;
+  _dblclck_timeout = _timeout_of_dblclick;
+}
+
+void clkButton::setButtonLongClickTimeouts(bool _serial_on,
+                                           uint8_t _of_longclick,
+                                           uint8_t _of_serial)
+{
+  _longclick_mode = (_serial_on) ? LCM_CLICKSERIES : LCM_ONLYONCE;
+  _longclick_timeout = _of_longclick;
+  _interval_of_serial = _of_serial;
+}
+#endif
 
 uint8_t clkButton::getButtonState()
 {
@@ -380,13 +421,15 @@ enum clkButtonType : uint8_t
 {
   CLK_BTN_SET,
   CLK_BTN_UP,
-  CLK_BTN_DOWN
+  CLK_BTN_DOWN,
+  CLK_BTN_ADD1,
+  CLK_BTN_ADD2
 };
 
 class clkButtonGroup
 {
 private:
-  clkButton *buttons[3] = {NULL, NULL, NULL};
+  clkButton *buttons[5] = {NULL, NULL, NULL, NULL, NULL};
 
   bool isValidButton(clkButtonType _btn);
 
@@ -394,6 +437,21 @@ public:
   clkButtonGroup();
 
   void init();
+
+#if (BTN_ADD1_PIN >= 0) || (BTN_ADD2_PIN >= 0)
+  void setBtnType(clkButtonType _btn, uint8_t _type);
+
+  void setBtnInputType(clkButtonType _btn, uint8_t _input_type);
+
+  void setBtnTimeoutSet(clkButtonType _btn,
+                        uint8_t _timeout_of_debounce,
+                        uint8_t _timeout_of_dblclick);
+
+  void setBtnLongClickSet(clkButtonType _btn,
+                          bool _serial_on,
+                          uint8_t _timeout_of_longclick,
+                          uint8_t _interval_of_serial);
+#endif
 
   void setButtonFlag(clkButtonType _btn, clkButtonFlag _flag);
 
@@ -434,7 +492,52 @@ void clkButtonGroup::init()
 #if (BTN_DOWN_PIN >= 0)
   buttons[2] = new clkButton(BTN_DOWN_PIN, true);
 #endif
+#if (BTN_ADD1_PIN >= 0)
+  buttons[3] = new clkButton(BTN_UP_PIN, true);
+#endif
+#if (BTN_ADD2_PIN >= 0)
+  buttons[4] = new clkButton(BTN_DOWN_PIN, true);
+#endif
 }
+
+#if (BTN_ADD1_PIN >= 0) || (BTN_ADD2_PIN >= 0)
+void clkButtonGroup::setBtnType(clkButtonType _btn, uint8_t _type)
+{
+  if (isValidButton(_btn))
+  {
+    buttons[(uint8_t)_btn]->setButtonType(_type);
+  }
+}
+
+void clkButtonGroup::setBtnInputType(clkButtonType _btn, uint8_t _input_type)
+{
+  if (isValidButton(_btn))
+  {
+    buttons[(uint8_t)_btn]->setButtonInputType(_input_type);
+  }
+}
+
+void clkButtonGroup::setBtnTimeoutSet(clkButtonType _btn,
+                                      uint8_t _timeout_of_debounce,
+                                      uint8_t _timeout_of_dblclick)
+{
+  if (isValidButton(_btn))
+  {
+    buttons[(uint8_t)_btn]->setButtonTimeouts(_timeout_of_debounce, _timeout_of_dblclick);
+  }
+}
+
+void clkButtonGroup::setBtnLongClickSet(clkButtonType _btn,
+                                        bool _serial_on,
+                                        uint8_t _timeout_of_longclick,
+                                        uint8_t _interval_of_serial)
+{
+  if (isValidButton(_btn))
+  {
+    buttons[(uint8_t)_btn]->setButtonLongClickTimeouts(_serial_on, _timeout_of_longclick, _interval_of_serial);
+  }
+}
+#endif
 
 void clkButtonGroup::setButtonFlag(clkButtonType _btn, clkButtonFlag _flag)
 {

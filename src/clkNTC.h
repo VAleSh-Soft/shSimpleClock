@@ -3,7 +3,7 @@
 
    Методы библиотеки:
 
-   NTCSensor temp_sensor(_sensor_pin, resistor_std, balance_resistor, beta_coefficient = 3950) - конструктор класса.
+   clkNTCSensor temp_sensor(_sensor_pin, resistor_std, balance_resistor, beta_coefficient = 3950) - конструктор класса.
    Список аргументов:
 
     _sensor_pin - аналоговый пин, куда подключен датчик;
@@ -19,7 +19,7 @@
 #pragma once
 #include <Arduino.h>
 
-class NTCSensor
+class clkNTCSensor
 {
 private:
   uint16_t balance;
@@ -32,7 +32,7 @@ private:
   uint16_t adcAverage = 0;
 
 public:
-  NTCSensor(uint8_t _sensor_pin,
+  clkNTCSensor(uint8_t _sensor_pin,
             uint16_t resistor_std,
             uint16_t balance_resistor,
             uint16_t beta_coefficient = 3950);
@@ -52,7 +52,7 @@ public:
   void setADCbitDepth(uint8_t bit_depth);
 };
 
-NTCSensor::NTCSensor(uint8_t _sensor_pin,
+clkNTCSensor::clkNTCSensor(uint8_t _sensor_pin,
                      uint16_t resistor_std,
                      uint16_t balance_resistor,
                      uint16_t beta_coefficient)
@@ -67,7 +67,7 @@ NTCSensor::NTCSensor(uint8_t _sensor_pin,
   beta = beta_coefficient;
 }
 
-uint16_t NTCSensor::getTemp()
+uint16_t clkNTCSensor::getTemp()
 {
   adcAverage = (adcAverage * 2 + analogRead(sensor_pin)) / 3;
   // определяем текущее сопротивление термистора
@@ -82,7 +82,7 @@ uint16_t NTCSensor::getTemp()
   return (tCelsius);
 }
 
-void NTCSensor::setADCbitDepth(uint8_t bit_depth)
+void clkNTCSensor::setADCbitDepth(uint8_t bit_depth)
 {
   uint32_t d = 1;
   for (uint8_t i = 0; i < bit_depth; i++)
@@ -94,7 +94,7 @@ void NTCSensor::setADCbitDepth(uint8_t bit_depth)
 
 // ===================================================
 
-NTCSensor sscTempSensor(NTC_PIN,
+clkNTCSensor sscTempSensor(NTC_PIN,
                         RESISTOR_STD,
                         BALANCE_RESISTOR,
                         BETA_COEFFICIENT);
