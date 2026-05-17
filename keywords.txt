@@ -7,12 +7,30 @@
 #######################################
 
 shSimpleClock	KEYWORD1
-clkDisplayMode	KEYWORD1
-shSimpleRTC	KEYWORD1
+
+clkSimpleRTC	KEYWORD1
+clkClockEvent	KEYWORD1
+clkDateTime	KEYWORD1
 clkButton	KEYWORD1
 clkButtonGroup	KEYWORD1
-clkDataType	KEYWORD1
+clkAlarmClass	KEYWORD1
+clkTaskManager	KEYWORD1
+clkDisplayLCD_I2C	KEYWORD1
+clkDisplayMAX72xx7segment	KEYWORD1
+clkDisplayMAX72xxMatrix	KEYWORD1
+clkDisplayTM1637	KEYWORD1
+clkDisplayWS2812Matrix	KEYWORD1
+clkDS1820_ng	KEYWORD1
+clkDS1820	KEYWORD1
+clkStringData	KEYWORD1
+clkNTCSensor	KEYWORD1
+
+clkButtonType	KEYWORD1
 clkButtonFlag	KEYWORD1
+clkDataType	KEYWORD1
+clkDisplayMode	KEYWORD1
+clkAlarmState	KEYWORD1
+clkMatrixType	KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2) 
@@ -64,6 +82,10 @@ setSecondColumnState	KEYWORD2
 getSecondColumnState	KEYWORD2
 setBacklightState	KEYWORD2
 printTextForScreen	KEYWORD2
+setAddButtonType	KEYWORD2
+setAddButtonInputType	KEYWORD2
+setAddButtonTimeoutSet	KEYWORD2
+setAddButtonLongClickSet	KEYWORD2
 
 #######################################
 # Constants (LITERAL1)
@@ -108,6 +130,8 @@ CLK_BTN_FLAG_EXIT	LITERAL1
 CLK_BTN_SET	LITERAL1
 CLK_BTN_UP	LITERAL1
 CLK_BTN_DOWN	LITERAL1
+CLK_BTN_ADD1	LITERAL1
+CLK_BTN_ADD2	LITERAL1
 BTN_NO	LITERAL1
 BTN_NC	LITERAL1
 PULL_UP	LITERAL1

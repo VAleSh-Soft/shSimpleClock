@@ -10,7 +10,7 @@
  */
 #pragma once
 #include <Arduino.h>
-#include "shSimpleRTC.h"
+#include "clkSimpleRTC.h"
 #include "_eeprom.h"
 
 #define MAX_DATA 1439 // максимальное количество минут для установки будильника (23 ч, 59 мин)
@@ -24,7 +24,7 @@ uint8_t constexpr ALARM_POINT = 1; // точка срабатывания буд
 
 // ==== clkAlarmClass ================================
 
-enum AlarmState : uint8_t // состояние будильника
+enum clkAlarmState : uint8_t // состояние будильника
 {
   ALARM_OFF, // будильник выключен
   ALARM_ON,  // будильник включен
@@ -35,7 +35,7 @@ class clkAlarmClass
 {
 private:
   uint16_t eeprom_index;
-  AlarmState state;
+  clkAlarmState state;
 
 #if ALARM_LED_PIN >= 0
   uint8_t led_pin;
@@ -55,16 +55,16 @@ public:
   /**
    * @brief получение текущего состояния будильника
    *
-   * @return AlarmState
+   * @return clkAlarmState
    */
-  AlarmState getAlarmState();
+  clkAlarmState getAlarmState();
 
   /**
    * @brief установка текущего состояния будильника
    *
    * @param _state новое значение состояния будильника
    */
-  void setAlarmState(AlarmState _state);
+  void setAlarmState(clkAlarmState _state);
 
   /**
    * @brief получение информации о состоянии будильника - включен/выключен
@@ -100,7 +100,7 @@ public:
    *
    * @param _time текущее время
    */
-  void tick(shDateTime _time);
+  void tick(clkDateTime _time);
 };
 
 // ---- clkAlarmClass private -------------------
@@ -146,26 +146,26 @@ void clkAlarmClass::init()
   {
     write_eeprom_16(eeprom_index + ALARM_POINT, 360);
   }
-  state = (AlarmState)read_eeprom_8(eeprom_index + ALARM_STATE);
+  state = (clkAlarmState)read_eeprom_8(eeprom_index + ALARM_STATE);
 }
 
-AlarmState clkAlarmClass::getAlarmState() { return (state); }
+clkAlarmState clkAlarmClass::getAlarmState() { return (state); }
 
-void clkAlarmClass::setAlarmState(AlarmState _state) { state = _state; }
+void clkAlarmClass::setAlarmState(clkAlarmState _state) { state = _state; }
 
 bool clkAlarmClass::getOnOffAlarm() { return (bool)read_eeprom_8(eeprom_index + ALARM_STATE); }
 
 void clkAlarmClass::setOnOffAlarm(bool _state)
 {
   write_eeprom_8(eeprom_index + ALARM_STATE, (uint8_t)_state);
-  state = (AlarmState)_state;
+  state = (clkAlarmState)_state;
 }
 
 uint16_t clkAlarmClass::getAlarmPoint() { return (read_eeprom_16(eeprom_index + ALARM_POINT)); }
 
 void clkAlarmClass::setAlarmPoint(uint16_t _time) { write_eeprom_16(eeprom_index + ALARM_POINT, _time); }
 
-void clkAlarmClass::tick(shDateTime _time)
+void clkAlarmClass::tick(clkDateTime _time)
 {
 #if ALARM_LED_PIN >= 0
   setLed();

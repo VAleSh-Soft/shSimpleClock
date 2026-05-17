@@ -2,7 +2,7 @@
 
 typedef void (*sceCallback)(void); // тип - указатель для Callback-функции
 
-class shClockEvent
+class clkClockEvent
 {
 private:
   sceCallback callback;
@@ -11,13 +11,13 @@ private:
   bool state = false;
 
 public:
-  shClockEvent();
+  clkClockEvent();
 
   void init(uint16_t _interval, sceCallback _callback, bool _active = true);
 
   void init(sceCallback _callback, bool _active = true);
 
-  // ~shClockEvent();
+  // ~clkClockEvent();
 
   void run();
 
@@ -26,9 +26,9 @@ public:
   bool getState();
 };
 
-shClockEvent::shClockEvent() {}
+clkClockEvent::clkClockEvent() {}
 
-void shClockEvent::init(uint16_t _interval, sceCallback _callback, bool _active)
+void clkClockEvent::init(uint16_t _interval, sceCallback _callback, bool _active)
 {
   index = 0;
   count = _interval;
@@ -36,7 +36,7 @@ void shClockEvent::init(uint16_t _interval, sceCallback _callback, bool _active)
   callback = _callback;
 }
 
-void shClockEvent::init(sceCallback _callback, bool _active)
+void clkClockEvent::init(sceCallback _callback, bool _active)
 {
   index = 0;
   count = 1;
@@ -44,9 +44,9 @@ void shClockEvent::init(sceCallback _callback, bool _active)
   callback = _callback;
 }
 
-// shClockEvent::~shClockEvent() { callback = NULL; }
+// clkClockEvent::~clkClockEvent() { callback = NULL; }
 
-void shClockEvent::run()
+void clkClockEvent::run()
 {
   if (state && callback != NULL)
   {
@@ -58,14 +58,14 @@ void shClockEvent::run()
   }
 }
 
-void shClockEvent::setState(bool _state) { state = _state; }
+void clkClockEvent::setState(bool _state) { state = _state; }
 
-bool shClockEvent::getState() { return state; }
+bool clkClockEvent::getState() { return state; }
 
 // ===================================================
 
-shClockEvent sscClockEvent;
+clkClockEvent sscClockEvent;
 
 #if defined(USE_ALARM)
-shClockEvent sscAlarmEvent;
+clkClockEvent sscAlarmEvent;
 #endif

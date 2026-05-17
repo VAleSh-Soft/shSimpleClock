@@ -98,7 +98,7 @@
 #include <avr/pgmspace.h>
 #endif
 #include "_eeprom.h"
-#include "shSimpleRTC.h"
+#include "clkSimpleRTC.h"
 #include "clkTaskManager.h"
 #include "clkButtons.h"
 
@@ -281,7 +281,7 @@ void sscSetTag(clkDataType _type);
 void sscSetOnOffData(clkDataType _type, bool _state, bool _blink);
 void sscShowTime(int8_t hour, int8_t minute, bool show_colon);
 #if defined(USE_CALENDAR)
-void sscShowDate(shDateTime date);
+void sscShowDate(clkDateTime date);
 #endif
 #if __USE_TEMP_DATA__
 void sscShowTemp(int temp);
@@ -297,14 +297,14 @@ clkDisplayMode ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
 // ===================================================
 
 #if defined(TM1637_DISPLAY)
-#include "display_TM1637.h"
+#include "clkDisplay_TM1637.h"
 #elif defined(LCD_I2C_DISPLAY)
-#include "display_LCD_I2C.h"
+#include "clkDisplay_LCD_I2C.h"
 #elif defined(MAX72XX_7SEGMENT_DISPLAY) || defined(MAX72XX_MATRIX_DISPLAY)
-#include "display_MAX72xx.h"
+#include "clkDisplay_MAX72xx.h"
 #elif defined(WS2812_MATRIX_DISPLAY)
 #include <FastLED.h> // https://github.com/FastLED/FastLED
-#include "display_WS2812.h"
+#include "clkDisplay_WS2812.h"
 #else
 #error "Unknown display specified. Set the supported display in clockSetting.h"
 #endif
@@ -314,16 +314,16 @@ clkDisplayMode ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
 #if __USE_TEMP_DATA__
 #if defined(USE_DS18B20)
 #if defined(ARDUINO_ARCH_RP2040)
-#include "ds1820_new.h"
+#include "clkDS1820_new.h"
 #else
-#include "ds1820.h"
+#include "clkDS1820.h"
 #endif
 #elif defined(USE_NTC)
-#include "ntc.h"
+#include "clkNTC.h"
 #endif
 #endif
 #if defined USE_CLOCK_EVENT
-#include "shClockEvent.h"
+#include "clkClockEvent.h"
 #endif
 
 // ===================================================
@@ -586,9 +586,9 @@ public:
   /**
    * @brief получение текущих даты и времени
    *
-   * @return shDateTime
+   * @return clkDateTime
    */
-  shDateTime getCurrentDateTime();
+  clkDateTime getCurrentDateTime();
 
   /**
    * @brief установка текущего времени
@@ -692,9 +692,9 @@ public:
   /**
    * @brief получение статуса будильника, позволяет отслеживать срабатывание будильника
    *
-   * @return AlarmState 0 - будильник выключен, 1 - будильник включен, 2 - будильник сработал
+   * @return clkAlarmState 0 - будильник выключен, 1 - будильник включен, 2 - будильник сработал
    */
-  AlarmState getAlarmState();
+  clkAlarmState getAlarmState();
 
   /**
    * @brief отключение сигнала сработавшего будильника
@@ -1203,7 +1203,7 @@ void shSimpleClock::setMaxPSP(uint8_t volts, uint32_t milliamps)
 }
 #endif
 
-shDateTime shSimpleClock::getCurrentDateTime()
+clkDateTime shSimpleClock::getCurrentDateTime()
 {
   return (clkClock.getCurTime());
 }
@@ -1262,7 +1262,7 @@ bool shSimpleClock::getOnOffAlarm() { return (clkAlarm.getOnOffAlarm()); }
 
 void shSimpleClock::setOnOffAlarm(bool _state) { clkAlarm.setOnOffAlarm(_state); }
 
-AlarmState shSimpleClock::getAlarmState() { return (clkAlarm.getAlarmState()); }
+clkAlarmState shSimpleClock::getAlarmState() { return (clkAlarm.getAlarmState()); }
 
 void shSimpleClock::buzzerStop()
 {
@@ -3584,7 +3584,7 @@ void sscShowTime(int8_t hour, int8_t minute, bool show_colon)
 }
 
 #if defined(USE_CALENDAR)
-void sscShowDate(shDateTime date)
+void sscShowDate(clkDateTime date)
 {
   static uint8_t n = 0;
 

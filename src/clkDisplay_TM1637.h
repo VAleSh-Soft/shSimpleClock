@@ -1,5 +1,5 @@
 /**
- * @file display_TM1637.h
+ * @file clkDisplay_TM1637.h
  * @author Vladimir Shatalov (valesh-soft@yandex.ru)
  * @brief Модуль, реализующий работу часов с экранами, основанными на драйвере TM1637
  * @version 1.5
@@ -10,7 +10,7 @@
  */
 #pragma once
 #include <Arduino.h>
-#include "shSimpleRTC.h"   
+#include "clkSimpleRTC.h"   
 #include <TM1637Display.h> // https://github.com/avishorp/TM1637
 
 #if defined(__STM32F1__)
@@ -21,9 +21,9 @@
 #define BIT_DELAY 100ul
 #endif
 
-// ==== DisplayTM1637 ================================
+// ==== clkDisplayTM1637 ================================
 
-class DisplayTM1637 : public TM1637Display
+class clkDisplayTM1637 : public TM1637Display
 {
 private:
   uint8_t data[4];
@@ -33,7 +33,7 @@ private:
   uint8_t br = 0;
 
 public:
-  DisplayTM1637(uint8_t clk_pin, uint8_t dat_pin) : TM1637Display(clk_pin, dat_pin, BIT_DELAY)
+  clkDisplayTM1637(uint8_t clk_pin, uint8_t dat_pin) : TM1637Display(clk_pin, dat_pin, BIT_DELAY)
   {
     clear();
   }
@@ -87,7 +87,7 @@ public:
   uint8_t getBrightness();
 };
 
-void DisplayTM1637::clear()
+void clkDisplayTM1637::clear()
 {
   for (uint8_t i = 0; i < 4; i++)
   {
@@ -95,13 +95,13 @@ void DisplayTM1637::clear()
   }
 }
 
-void DisplayTM1637::sleep()
+void clkDisplayTM1637::sleep()
 {
   clear();
   TM1637Display::setSegments(data);
 }
 
-void DisplayTM1637::setDispData(uint8_t _index, uint8_t _data)
+void clkDisplayTM1637::setDispData(uint8_t _index, uint8_t _data)
 {
   if (_index < 4)
   {
@@ -109,12 +109,12 @@ void DisplayTM1637::setDispData(uint8_t _index, uint8_t _data)
   }
 }
 
-uint8_t DisplayTM1637::getDispData(uint8_t _index)
+uint8_t clkDisplayTM1637::getDispData(uint8_t _index)
 {
   return ((_index < 4) ? data[_index] : 0);
 }
 
-void DisplayTM1637::show()
+void clkDisplayTM1637::show()
 {
   bool flag = false;
   for (uint8_t i = 0; i < 4; i++)
@@ -141,17 +141,17 @@ void DisplayTM1637::show()
   }
 }
 
-void DisplayTM1637::setBrightness(uint8_t brightness)
+void clkDisplayTM1637::setBrightness(uint8_t brightness)
 {
   _brightness = (brightness <= 7) ? brightness : 7;
   TM1637Display::setBrightness(brightness, true);
 }
 
-uint8_t DisplayTM1637::getBrightness()
+uint8_t clkDisplayTM1637::getBrightness()
 {
   return _brightness;
 }
 
 // ===================================================
 
-DisplayTM1637 clkDisplay(DISPLAY_CLK_PIN, DISPLAY_DAT_PIN);
+clkDisplayTM1637 clkDisplay(DISPLAY_CLK_PIN, DISPLAY_DAT_PIN);
