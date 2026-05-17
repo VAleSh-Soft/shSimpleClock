@@ -488,11 +488,21 @@ public:
    * @brief установка типа кнопки; действительно только для дополнительных кнопок
    *
    * @param _btn идентификатор кнопки, может иметь значение: CLK_BTN_ADD1, CLK_BTN_ADD2; остальные значения игнорируются
-   * @param _btn_type используемых кнопок; возможные варианты:
-   *                                       BTN_NO - кнопка с нормально разомкнутыми контактами;
-   *                                       BTN_NC - кнопка с нормально замкнутыми контактами;
+   * @param _btn_type тип кнопки; возможные варианты:
+   *                      BTN_NO - кнопка с нормально разомкнутыми контактами
+   *                      BTN_NC - кнопка с нормально замкнутыми контактами
    */
   void setAddButtonType(clkButtonType _btn, uint8_t _btn_type);
+
+  /**
+   * @brief установка типа подключения кнопки; действительно только для дополнительных кнопок
+   *
+   * @param _btn идентификатор кнопки, может иметь значение: CLK_BTN_ADD1, CLK_BTN_ADD2; остальные значения игнорируются
+   * @param _btn_input_type тип подключения кнопки; возможные варианты:
+   *                            PULL_UP - кнопка подтянута к VCC;
+   *                            PULL_DOWN - кнопка подтянута к GND;
+   */
+  void setAddButtonInputType(clkButtonType _btn, uint8_t _btn_input_type);
 
   /**
    * @brief установка временных интервалов кнопки; действительно только для дополнительных кнопок
@@ -1119,6 +1129,14 @@ void shSimpleClock::setAddButtonType(clkButtonType _btn, uint8_t _btn_type)
   if (_btn == CLK_BTN_ADD1 || _btn == CLK_BTN_ADD2)
   {
     clkButtons.setBtnType(_btn, _btn_type);
+  }
+}
+
+void shSimpleClock::setAddButtonInputType(clkButtonType _btn, uint8_t _btn_input_type)
+{
+  if (_btn == CLK_BTN_ADD1 || _btn == CLK_BTN_ADD2)
+  {
+    clkButtons.setBtnInputType(_btn, _btn_input_type);
   }
 }
 

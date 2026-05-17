@@ -112,6 +112,8 @@ public:
 
   void setButtonType(uint8_t btn_type);
 
+  void setButtonInputType(uint8_t btn_type);
+
 #if (BTN_ADD1_PIN >= 0) || (BTN_ADD2_PIN >= 0)
   void setButtonTimeouts(uint8_t _timeout_of_debounce,
                          uint8_t _timeout_of_dblclick);
@@ -233,8 +235,8 @@ clkButton::clkButton(uint8_t pin, bool serial_mode)
 {
   _PIN = pin;
   setFlag(INPUTTYPE_BIT, BTN_INPUT_TYPE);
-  setButtonType(BTN_INPUT_TYPE);
-  setFlag(BTNTYPE_BIT, BTN_TYPE);
+  setButtonInputType(BTN_INPUT_TYPE);
+  setButtonType(BTN_TYPE);
   if (serial_mode)
   {
     _longclick_mode = LCM_CLICKSERIES;
@@ -242,6 +244,11 @@ clkButton::clkButton(uint8_t pin, bool serial_mode)
 }
 
 void clkButton::setButtonType(uint8_t btn_type)
+{
+  setFlag(BTNTYPE_BIT, btn_type);
+}
+
+void clkButton::setButtonInputType(uint8_t btn_type)
 {
   (btn_type == PULL_UP) ? pinMode(_PIN, INPUT_PULLUP) : pinMode(_PIN, INPUT);
 }
@@ -434,6 +441,8 @@ public:
 #if (BTN_ADD1_PIN >= 0) || (BTN_ADD2_PIN >= 0)
   void setBtnType(clkButtonType _btn, uint8_t _type);
 
+  void setBtnInputType(clkButtonType _btn, uint8_t _input_type);
+
   void setBtnTimeoutSet(clkButtonType _btn,
                         uint8_t _timeout_of_debounce,
                         uint8_t _timeout_of_dblclick);
@@ -497,6 +506,14 @@ void clkButtonGroup::setBtnType(clkButtonType _btn, uint8_t _type)
   if (isValidButton(_btn))
   {
     buttons[(uint8_t)_btn]->setButtonType(_type);
+  }
+}
+
+void clkButtonGroup::setBtnInputType(clkButtonType _btn, uint8_t _input_type)
+{
+  if (isValidButton(_btn))
+  {
+    buttons[(uint8_t)_btn]->setButtonInputType(_input_type);
   }
 }
 
