@@ -80,8 +80,7 @@
 
 // используется ли EEPROM на флеш-памяти (esp32, esp8266, rp2040):
 //   - задействованы ли сохраняемые в EEPROM параметры
-#if (__USE_ARDUINO_ESP__ || defined(ARDUINO_ARCH_RP2040)) && \
-    (__USE_OTHER_SETTING__ || __USE_ON_OFF_DATA__)
+#if (__USE_ARDUINO_ESP__ || defined(ARDUINO_ARCH_RP2040))
 #define __USE_EEPROM_IN_FLASH__ 1
 #define EEPROM_SIZE 256
 #else
