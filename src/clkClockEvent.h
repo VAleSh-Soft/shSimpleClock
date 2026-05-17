@@ -1,11 +1,11 @@
 #pragma once
 
-typedef void (*sceCallback)(void); // тип - указатель для Callback-функции
+typedef void (*clkEventCallback)(void); // тип - указатель для Callback-функции
 
 class clkClockEvent
 {
 private:
-  sceCallback callback;
+  clkEventCallback callback;
   uint16_t count = 0;
   uint16_t index = 0;
   bool state = false;
@@ -13,9 +13,9 @@ private:
 public:
   clkClockEvent();
 
-  void init(uint16_t _interval, sceCallback _callback, bool _active = true);
+  void init(uint16_t _interval, clkEventCallback _callback, bool _active = true);
 
-  void init(sceCallback _callback, bool _active = true);
+  void init(clkEventCallback _callback, bool _active = true);
 
   // ~clkClockEvent();
 
@@ -28,7 +28,7 @@ public:
 
 clkClockEvent::clkClockEvent() {}
 
-void clkClockEvent::init(uint16_t _interval, sceCallback _callback, bool _active)
+void clkClockEvent::init(uint16_t _interval, clkEventCallback _callback, bool _active)
 {
   index = 0;
   count = _interval;
@@ -36,7 +36,7 @@ void clkClockEvent::init(uint16_t _interval, sceCallback _callback, bool _active
   callback = _callback;
 }
 
-void clkClockEvent::init(sceCallback _callback, bool _active)
+void clkClockEvent::init(clkEventCallback _callback, bool _active)
 {
   index = 0;
   count = 1;

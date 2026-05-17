@@ -439,7 +439,7 @@ public:
    * @param _active статус события - активно/не активно
    */
   void setClockEvent(uint16_t _interval,
-                     sceCallback _callback,
+                     clkEventCallback _callback,
                      bool _active = true);
 
   /**
@@ -634,7 +634,7 @@ public:
    * @param _callback вызываемая функция
    * @param _active статус события - активно/не активно
    */
-  void setAlarmEvent(sceCallback _callback, bool _active = true);
+  void setAlarmEvent(clkEventCallback _callback, bool _active = true);
 
   /**
    * @brief установить статус события будильника
@@ -1097,7 +1097,7 @@ void shSimpleClock::printTextForScreen(uint8_t _col, uint8_t _line, const char *
 
 #if defined USE_CLOCK_EVENT
 void shSimpleClock::setClockEvent(uint16_t _interval,
-                                  sceCallback _callback,
+                                  clkEventCallback _callback,
                                   bool _active)
 {
   sscClockEvent.init(_interval, _callback, _active);
@@ -1239,7 +1239,7 @@ int8_t shSimpleClock::getTemperature()
 #if defined(USE_ALARM)
 
 #if defined USE_CLOCK_EVENT
-void shSimpleClock::setAlarmEvent(sceCallback _callback, bool _active)
+void shSimpleClock::setAlarmEvent(clkEventCallback _callback, bool _active)
 {
   sscAlarmEvent.init(_callback, _active);
 }

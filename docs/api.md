@@ -445,7 +445,7 @@ void setAddButtonInputType(clkButtonType _btn, uint8_t _btn_input_type);
 
 Библиотека позволяет задавать callback-функции на ежесекундное событие и событие будильника. Ежесекундное событие, как следует из его названия, происходит каждый раз при смене секунды. К нему относятся методы:
 ```
-void setClockEvent(uint16_t _interval, sceCallback _callback, bool _active = true);
+void setClockEvent(uint16_t _interval, clkEventCallback _callback, bool _active = true);
 ```
 задает функцию `_callback`, которая будет вызываться через каждые `_interval` секунд, если `_active == true`.
 
@@ -461,7 +461,7 @@ void getClockEventState();
 
 Событие будильника происходит каждый раз при его срабатывании. К нему относятся методы:
 ```
-void setAlarmEvent(sceCallback _callback, bool _active = true);
+void setAlarmEvent(clkEventCallback _callback, bool _active = true);
 ```
 задает функцию `_callback`, которая будет вызываться при срабатывании будильника, если `_active == true`.
 

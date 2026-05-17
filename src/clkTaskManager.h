@@ -5,8 +5,8 @@
  * @brief диспетчер задач;
  *        полная версия здесь - https://github.com/VAleSh-Soft/shTaskManager
  *
- * @version 1.5
- * @date 01.05.2024
+ * @version 1.6
+ * @date 17.05.2026
  *
  * @copyright Copyright (c) 2024
  *
@@ -15,16 +15,16 @@
 
 // ==== clkTaskManager ===============================
 
-typedef void (*clkCallback)(void); // тип - указатель для Callback-функции
-typedef int8_t clkHandle;          // тип - идентификатор задачи
+typedef void (*clkTaskManagerCallback)(void); // тип - указатель для Callback-функции
+typedef int8_t clkHandle;                     // тип - идентификатор задачи
 static const clkHandle CLK_INVALID_HANDLE = -1;
 
 struct clkTask // структура, описывающая задачу
 {
-  bool status;            // статус задачи
-  unsigned long timer;    // таймер задачи
-  unsigned long interval; // интервал срабатывания задачи
-  clkCallback callback;   // функция, вызываемая при срабатывании таймера задачи
+  bool status;                     // статус задачи
+  unsigned long timer;             // таймер задачи
+  unsigned long interval;          // интервал срабатывания задачи
+  clkTaskManagerCallback callback; // функция, вызываемая при срабатывании таймера задачи
 };
 
 class clkTaskManager
@@ -67,7 +67,7 @@ public:
 
   void tick();
 
-  clkHandle addTask(unsigned long _interval, clkCallback _callback, bool isActive = true);
+  clkHandle addTask(unsigned long _interval, clkTaskManagerCallback _callback, bool isActive = true);
 
   void startTask(clkHandle _handle);
 
@@ -102,7 +102,7 @@ void clkTaskManager::tick()
 {
   for (uint8_t i = 0; i < TASKCOUNT; i++)
   {
-   unsigned long now = millis();
+    unsigned long now = millis();
     if (taskList[i].status && taskList[i].callback != NULL)
     {
       if (now - taskList[i].timer >= taskList[i].interval)
@@ -114,7 +114,7 @@ void clkTaskManager::tick()
   }
 }
 
-clkHandle clkTaskManager::addTask(unsigned long _interval, clkCallback _callback, bool isActive)
+clkHandle clkTaskManager::addTask(unsigned long _interval, clkTaskManagerCallback _callback, bool isActive)
 {
   for (uint8_t i = 0; i < TASKCOUNT; i++)
   {
