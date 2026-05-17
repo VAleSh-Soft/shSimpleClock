@@ -9,8 +9,8 @@
  *               объявления библиотеки shSimpleClock.h (см. скетч ниже)
  *
  *        Использование кнопки: - одиночный клик - включение/выключение будильника;
- *                              - двойной клик - вход в режим настройки времени
- *                                срабатывания будильника.
+ *                              - удержание кнопки нажатой - вход в режим настройки
+ *                                времени срабатывания будильника.
  *
  * @version 1.0
  * @date 13.05.2026
@@ -35,7 +35,7 @@ void clk_btn_add1()
     Serial.println(simple_clock.getOnOffAlarm() ? "ON" : "OFF");
     break;
   // двойной клик - вход в режим настройки времени срабатывания будильника
-  case BTN_DBLCLICK:
+  case BTN_LONGCLICK:
     simple_clock.setDisplayMode(DISPLAY_MODE_SET_ALARM_HOUR);
     Serial.println("The alarm time setting mode has been started");
     break;

@@ -469,7 +469,7 @@ public:
   /**
    * @brief получить флаг кнопки
    *
-   * @param _btn идентификатор кнопки, может иметь значение: CLK_BTN_SET, CLK_BTN_UP, CLK_BTN_DOWN;
+   * @param _btn идентификатор кнопки, может иметь значение: CLK_BTN_SET, CLK_BTN_UP, CLK_BTN_DOWN, CLK_BTN_ADD1, CLK_BTN_ADD2;
    * @param _clear если true, то флаг кнопки после считывания будет очищен (установлено значение CLK_BTN_FLAG_NONE);
    * @return clkButtonFlag возможные варианты: CLK_BTN_FLAG_NONE, CLK_BTN_FLAG_NEXT, CLK_BTN_FLAG_EXIT
    */
@@ -478,10 +478,46 @@ public:
   /**
    * @brief установить флаг кнопки
    *
-   * @param _btn  идентификатор кнопки, может иметь значение: CLK_BTN_SET, CLK_BTN_UP, CLK_BTN_DOWN;
+   * @param _btn  идентификатор кнопки, может иметь значение: CLK_BTN_SET, CLK_BTN_UP, CLK_BTN_DOWN, CLK_BTN_ADD1, CLK_BTN_ADD2;
    * @param _flag устанавливаемый флаг; возможные варианты: CLK_BTN_FLAG_NONE, CLK_BTN_FLAG_NEXT, CLK_BTN_FLAG_EXIT
    */
   void setButtonFlag(clkButtonType _btn, clkButtonFlag _flag);
+
+#if (BTN_ADD1_PIN >= 0) || (BTN_ADD2_PIN >= 0)
+  /**
+   * @brief установка типа кнопки; действительно только для дополнительных кнопок
+   *
+   * @param _btn идентификатор кнопки, может иметь значение: CLK_BTN_ADD1, CLK_BTN_ADD2; остальные значения игнорируются
+   * @param _btn_type используемых кнопок; возможные варианты:
+   *                                       BTN_NO - кнопка с нормально разомкнутыми контактами;
+   *                                       BTN_NC - кнопка с нормально замкнутыми контактами;
+   */
+  void setAddButtonType(clkButtonType _btn, uint8_t _btn_type);
+
+  /**
+   * @brief установка временных интервалов кнопки; действительно только для дополнительных кнопок
+   *
+   * @param _btn идентификатор кнопки, может иметь значение: CLK_BTN_ADD1, CLK_BTN_ADD2; остальные значения игнорируются
+   * @param timeout_of_debounce интервал антидребезга, мс
+   * @param _timeout_of_dblclick интервал двойного клика, мс
+   */
+  void setAddButtonTimeoutSet(clkButtonType _btn,
+                              uint8_t _timeout_of_debounce,
+                              uint8_t _timeout_of_dblclick = TIMEOUT_OF_DBLCLICK);
+
+  /**
+   * @brief настройка параметров удержания кнопки нажатой; действительно только для дополнительных кнопок
+   *
+   * @param _btn идентификатор кнопки, может иметь значение: CLK_BTN_ADD1, CLK_BTN_ADD2; остальные значения игнорируются
+   * @param _serial_on включение/выключение режима выдачи события BTN_LONGCLICK через заданные интервалы времени после окончания времени удержания кнопки нажатой
+   * @param _timeout_of_longclick время удержания кнопки нажатой до выдачи события BTN_LONGCLICK, мс
+   * @param _interval_of_serial интервал выдачи событий BTN_LONGCLICK при удержании кнопки нажатой, мс; задавать значение, кратное 50
+   */
+  void setAddButtonLongClickSet(clkButtonType _btn,
+                                bool _serial_on,
+                                uint8_t _timeout_of_longclick = TIMEOUT_OF_LONGCLICK,
+                                uint8_t _interval_of_serial = INTERVAL_OF_SERIAL);
+#endif
 
 #if defined(MAX72XX_MATRIX_DISPLAY)
   /**
@@ -1076,6 +1112,37 @@ void shSimpleClock::setButtonFlag(clkButtonType _btn, clkButtonFlag _flag)
 {
   clkButtons.setButtonFlag(_btn, _flag);
 }
+
+#if (BTN_ADD1_PIN >= 0) || (BTN_ADD2_PIN >= 0)
+void shSimpleClock::setAddButtonType(clkButtonType _btn, uint8_t _btn_type)
+{
+  if (_btn == CLK_BTN_ADD1 || _btn == CLK_BTN_ADD2)
+  {
+    clkButtons.setBtnType(_btn, _btn_type);
+  }
+}
+
+void shSimpleClock::setAddButtonTimeoutSet(clkButtonType _btn,
+                                           uint8_t _timeout_of_debounce,
+                                           uint8_t _timeout_of_dblclick = TIMEOUT_OF_DBLCLICK)
+{
+  if (_btn == CLK_BTN_ADD1 || _btn == CLK_BTN_ADD2)
+  {
+    clkButtons.setBtnTimeoutSet(_btn, _timeout_of_debounce, _timeout_of_dblclick);
+  }
+}
+
+void shSimpleClock::setAddButtonLongClickSet(clkButtonType _btn,
+                                             bool _serial_on,
+                                             uint8_t _timeout_of_longclick = TIMEOUT_OF_LONGCLICK,
+                                             uint8_t _interval_of_serial = INTERVAL_OF_SERIAL)
+{
+  if (_btn == CLK_BTN_ADD1 || _btn == CLK_BTN_ADD2)
+  {
+    clkButtons.setBtnLongClickSet(_btn, _serial_on, _timeout_of_longclick, _interval_of_serial);
+  }
+}
+#endif
 
 #if defined(MAX72XX_MATRIX_DISPLAY)
 void shSimpleClock::setMatrixDirection(uint8_t _dir)
