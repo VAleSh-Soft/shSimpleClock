@@ -80,8 +80,7 @@
 
 // используется ли EEPROM на флеш-памяти (esp32, esp8266, rp2040):
 //   - задействованы ли сохраняемые в EEPROM параметры
-#if (__USE_ARDUINO_ESP__ || defined(ARDUINO_ARCH_RP2040)) && \
-    (__USE_OTHER_SETTING__ || __USE_ON_OFF_DATA__)
+#if (__USE_ARDUINO_ESP__ || defined(ARDUINO_ARCH_RP2040))
 #define __USE_EEPROM_IN_FLASH__ 1
 #define EEPROM_SIZE 256
 #else
@@ -1142,7 +1141,7 @@ void shSimpleClock::setAddButtonInputType(clkButtonType _btn, uint8_t _btn_input
 
 void shSimpleClock::setAddButtonTimeoutSet(clkButtonType _btn,
                                            uint8_t _timeout_of_debounce,
-                                           uint8_t _timeout_of_dblclick = TIMEOUT_OF_DBLCLICK)
+                                           uint8_t _timeout_of_dblclick)
 {
   if (_btn == CLK_BTN_ADD1 || _btn == CLK_BTN_ADD2)
   {
@@ -1152,8 +1151,8 @@ void shSimpleClock::setAddButtonTimeoutSet(clkButtonType _btn,
 
 void shSimpleClock::setAddButtonLongClickSet(clkButtonType _btn,
                                              bool _serial_on,
-                                             uint8_t _timeout_of_longclick = TIMEOUT_OF_LONGCLICK,
-                                             uint8_t _interval_of_serial = INTERVAL_OF_SERIAL)
+                                             uint8_t _timeout_of_longclick,
+                                             uint8_t _interval_of_serial)
 {
   if (_btn == CLK_BTN_ADD1 || _btn == CLK_BTN_ADD2)
   {
