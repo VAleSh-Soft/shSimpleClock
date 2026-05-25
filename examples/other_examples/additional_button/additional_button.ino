@@ -12,8 +12,8 @@
  *                              - удержание кнопки нажатой - вход в режим настройки
  *                                времени срабатывания будильника.
  *
- * @version 1.0
- * @date 13.05.2026
+ * @version 1.1
+ * @date 25.05.2026
  *
  * @copyright Copyright (c) 2026
  *
@@ -36,9 +36,12 @@ void clk_btn_add1()
     break;
   // двойной клик - вход в режим настройки времени срабатывания будильника
   case BTN_LONGCLICK:
-    simple_clock.setDisplayMode(DISPLAY_MODE_SET_ALARM_HOUR);
-    Serial.println("The alarm time setting mode has been started");
-    break;
+    if (simple_clock.getDisplayMode() == DISPLAY_MODE_SHOW_TIME)
+    {
+      simple_clock.setDisplayMode(DISPLAY_MODE_SET_ALARM_HOUR);
+      Serial.println("The alarm time setting mode has been started");
+      break;
+    }
   }
 }
 
