@@ -50,6 +50,7 @@ setClockEvent	 KEYWORD2
 setClockEventState	 KEYWORD2
 getClockEventState	 KEYWORD2
 getButtonState	 KEYWORD2
+resetButtonState	 KEYWORD2
 getButtonFlag	 KEYWORD2
 setButtonFlag	 KEYWORD2
 setAddButtonType	 KEYWORD2

@@ -458,6 +458,13 @@ public:
 #endif
 
   /**
+   * @brief сбросить текущее состояние кнопки
+   *
+   * @param _btn идентификатор кнопки, может иметь значение: CLK_BTN_SET, CLK_BTN_UP, CLK_BTN_DOWN, CLK_BTN_ADD1, CLK_BTN_ADD2;
+   */
+  void resetButtonState(clkButtonType _btn);
+
+  /**
    * @brief получить текущее состояние или событие кнопки
    *
    * @param _btn идентификатор кнопки, может иметь значение: CLK_BTN_SET, CLK_BTN_UP, CLK_BTN_DOWN, CLK_BTN_ADD1, CLK_BTN_ADD2;
@@ -1106,6 +1113,11 @@ void shSimpleClock::setClockEventState(bool _state) { sscClockEvent.setState(_st
 
 bool shSimpleClock::getClockEventState() { return sscClockEvent.getState(); }
 #endif
+
+void shSimpleClock::resetButtonState(clkButtonType _btn)
+{
+  clkButtons.resetButtonState(_btn);
+}
 
 uint8_t shSimpleClock::getButtonState(clkButtonType _btn)
 {
