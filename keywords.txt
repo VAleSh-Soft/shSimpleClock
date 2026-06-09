@@ -42,6 +42,7 @@ clkHandle	KEYWORD1
 setADCbitDepth	 KEYWORD2
 init	 KEYWORD2
 tick	 KEYWORD2
+getBlink	 KEYWORD2
 getDisplayMode	 KEYWORD2
 setDisplayMode	 KEYWORD2
 setBacklightState	 KEYWORD2
@@ -51,6 +52,7 @@ setClockEventState	 KEYWORD2
 getClockEventState	 KEYWORD2
 getButtonState	 KEYWORD2
 resetButtonState	 KEYWORD2
+isButtonClosed	 KEYWORD2
 getButtonFlag	 KEYWORD2
 setButtonFlag	 KEYWORD2
 setAddButtonType	 KEYWORD2

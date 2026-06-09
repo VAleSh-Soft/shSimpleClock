@@ -398,6 +398,14 @@ public:
   void tick();
 
   /**
+   * @brief получение текущего состояния блинка часов
+   *
+   * @return true
+   * @return false
+   */
+  bool getBlink();
+
+  /**
    * @brief получить текущий режим экрана часов
    *
    * @return clkDisplayMode
@@ -463,6 +471,13 @@ public:
    * @param _btn идентификатор кнопки, может иметь значение: CLK_BTN_SET, CLK_BTN_UP, CLK_BTN_DOWN, CLK_BTN_ADD1, CLK_BTN_ADD2;
    */
   void resetButtonState(clkButtonType _btn);
+
+  /**
+   * @brief возвращает true, если по результатам последнего опроса кнопка нажата
+   *
+   * @param _btn идентификатор кнопки, может иметь значение: CLK_BTN_SET, CLK_BTN_UP, CLK_BTN_DOWN, CLK_BTN_ADD1, CLK_BTN_ADD2;
+   */
+  bool isButtonClosed(clkButtonType _btn);
 
   /**
    * @brief получить текущее состояние или событие кнопки
@@ -1081,6 +1096,8 @@ void shSimpleClock::tick()
   }
 }
 
+bool shSimpleClock::getBlink() { return sscBlinkFlag; }
+
 clkDisplayMode shSimpleClock::getDisplayMode() { return ssc_display_mode; }
 
 void shSimpleClock::setDisplayMode(clkDisplayMode _mode) { ssc_display_mode = _mode; }
@@ -1117,6 +1134,11 @@ bool shSimpleClock::getClockEventState() { return sscClockEvent.getState(); }
 void shSimpleClock::resetButtonState(clkButtonType _btn)
 {
   clkButtons.resetButtonState(_btn);
+}
+
+bool shSimpleClock::isButtonClosed(clkButtonType _btn)
+{
+  return clkButtons.isButtonClosed(_btn);
 }
 
 uint8_t shSimpleClock::getButtonState(clkButtonType _btn)
