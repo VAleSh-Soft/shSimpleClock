@@ -825,6 +825,64 @@ public:
 #endif
 
 #endif
+
+  /**
+   * @brief увеличение списка задач для добавления дополнительных
+   *        пользовательских задач
+   *
+   * @param _add_task количество пользовательских задач, которые будут
+   *                  добавлены в список
+   */
+  void setAdditionalTaskCount(uint8_t _add_task);
+
+  /**
+   * @brief добавление пользовательской задачи в список диспетчера задач
+   *
+   * @param _interval интервал срабатывания задачи в милисекундах
+   * @param _callback функция, которая будет вызываться при срабатывании задачи
+   *                  функция не должна принимать никаких аргументов и не должна 
+   *                  возвращать никаких значений
+   * @param isActive активна ли задача с момента добавления или будет запущена потом
+   * @return shHandle, идентификатор задачи в списке в случае успешного добавления 
+   *                   ее в список или -1 в случае неудачи
+   */
+  clkHandle addAdditionalTask(unsigned long _interval,
+                              clkTaskManagerCallback _callback,
+                              bool isActive = true);
+
+  /**
+   * @brief запуск пользовательской задачи;
+   *
+   * @param _handle идентификатор запускаемой задачи;
+   */
+  void startAdditionalTask(clkHandle _handle);
+
+  /**
+   * @brief остановка пользовательской задачи;
+   *
+   * @param _handle идентификатор останавливаемой задачи;
+   */
+  void stopAdditionalTask(clkHandle _handle);
+
+  /**
+   * @brief получение статуса пользовательской задачи;
+   *
+   * @param _handle идентификатор задачи;
+   * @return true, задача активна (выполняется);
+   * @return false, задача неактивна (остановлена) или не существует;
+   */
+  bool getAdditionalTaskState(clkHandle _handle);
+
+  /**
+   * @brief установка нового интервала срабатывания пользовательской задачи;
+   *
+   * @param _handle идентификатор задачи;
+   * @param _interval новое значение интервала срабатывания задачи;
+   * @param _restart перезапускать или нет задачу с новым интервалом;
+   */
+  void setAdditionalTaskInterval(clkHandle _handle,
+                                 unsigned long _interval,
+                                 bool _restart = true);
 };
 
 // ---- shSimpleClock private -------------------
@@ -1392,6 +1450,40 @@ bool shSimpleClock::getSecondColumnState()
 #endif
 
 #endif
+
+void shSimpleClock::setAdditionalTaskCount(uint8_t _add_task)
+{
+  clkTasks.setAddTaskCount(_add_task);
+}
+
+clkHandle shSimpleClock::addAdditionalTask(unsigned long _interval,
+                                           clkTaskManagerCallback _callback,
+                                           bool isActive)
+{
+  return clkTasks.addTask(_interval, _callback, isActive);
+}
+
+void shSimpleClock::startAdditionalTask(clkHandle _handle)
+{
+  clkTasks.startTask(_handle);
+}
+
+void shSimpleClock::stopAdditionalTask(clkHandle _handle)
+{
+  clkTasks.stopTask(_handle);
+}
+
+bool shSimpleClock::getAdditionalTaskState(clkHandle _handle)
+{
+  return clkTasks.getTaskState(_handle);
+}
+
+void shSimpleClock::setAdditionalTaskInterval(clkHandle _handle,
+                                              unsigned long _interval,
+                                              bool _restart)
+{
+  clkTasks.setTaskInterval(_handle, _interval, _restart);
+}
 
 // ==== end shSimpleClock ============================
 

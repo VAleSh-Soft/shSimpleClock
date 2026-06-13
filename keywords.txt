@@ -93,6 +93,12 @@ setIntervalForAutoShowData	 KEYWORD2
 getIntervalForAutoShowData	 KEYWORD2
 setSecondColumnState	 KEYWORD2
 getSecondColumnState	 KEYWORD2
+setAdditionalTaskCount	 KEYWORD2
+addAdditionalTask	 KEYWORD2
+startAdditionalTask	 KEYWORD2
+stopAdditionalTask	 KEYWORD2
+getAdditionalTaskState	 KEYWORD2
+setAdditionalTaskInterval	 KEYWORD2
 
 #######################################
 # Constants (LITERAL1)
