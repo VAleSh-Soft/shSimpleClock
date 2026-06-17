@@ -19,7 +19,6 @@
  *                              адресных светодиодов
  *   LCD_I2C_DISPLAY          - текстовый двух- (четырех-)строчный LCD экран,
  *                              подключаемый по I2C
- *   CUSTOM_DISPLAY           - пользовательский экран
  */
 
 #define MAX72XX_7SEGMENT_DISPLAY 
