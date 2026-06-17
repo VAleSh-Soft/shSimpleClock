@@ -80,8 +80,7 @@
 
 // используется ли EEPROM на флеш-памяти (esp32, esp8266, rp2040):
 //   - задействованы ли сохраняемые в EEPROM параметры
-#if (__USE_ARDUINO_ESP__ || defined(ARDUINO_ARCH_RP2040)) && \
-    (__USE_OTHER_SETTING__ || __USE_ON_OFF_DATA__)
+#if (__USE_ARDUINO_ESP__ || defined(ARDUINO_ARCH_RP2040))
 #define __USE_EEPROM_IN_FLASH__ 1
 #define EEPROM_SIZE 256
 #else
@@ -98,7 +97,7 @@
 #include <avr/pgmspace.h>
 #endif
 #include "_eeprom.h"
-#include "shSimpleRTC.h"
+#include "clkSimpleRTC.h"
 #include "clkTaskManager.h"
 #include "clkButtons.h"
 
@@ -281,7 +280,7 @@ void sscSetTag(clkDataType _type);
 void sscSetOnOffData(clkDataType _type, bool _state, bool _blink);
 void sscShowTime(int8_t hour, int8_t minute, bool show_colon);
 #if defined(USE_CALENDAR)
-void sscShowDate(shDateTime date);
+void sscShowDate(clkDateTime date);
 #endif
 #if __USE_TEMP_DATA__
 void sscShowTemp(int temp);
@@ -297,14 +296,14 @@ clkDisplayMode ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
 // ===================================================
 
 #if defined(TM1637_DISPLAY)
-#include "display_TM1637.h"
+#include "clkDisplay_TM1637.h"
 #elif defined(LCD_I2C_DISPLAY)
-#include "display_LCD_I2C.h"
+#include "clkDisplay_LCD_I2C.h"
 #elif defined(MAX72XX_7SEGMENT_DISPLAY) || defined(MAX72XX_MATRIX_DISPLAY)
-#include "display_MAX72xx.h"
+#include "clkDisplay_MAX72xx.h"
 #elif defined(WS2812_MATRIX_DISPLAY)
 #include <FastLED.h> // https://github.com/FastLED/FastLED
-#include "display_WS2812.h"
+#include "clkDisplay_WS2812.h"
 #else
 #error "Unknown display specified. Set the supported display in clockSetting.h"
 #endif
@@ -314,16 +313,16 @@ clkDisplayMode ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
 #if __USE_TEMP_DATA__
 #if defined(USE_DS18B20)
 #if defined(ARDUINO_ARCH_RP2040)
-#include "ds1820_new.h"
+#include "clkDS1820_new.h"
 #else
-#include "ds1820.h"
+#include "clkDS1820.h"
 #endif
 #elif defined(USE_NTC)
-#include "ntc.h"
+#include "clkNTC.h"
 #endif
 #endif
 #if defined USE_CLOCK_EVENT
-#include "shClockEvent.h"
+#include "clkClockEvent.h"
 #endif
 
 // ===================================================
@@ -399,6 +398,14 @@ public:
   void tick();
 
   /**
+   * @brief получение текущего состояния блинка часов
+   *
+   * @return true
+   * @return false
+   */
+  bool getBlink();
+
+  /**
    * @brief получить текущий режим экрана часов
    *
    * @return clkDisplayMode
@@ -439,7 +446,7 @@ public:
    * @param _active статус события - активно/не активно
    */
   void setClockEvent(uint16_t _interval,
-                     sceCallback _callback,
+                     clkEventCallback _callback,
                      bool _active = true);
 
   /**
@@ -459,9 +466,23 @@ public:
 #endif
 
   /**
+   * @brief сбросить текущее состояние кнопки
+   *
+   * @param _btn идентификатор кнопки, может иметь значение: CLK_BTN_SET, CLK_BTN_UP, CLK_BTN_DOWN, CLK_BTN_ADD1, CLK_BTN_ADD2;
+   */
+  void resetButtonState(clkButtonType _btn);
+
+  /**
+   * @brief возвращает true, если по результатам последнего опроса кнопка нажата
+   *
+   * @param _btn идентификатор кнопки, может иметь значение: CLK_BTN_SET, CLK_BTN_UP, CLK_BTN_DOWN, CLK_BTN_ADD1, CLK_BTN_ADD2;
+   */
+  bool isButtonClosed(clkButtonType _btn);
+
+  /**
    * @brief получить текущее состояние или событие кнопки
    *
-   * @param _btn идентификатор кнопки, может иметь значение: CLK_BTN_SET, CLK_BTN_UP, CLK_BTN_DOWN;
+   * @param _btn идентификатор кнопки, может иметь значение: CLK_BTN_SET, CLK_BTN_UP, CLK_BTN_DOWN, CLK_BTN_ADD1, CLK_BTN_ADD2;
    * @return uint8_t
    */
   uint8_t getButtonState(clkButtonType _btn);
@@ -469,7 +490,7 @@ public:
   /**
    * @brief получить флаг кнопки
    *
-   * @param _btn идентификатор кнопки, может иметь значение: CLK_BTN_SET, CLK_BTN_UP, CLK_BTN_DOWN;
+   * @param _btn идентификатор кнопки, может иметь значение: CLK_BTN_SET, CLK_BTN_UP, CLK_BTN_DOWN, CLK_BTN_ADD1, CLK_BTN_ADD2;
    * @param _clear если true, то флаг кнопки после считывания будет очищен (установлено значение CLK_BTN_FLAG_NONE);
    * @return clkButtonFlag возможные варианты: CLK_BTN_FLAG_NONE, CLK_BTN_FLAG_NEXT, CLK_BTN_FLAG_EXIT
    */
@@ -478,10 +499,56 @@ public:
   /**
    * @brief установить флаг кнопки
    *
-   * @param _btn  идентификатор кнопки, может иметь значение: CLK_BTN_SET, CLK_BTN_UP, CLK_BTN_DOWN;
+   * @param _btn  идентификатор кнопки, может иметь значение: CLK_BTN_SET, CLK_BTN_UP, CLK_BTN_DOWN, CLK_BTN_ADD1, CLK_BTN_ADD2;
    * @param _flag устанавливаемый флаг; возможные варианты: CLK_BTN_FLAG_NONE, CLK_BTN_FLAG_NEXT, CLK_BTN_FLAG_EXIT
    */
   void setButtonFlag(clkButtonType _btn, clkButtonFlag _flag);
+
+#if (BTN_ADD1_PIN >= 0) || (BTN_ADD2_PIN >= 0)
+  /**
+   * @brief установка типа кнопки; действительно только для дополнительных кнопок
+   *
+   * @param _btn идентификатор кнопки, может иметь значение: CLK_BTN_ADD1, CLK_BTN_ADD2; остальные значения игнорируются
+   * @param _btn_type тип кнопки; возможные варианты:
+   *                      BTN_NO - кнопка с нормально разомкнутыми контактами
+   *                      BTN_NC - кнопка с нормально замкнутыми контактами
+   */
+  void setAddButtonType(clkButtonType _btn, uint8_t _btn_type);
+
+  /**
+   * @brief установка типа подключения кнопки; действительно только для дополнительных кнопок
+   *
+   * @param _btn идентификатор кнопки, может иметь значение: CLK_BTN_ADD1, CLK_BTN_ADD2; остальные значения игнорируются
+   * @param _btn_input_type тип подключения кнопки; возможные варианты:
+   *                            PULL_UP - кнопка подтянута к VCC;
+   *                            PULL_DOWN - кнопка подтянута к GND;
+   */
+  void setAddButtonInputType(clkButtonType _btn, uint8_t _btn_input_type);
+
+  /**
+   * @brief установка временных интервалов кнопки; действительно только для дополнительных кнопок
+   *
+   * @param _btn идентификатор кнопки, может иметь значение: CLK_BTN_ADD1, CLK_BTN_ADD2; остальные значения игнорируются
+   * @param timeout_of_debounce интервал антидребезга, мс
+   * @param _timeout_of_dblclick интервал двойного клика, мс
+   */
+  void setAddButtonTimeoutSet(clkButtonType _btn,
+                              uint8_t _timeout_of_debounce,
+                              uint8_t _timeout_of_dblclick = TIMEOUT_OF_DBLCLICK);
+
+  /**
+   * @brief настройка параметров удержания кнопки нажатой; действительно только для дополнительных кнопок
+   *
+   * @param _btn идентификатор кнопки, может иметь значение: CLK_BTN_ADD1, CLK_BTN_ADD2; остальные значения игнорируются
+   * @param _serial_on включение/выключение режима выдачи события BTN_LONGCLICK через заданные интервалы времени после окончания времени удержания кнопки нажатой
+   * @param _timeout_of_longclick время удержания кнопки нажатой до выдачи события BTN_LONGCLICK, мс
+   * @param _interval_of_serial интервал выдачи событий BTN_LONGCLICK при удержании кнопки нажатой, мс; задавать значение, кратное 50
+   */
+  void setAddButtonLongClickSet(clkButtonType _btn,
+                                bool _serial_on,
+                                uint8_t _timeout_of_longclick = TIMEOUT_OF_LONGCLICK,
+                                uint8_t _interval_of_serial = INTERVAL_OF_SERIAL);
+#endif
 
 #if defined(MAX72XX_MATRIX_DISPLAY)
   /**
@@ -540,9 +607,9 @@ public:
   /**
    * @brief получение текущих даты и времени
    *
-   * @return shDateTime
+   * @return clkDateTime
    */
-  shDateTime getCurrentDateTime();
+  clkDateTime getCurrentDateTime();
 
   /**
    * @brief установка текущего времени
@@ -588,7 +655,7 @@ public:
    * @param _callback вызываемая функция
    * @param _active статус события - активно/не активно
    */
-  void setAlarmEvent(sceCallback _callback, bool _active = true);
+  void setAlarmEvent(clkEventCallback _callback, bool _active = true);
 
   /**
    * @brief установить статус события будильника
@@ -646,9 +713,9 @@ public:
   /**
    * @brief получение статуса будильника, позволяет отслеживать срабатывание будильника
    *
-   * @return AlarmState 0 - будильник выключен, 1 - будильник включен, 2 - будильник сработал
+   * @return clkAlarmState 0 - будильник выключен, 1 - будильник включен, 2 - будильник сработал
    */
-  AlarmState getAlarmState();
+  clkAlarmState getAlarmState();
 
   /**
    * @brief отключение сигнала сработавшего будильника
@@ -758,6 +825,64 @@ public:
 #endif
 
 #endif
+
+  /**
+   * @brief увеличение списка задач для добавления дополнительных
+   *        пользовательских задач
+   *
+   * @param _add_task количество пользовательских задач, которые будут
+   *                  добавлены в список
+   */
+  void setAdditionalTaskCount(uint8_t _add_task);
+
+  /**
+   * @brief добавление пользовательской задачи в список диспетчера задач
+   *
+   * @param _interval интервал срабатывания задачи в милисекундах
+   * @param _callback функция, которая будет вызываться при срабатывании задачи
+   *                  функция не должна принимать никаких аргументов и не должна 
+   *                  возвращать никаких значений
+   * @param isActive активна ли задача с момента добавления или будет запущена потом
+   * @return shHandle, идентификатор задачи в списке в случае успешного добавления 
+   *                   ее в список или -1 в случае неудачи
+   */
+  clkHandle addAdditionalTask(unsigned long _interval,
+                              clkTaskManagerCallback _callback,
+                              bool isActive = true);
+
+  /**
+   * @brief запуск пользовательской задачи;
+   *
+   * @param _handle идентификатор запускаемой задачи;
+   */
+  void startAdditionalTask(clkHandle _handle);
+
+  /**
+   * @brief остановка пользовательской задачи;
+   *
+   * @param _handle идентификатор останавливаемой задачи;
+   */
+  void stopAdditionalTask(clkHandle _handle);
+
+  /**
+   * @brief получение статуса пользовательской задачи;
+   *
+   * @param _handle идентификатор задачи;
+   * @return true, задача активна (выполняется);
+   * @return false, задача неактивна (остановлена) или не существует;
+   */
+  bool getAdditionalTaskState(clkHandle _handle);
+
+  /**
+   * @brief установка нового интервала срабатывания пользовательской задачи;
+   *
+   * @param _handle идентификатор задачи;
+   * @param _interval новое значение интервала срабатывания задачи;
+   * @param _restart перезапускать или нет задачу с новым интервалом;
+   */
+  void setAdditionalTaskInterval(clkHandle _handle,
+                                 unsigned long _interval,
+                                 bool _restart = true);
 };
 
 // ---- shSimpleClock private -------------------
@@ -1029,6 +1154,8 @@ void shSimpleClock::tick()
   }
 }
 
+bool shSimpleClock::getBlink() { return sscBlinkFlag; }
+
 clkDisplayMode shSimpleClock::getDisplayMode() { return ssc_display_mode; }
 
 void shSimpleClock::setDisplayMode(clkDisplayMode _mode) { ssc_display_mode = _mode; }
@@ -1051,7 +1178,7 @@ void shSimpleClock::printTextForScreen(uint8_t _col, uint8_t _line, const char *
 
 #if defined USE_CLOCK_EVENT
 void shSimpleClock::setClockEvent(uint16_t _interval,
-                                  sceCallback _callback,
+                                  clkEventCallback _callback,
                                   bool _active)
 {
   sscClockEvent.init(_interval, _callback, _active);
@@ -1061,6 +1188,16 @@ void shSimpleClock::setClockEventState(bool _state) { sscClockEvent.setState(_st
 
 bool shSimpleClock::getClockEventState() { return sscClockEvent.getState(); }
 #endif
+
+void shSimpleClock::resetButtonState(clkButtonType _btn)
+{
+  clkButtons.resetButtonState(_btn);
+}
+
+bool shSimpleClock::isButtonClosed(clkButtonType _btn)
+{
+  return clkButtons.isButtonClosed(_btn);
+}
 
 uint8_t shSimpleClock::getButtonState(clkButtonType _btn)
 {
@@ -1076,6 +1213,45 @@ void shSimpleClock::setButtonFlag(clkButtonType _btn, clkButtonFlag _flag)
 {
   clkButtons.setButtonFlag(_btn, _flag);
 }
+
+#if (BTN_ADD1_PIN >= 0) || (BTN_ADD2_PIN >= 0)
+void shSimpleClock::setAddButtonType(clkButtonType _btn, uint8_t _btn_type)
+{
+  if (_btn == CLK_BTN_ADD1 || _btn == CLK_BTN_ADD2)
+  {
+    clkButtons.setBtnType(_btn, _btn_type);
+  }
+}
+
+void shSimpleClock::setAddButtonInputType(clkButtonType _btn, uint8_t _btn_input_type)
+{
+  if (_btn == CLK_BTN_ADD1 || _btn == CLK_BTN_ADD2)
+  {
+    clkButtons.setBtnInputType(_btn, _btn_input_type);
+  }
+}
+
+void shSimpleClock::setAddButtonTimeoutSet(clkButtonType _btn,
+                                           uint8_t _timeout_of_debounce,
+                                           uint8_t _timeout_of_dblclick)
+{
+  if (_btn == CLK_BTN_ADD1 || _btn == CLK_BTN_ADD2)
+  {
+    clkButtons.setBtnTimeoutSet(_btn, _timeout_of_debounce, _timeout_of_dblclick);
+  }
+}
+
+void shSimpleClock::setAddButtonLongClickSet(clkButtonType _btn,
+                                             bool _serial_on,
+                                             uint8_t _timeout_of_longclick,
+                                             uint8_t _interval_of_serial)
+{
+  if (_btn == CLK_BTN_ADD1 || _btn == CLK_BTN_ADD2)
+  {
+    clkButtons.setBtnLongClickSet(_btn, _serial_on, _timeout_of_longclick, _interval_of_serial);
+  }
+}
+#endif
 
 #if defined(MAX72XX_MATRIX_DISPLAY)
 void shSimpleClock::setMatrixDirection(uint8_t _dir)
@@ -1118,7 +1294,7 @@ void shSimpleClock::setMaxPSP(uint8_t volts, uint32_t milliamps)
 }
 #endif
 
-shDateTime shSimpleClock::getCurrentDateTime()
+clkDateTime shSimpleClock::getCurrentDateTime()
 {
   return (clkClock.getCurTime());
 }
@@ -1154,7 +1330,7 @@ int8_t shSimpleClock::getTemperature()
 #if defined(USE_ALARM)
 
 #if defined USE_CLOCK_EVENT
-void shSimpleClock::setAlarmEvent(sceCallback _callback, bool _active)
+void shSimpleClock::setAlarmEvent(clkEventCallback _callback, bool _active)
 {
   sscAlarmEvent.init(_callback, _active);
 }
@@ -1177,7 +1353,7 @@ bool shSimpleClock::getOnOffAlarm() { return (clkAlarm.getOnOffAlarm()); }
 
 void shSimpleClock::setOnOffAlarm(bool _state) { clkAlarm.setOnOffAlarm(_state); }
 
-AlarmState shSimpleClock::getAlarmState() { return (clkAlarm.getAlarmState()); }
+clkAlarmState shSimpleClock::getAlarmState() { return (clkAlarm.getAlarmState()); }
 
 void shSimpleClock::buzzerStop()
 {
@@ -1274,6 +1450,40 @@ bool shSimpleClock::getSecondColumnState()
 #endif
 
 #endif
+
+void shSimpleClock::setAdditionalTaskCount(uint8_t _add_task)
+{
+  clkTasks.setAddTaskCount(_add_task);
+}
+
+clkHandle shSimpleClock::addAdditionalTask(unsigned long _interval,
+                                           clkTaskManagerCallback _callback,
+                                           bool isActive)
+{
+  return clkTasks.addTask(_interval, _callback, isActive);
+}
+
+void shSimpleClock::startAdditionalTask(clkHandle _handle)
+{
+  clkTasks.startTask(_handle);
+}
+
+void shSimpleClock::stopAdditionalTask(clkHandle _handle)
+{
+  clkTasks.stopTask(_handle);
+}
+
+bool shSimpleClock::getAdditionalTaskState(clkHandle _handle)
+{
+  return clkTasks.getTaskState(_handle);
+}
+
+void shSimpleClock::setAdditionalTaskInterval(clkHandle _handle,
+                                              unsigned long _interval,
+                                              bool _restart)
+{
+  clkTasks.setTaskInterval(_handle, _interval, _restart);
+}
 
 // ==== end shSimpleClock ============================
 
@@ -2175,6 +2385,9 @@ void sscCheckButton()
 {
   sscCheckSetButton();
   sscCheckUpDownButton();
+  // опрос дополнительных кнопок, при их наличии
+  clkButtons.getButtonState(CLK_BTN_ADD1);
+  clkButtons.getButtonState(CLK_BTN_ADD2);
 }
 
 void sscSetDisplayMode()
@@ -2327,7 +2540,7 @@ void sscSetBrightness()
   }
 #endif
 
-  uint8_t x = 1;
+  uint8_t x = clkDisplay.getBrightness();
 #if __USE_LIGHT_SENSOR__ && LIGHT_SENSOR_PIN >= 0
   uint8_t _pin = LIGHT_SENSOR_PIN; // иначе на stm32duino зависает analogRead()
   static uint16_t b = analogRead(_pin);
@@ -3496,7 +3709,7 @@ void sscShowTime(int8_t hour, int8_t minute, bool show_colon)
 }
 
 #if defined(USE_CALENDAR)
-void sscShowDate(shDateTime date)
+void sscShowDate(clkDateTime date)
 {
   static uint8_t n = 0;
 

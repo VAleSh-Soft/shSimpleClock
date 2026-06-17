@@ -1,5 +1,5 @@
 /**
- * @file display_MAX72xx.h
+ * @file clkDisplay_MAX72xx.h
  * @author Vladimir Shatalov (valesh-soft@yandex.ru)
  * @brief Модуль, реализующий работу часов с экранами, основанными на драйверах MAX7219/MAX7221
  * @version 1.0
@@ -9,14 +9,14 @@
  *
  */
 #pragma once
-#include "matrix_data.h"
+#include "clkMatrix_data.h"
 #include <Arduino.h>
 #if defined(ARDUINO_ARCH_ESP32)
 #include <pgmspace.h>
 #else
 #include <avr/pgmspace.h>
 #endif
-#include "shSimpleRTC.h"
+#include "clkSimpleRTC.h"
 #include <shMAX72xxMini.h> // https://github.com/VAleSh-Soft/shMAX72xxMini
 
 // ==== класс для 7-сегментного индикатора MAX72xx ===
@@ -24,17 +24,18 @@
 #define NUM_DIGITS 8
 
 template <uint8_t cs_pin>
-class DisplayMAX72xx7segment : public shMAX72xx7Segment<cs_pin, 1, NUM_DIGITS>
+class clkDisplayMAX72xx7segment : public shMAX72xx7Segment<cs_pin, 1, NUM_DIGITS>
 {
 private:
   uint8_t data[4];
   // контрольные данные
   uint8_t _data[4] = {0x00, 0x00, 0x00, 0x00};
+  uint8_t _brightness = 0;
 
   void setSegments(uint8_t *data);
 
 public:
-  DisplayMAX72xx7segment() : shMAX72xx7Segment<cs_pin, 1, NUM_DIGITS>() { clear(); }
+  clkDisplayMAX72xx7segment() : shMAX72xx7Segment<cs_pin, 1, NUM_DIGITS>() { clear(); }
 
   /**
    * @brief очистка буфера экрана, сам экран при этом не очищается
@@ -73,15 +74,22 @@ public:
   /**
    * @brief установка яркости экрана
    *
-   * @param brightness значение яркости (1..7)
+   * @param brightness значение яркости (0..15)
    */
   void setBrightness(uint8_t brightness);
+
+  /**
+   * @brief получение текущей яркости экрана
+   * 
+   * @return uint8_t 
+   */
+  uint8_t getBrightness();
 };
 
-// ---- DisplayMAX72xx7segment private ----------
+// ---- clkDisplayMAX72xx7segment private ----------
 
 template <uint8_t cs_pin>
-void DisplayMAX72xx7segment<cs_pin>::setSegments(uint8_t *data)
+void clkDisplayMAX72xx7segment<cs_pin>::setSegments(uint8_t *data)
 {
   shMAX72xx7Segment<cs_pin, 1, NUM_DIGITS>::clearAllDevices();
   for (uint8_t i = 0; i < 4; i++)
@@ -92,10 +100,10 @@ void DisplayMAX72xx7segment<cs_pin>::setSegments(uint8_t *data)
   shMAX72xx7Segment<cs_pin, 1, NUM_DIGITS>::update();
 }
 
-// ---- DisplayMAX72xx7segment public -----------
+// ---- clkDisplayMAX72xx7segment public -----------
 
 template <uint8_t cs_pin>
-void DisplayMAX72xx7segment<cs_pin>::clear()
+void clkDisplayMAX72xx7segment<cs_pin>::clear()
 {
   for (uint8_t i = 0; i < 4; i++)
   {
@@ -104,14 +112,14 @@ void DisplayMAX72xx7segment<cs_pin>::clear()
 }
 
 template <uint8_t cs_pin>
-void DisplayMAX72xx7segment<cs_pin>::sleep()
+void clkDisplayMAX72xx7segment<cs_pin>::sleep()
 {
   clear();
   shMAX72xx7Segment<cs_pin, 1, NUM_DIGITS>::clearAllDevices(true);
 }
 
 template <uint8_t cs_pin>
-void DisplayMAX72xx7segment<cs_pin>::setDispData(uint8_t _index, uint8_t _data)
+void clkDisplayMAX72xx7segment<cs_pin>::setDispData(uint8_t _index, uint8_t _data)
 {
   if (_index < 4)
   {
@@ -120,13 +128,13 @@ void DisplayMAX72xx7segment<cs_pin>::setDispData(uint8_t _index, uint8_t _data)
 }
 
 template <uint8_t cs_pin>
-uint8_t DisplayMAX72xx7segment<cs_pin>::getDispData(uint8_t _index)
+uint8_t clkDisplayMAX72xx7segment<cs_pin>::getDispData(uint8_t _index)
 {
   return ((_index < 4) ? data[_index] : 0);
 }
 
 template <uint8_t cs_pin>
-void DisplayMAX72xx7segment<cs_pin>::show()
+void clkDisplayMAX72xx7segment<cs_pin>::show()
 {
   bool flag = false;
   for (uint8_t i = 0; i < 4; i++)
@@ -149,18 +157,26 @@ void DisplayMAX72xx7segment<cs_pin>::show()
 }
 
 template <uint8_t cs_pin>
-void DisplayMAX72xx7segment<cs_pin>::setBrightness(uint8_t brightness)
+void clkDisplayMAX72xx7segment<cs_pin>::setBrightness(uint8_t brightness)
 {
-  brightness = (brightness <= 15) ? brightness : 15;
+  _brightness = (brightness <= 15) ? brightness : 15;
   shMAX72xxMini<cs_pin, 1>::setBrightness(0, brightness);
+}
+
+template <uint8_t cs_pin>
+uint8_t clkDisplayMAX72xx7segment<cs_pin>::getBrightness()
+{
+  return _brightness;
 }
 
 // ==== класс для матрицы 8х8х4 MAX72xx ==============
 
 template <uint8_t cs_pin>
-class DisplayMAX72xxMatrix : public shMAX72xxMini<cs_pin, 4>
+class clkDisplayMAX72xxMatrix : public shMAX72xxMini<cs_pin, 4>
 {
 private:
+  uint8_t _brightness = 0;
+
   // void setNumString(uint8_t offset, uint8_t num,
   //                   uint8_t width = 6, uint8_t space = 1,
   //                   uint8_t *_data = NULL, uint8_t _data_count = 0);
@@ -169,7 +185,7 @@ private:
                uint8_t width = 6, uint8_t *_arr = NULL, uint8_t _arr_length = 0);
 
 public:
-  DisplayMAX72xxMatrix() : shMAX72xxMini<cs_pin, 4>() { clear(); }
+  clkDisplayMAX72xxMatrix() : shMAX72xxMini<cs_pin, 4>() { clear(); }
 
   /**
    * @brief запись столбца в буфер экрана
@@ -222,12 +238,19 @@ public:
    * @param brightness значение яркости (0..15)
    */
   void setBrightness(uint8_t brightness);
+
+  /**
+   * @brief получение текущей яркости экрана
+   * 
+   * @return uint8_t 
+   */
+  uint8_t getBrightness();
 };
 
-// ---- DisplayMAX72xxMatrix private ------------
+// ---- clkDisplayMAX72xxMatrix private ------------
 
 // template <uint8_t cs_pin>
-// void DisplayMAX72xxMatrix<cs_pin>::setNumString(uint8_t offset, uint8_t num,
+// void clkDisplayMAX72xxMatrix<cs_pin>::setNumString(uint8_t offset, uint8_t num,
 //                                         uint8_t width, uint8_t space,
 //                                         uint8_t *_data, uint8_t _data_count)
 // {
@@ -238,7 +261,7 @@ public:
 // }
 
 template <uint8_t cs_pin>
-void DisplayMAX72xxMatrix<cs_pin>::setChar(uint8_t offset, uint8_t chr,
+void clkDisplayMAX72xxMatrix<cs_pin>::setChar(uint8_t offset, uint8_t chr,
                                            uint8_t width, uint8_t *_arr, uint8_t _arr_length)
 {
   for (uint8_t j = offset, i = 0; i < width; j++, i++)
@@ -273,10 +296,10 @@ void DisplayMAX72xxMatrix<cs_pin>::setChar(uint8_t offset, uint8_t chr,
   }
 }
 
-// ---- DisplayMAX72xxMatrix public -------------
+// ---- clkDisplayMAX72xxMatrix public -------------
 
 template <uint8_t cs_pin>
-void DisplayMAX72xxMatrix<cs_pin>::setColumn(uint8_t col, uint8_t _data)
+void clkDisplayMAX72xxMatrix<cs_pin>::setColumn(uint8_t col, uint8_t _data)
 {
   if (col < 32)
   {
@@ -285,7 +308,7 @@ void DisplayMAX72xxMatrix<cs_pin>::setColumn(uint8_t col, uint8_t _data)
 }
 
 template <uint8_t cs_pin>
-uint8_t DisplayMAX72xxMatrix<cs_pin>::getColumn(uint8_t col)
+uint8_t clkDisplayMAX72xxMatrix<cs_pin>::getColumn(uint8_t col)
 {
   uint8_t result = 0x00;
   if (col < 32)
@@ -296,44 +319,50 @@ uint8_t DisplayMAX72xxMatrix<cs_pin>::getColumn(uint8_t col)
 }
 
 template <uint8_t cs_pin>
-void DisplayMAX72xxMatrix<cs_pin>::clear(bool upd)
+void clkDisplayMAX72xxMatrix<cs_pin>::clear(bool upd)
 {
   shMAX72xxMini<cs_pin, 4>::clearAllDevices(upd);
 }
 
 template <uint8_t cs_pin>
-void DisplayMAX72xxMatrix<cs_pin>::setDispData(uint8_t offset, uint8_t chr, uint8_t width)
+void clkDisplayMAX72xxMatrix<cs_pin>::setDispData(uint8_t offset, uint8_t chr, uint8_t width)
 {
   setChar(offset, chr, width);
 }
 
 template <uint8_t cs_pin>
-void DisplayMAX72xxMatrix<cs_pin>::setColon(bool toDot)
+void clkDisplayMAX72xxMatrix<cs_pin>::setColon(bool toDot)
 {
   (toDot) ? shMAX72xxMini<cs_pin, 4>::setColumn(1, 7, 0b00000001)
           : shMAX72xxMini<cs_pin, 4>::setColumn(1, 7, 0b00100100);
 }
 
 template <uint8_t cs_pin>
-void DisplayMAX72xxMatrix<cs_pin>::show()
+void clkDisplayMAX72xxMatrix<cs_pin>::show()
 {
   shMAX72xxMini<cs_pin, 4>::update();
 }
 
 template <uint8_t cs_pin>
-void DisplayMAX72xxMatrix<cs_pin>::setBrightness(uint8_t brightness)
+void clkDisplayMAX72xxMatrix<cs_pin>::setBrightness(uint8_t brightness)
 {
-  brightness = (brightness <= 15) ? brightness : 15;
+  _brightness = (brightness <= 15) ? brightness : 15;
   for (uint8_t i = 0; i < 4; i++)
   {
     shMAX72xxMini<cs_pin, 4>::setBrightness(i, brightness);
   }
 }
 
+template <uint8_t cs_pin>
+uint8_t clkDisplayMAX72xxMatrix<cs_pin>::getBrightness()
+{
+  return _brightness;
+}
+
 // ====================================================
 
 #if defined(MAX72XX_7SEGMENT_DISPLAY)
-DisplayMAX72xx7segment<DISPLAY_CS_PIN> clkDisplay;
+clkDisplayMAX72xx7segment<DISPLAY_CS_PIN> clkDisplay;
 #else
-DisplayMAX72xxMatrix<DISPLAY_CS_PIN> clkDisplay;
+clkDisplayMAX72xxMatrix<DISPLAY_CS_PIN> clkDisplay;
 #endif

@@ -1,5 +1,5 @@
 /**
- * @file display_WS2812.h
+ * @file clkDisplay_WS2812.h
  * @author Vladimir Shatalov (valesh-soft@yandex.ru)
  * @brief Модуль, реализующий работу часов с матрицами, построенными на адресных светодиодах
  * @version 1.0
@@ -9,7 +9,7 @@
  *
  */
 #pragma once
-#include "matrix_data.h"
+#include "clkMatrix_data.h"
 #include <Arduino.h>
 #if defined(ARDUINO_ARCH_ESP32)
 #include <pgmspace.h>
@@ -17,7 +17,7 @@
 #include <avr/pgmspace.h>
 #endif
 #include <FastLED.h> // https://github.com/FastLED/FastLED
-#include "shSimpleRTC.h"
+#include "clkSimpleRTC.h"
 
 // ===================================================
 
@@ -49,7 +49,7 @@ static const uint32_t PROGMEM color_of_number[] = {
 /**
  * @brief тип матрицы по расположению светодиодов
  */
-enum MatrixType : uint8_t
+enum clkMatrixType : uint8_t
 {
   /**
    * @brief светодиоды расположены по столбцам:
@@ -70,13 +70,14 @@ enum MatrixType : uint8_t
 
 uint16_t const LEDS_COUNT = 256;
 
-class DisplayWS2812Matrix
+class clkDisplayWS2812Matrix
 {
 private:
   CRGB leds[LEDS_COUNT];
-  MatrixType matrix_type = BY_COLUMNS;
+  clkMatrixType matrix_type = BY_COLUMNS;
   uint8_t row_count = 8;
   uint8_t col_count = 32;
+  uint8_t _brightness = 0;
   CRGB color = CRGB::Red;
   CRGB bg_color = CRGB::Black;
 
@@ -103,7 +104,7 @@ public:
    * @param _color цвет
    * @param _type тип матрицы, собрана по столбцам или построчно
    */
-  DisplayWS2812Matrix(CRGB _color, MatrixType _type);
+  clkDisplayWS2812Matrix(CRGB _color, clkMatrixType _type);
 
   /**
    * @brief запись столбца в буфер экрана
@@ -158,6 +159,13 @@ public:
   void setBrightness(uint8_t brightness);
 
   /**
+   * @brief получение текущей яркости экрана
+   * 
+   * @return uint8_t 
+   */
+  uint8_t getBrightness();
+
+  /**
    * @brief установка цвета символов
    *
    * @param _color новый цвет
@@ -202,9 +210,9 @@ public:
   void init();
 };
 
-// ---- DisplayWS2812Matrix private -------------
+// ---- clkDisplayWS2812Matrix private -------------
 
-uint8_t DisplayWS2812Matrix::getLedIndexOfStrip(uint8_t row, uint8_t col)
+uint8_t clkDisplayWS2812Matrix::getLedIndexOfStrip(uint8_t row, uint8_t col)
 {
   uint8_t result = 0;
   switch (matrix_type)
@@ -219,7 +227,7 @@ uint8_t DisplayWS2812Matrix::getLedIndexOfStrip(uint8_t row, uint8_t col)
   return (result);
 }
 
-// void DisplayWS2812Matrix::setNumString(uint8_t offset, uint8_t num,
+// void clkDisplayWS2812Matrix::setNumString(uint8_t offset, uint8_t num,
 //                                        uint8_t width, uint8_t space,
 //                                        uint8_t *_data, uint8_t _data_count)
 // {
@@ -229,7 +237,7 @@ uint8_t DisplayWS2812Matrix::getLedIndexOfStrip(uint8_t row, uint8_t col)
 //   setChar(offset + width + space, x, width);
 // }
 
-void DisplayWS2812Matrix::setChar(uint8_t offset, uint8_t chr,
+void clkDisplayWS2812Matrix::setChar(uint8_t offset, uint8_t chr,
                                   uint8_t width, uint8_t *_arr, uint8_t _arr_length)
 {
   for (uint8_t j = offset, i = 0; i < width; j++, i++)
@@ -265,7 +273,7 @@ void DisplayWS2812Matrix::setChar(uint8_t offset, uint8_t chr,
 }
 
 #if __ESPI_CHIPSET__
-void DisplayWS2812Matrix::setESpiLedsData(CRGB *data, uint16_t leds_count)
+void clkDisplayWS2812Matrix::setESpiLedsData(CRGB *data, uint16_t leds_count)
 {
 #if defined CHIPSET_LPD6803
   ESPIChipsets const chip = LPD6803;
@@ -294,7 +302,7 @@ void DisplayWS2812Matrix::setESpiLedsData(CRGB *data, uint16_t leds_count)
 #endif
 }
 #else
-void DisplayWS2812Matrix::setLedsData(CRGB *data, uint16_t leds_count)
+void clkDisplayWS2812Matrix::setLedsData(CRGB *data, uint16_t leds_count)
 {
 #if defined CHIPSET_NEOPIXEL
   FastLED.addLeds<NEOPIXEL, DISPLAY_DIN_PIN, EORDER>(data, leds_count);
@@ -356,9 +364,9 @@ void DisplayWS2812Matrix::setLedsData(CRGB *data, uint16_t leds_count)
 }
 #endif
 
-// ---- DisplayWS2812Matrix public --------------
+// ---- clkDisplayWS2812Matrix public --------------
 
-DisplayWS2812Matrix::DisplayWS2812Matrix(CRGB _color, MatrixType _type)
+clkDisplayWS2812Matrix::clkDisplayWS2812Matrix(CRGB _color, clkMatrixType _type)
 {
   color = _color;
   bg_color = COLOR_OF_BACKGROUND;
@@ -367,7 +375,7 @@ DisplayWS2812Matrix::DisplayWS2812Matrix(CRGB _color, MatrixType _type)
   setMaxPSP(POWER_SUPPLY_VOLTAGE, POWER_SUPPLY_CURRENT);
 }
 
-void DisplayWS2812Matrix::setColumn(uint8_t col, uint8_t _data)
+void clkDisplayWS2812Matrix::setColumn(uint8_t col, uint8_t _data)
 {
   if (col < 32)
   {
@@ -413,7 +421,7 @@ void DisplayWS2812Matrix::setColumn(uint8_t col, uint8_t _data)
   }
 }
 
-uint8_t DisplayWS2812Matrix::getColumn(uint8_t col)
+uint8_t clkDisplayWS2812Matrix::getColumn(uint8_t col)
 {
   uint8_t result = 0x00;
   if (col < 32)
@@ -431,7 +439,7 @@ uint8_t DisplayWS2812Matrix::getColumn(uint8_t col)
   return (result);
 }
 
-void DisplayWS2812Matrix::clear(bool upd)
+void clkDisplayWS2812Matrix::clear(bool upd)
 {
   for (uint8_t i = 0; i < 32; i++)
   {
@@ -443,7 +451,7 @@ void DisplayWS2812Matrix::clear(bool upd)
   }
 }
 
-void DisplayWS2812Matrix::setDispData(uint8_t offset, uint8_t chr, uint8_t width)
+void clkDisplayWS2812Matrix::setDispData(uint8_t offset, uint8_t chr, uint8_t width)
 {
   if (offset < 32)
   {
@@ -451,48 +459,53 @@ void DisplayWS2812Matrix::setDispData(uint8_t offset, uint8_t chr, uint8_t width
   }
 }
 
-void DisplayWS2812Matrix::setColon(bool toDot)
+void clkDisplayWS2812Matrix::setColon(bool toDot)
 {
   (toDot) ? setColumn(15, 0b00000001) : setColumn(15, 0b00100100);
 }
 
-void DisplayWS2812Matrix::show()
+void clkDisplayWS2812Matrix::show()
 {
   FastLED.show();
 }
 
-void DisplayWS2812Matrix::setBrightness(uint8_t brightness)
+void clkDisplayWS2812Matrix::setBrightness(uint8_t brightness)
 {
-  brightness = (brightness <= 25) ? brightness : 25;
+  _brightness = (brightness <= 25) ? brightness : 25;
   FastLED.setBrightness(brightness * 10);
 }
 
-void DisplayWS2812Matrix::setColorOfNumber(CRGB _color)
+uint8_t clkDisplayWS2812Matrix::getBrightness()
+{
+  return (_brightness);
+}
+
+void clkDisplayWS2812Matrix::setColorOfNumber(CRGB _color)
 {
   color = _color;
 }
 
-CRGB DisplayWS2812Matrix::getColorOfNumber()
+CRGB clkDisplayWS2812Matrix::getColorOfNumber()
 {
   return (color);
 }
 
-void DisplayWS2812Matrix::setColorOfBackground(CRGB _color)
+void clkDisplayWS2812Matrix::setColorOfBackground(CRGB _color)
 {
   bg_color = _color;
 }
 
-CRGB DisplayWS2812Matrix::getColorOfBackground()
+CRGB clkDisplayWS2812Matrix::getColorOfBackground()
 {
   return (bg_color);
 }
 
-void DisplayWS2812Matrix::setMaxPSP(uint8_t volts, uint32_t milliamps)
+void clkDisplayWS2812Matrix::setMaxPSP(uint8_t volts, uint32_t milliamps)
 {
   FastLED.setMaxPowerInVoltsAndMilliamps(volts, milliamps);
 }
 
-void DisplayWS2812Matrix::init()
+void clkDisplayWS2812Matrix::init()
 {
 #if __ESPI_CHIPSET__
   setESpiLedsData(leds, LEDS_COUNT);
@@ -503,4 +516,4 @@ void DisplayWS2812Matrix::init()
 
 // ===================================================
 
-DisplayWS2812Matrix clkDisplay(COLOR_OF_NUMBER, MX_TYPE);
+clkDisplayWS2812Matrix clkDisplay(COLOR_OF_NUMBER, MX_TYPE);

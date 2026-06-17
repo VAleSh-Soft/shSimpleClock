@@ -1,19 +1,39 @@
-/* Небольшая библиотека для работы с датчиками температуры DS1820, DS18s20, DS18b20 или DS1822;
-   Работает только с одним датчиком, выдает температуру в градусах Цельсия в формате int16_t, имеет контроль наличия датчика на линии, в случае, если датчика нет, выдает -127 градусов.
-
-   Для работы требует наличие библиотеки OneWire.h - https://github.com/PaulStoffregen/OneWire
-
-   Методы библиотеки
-
-   DS1820 temp_sensor - конструктор 
-
-   void init(int8_t data_pin) - инициализация датчика; здесь data_pin - пин, к которому подключен датчик (наличие резистора 4.7кОм между пином данных и VCC обязательно)
-
-   void readData() - опрос датчика; следует вызывать не чаще одного раза в секунду, а лучше реже, т.к. при слишком частом опросе микросхема датчика начинает вносить искажения в температуру за счет собственного разогрева; считанные данные помещаются в поле temp;
-
-   int16_t getTemp() - получение ранее считанной из дачика температуры;
-
-*/
+/**
+ * @file clkDS1820.h
+ * @author Vladimir Shatalov (valesh-soft@yandex.ru)
+ * 
+ * @brief Небольшая библиотека для работы с датчиками температуры DS18b20, 
+ *        DS18s20, DS1825, DS28EA00 или DS1822.
+ * 
+ *        Работает только с одним датчиком, выдает температуру в градусах 
+ *        Цельсия в формате int16_t, имеет контроль наличия датчика на линии, в 
+ *        случае, если датчика нет, выдает -127 градусов.
+ *
+ *        Для работы требует наличие библиотеки OneWire.h - 
+ *                                    https://github.com/PaulStoffregen/OneWire
+ *
+ *        Методы библиотеки
+ *
+ *        clkDS1820 temp_sensor - конструктор;
+ * 
+ *        void init(int8_t data_pin) - инициализация датчика; здесь:
+ *           data_pin - пин, к которому подключен датчик (наличие резистора 
+ *                      4.7кОм между пином данных и VCC обязательно)
+ *
+ *        void readData() - опрос датчика; следует вызывать не чаще одного раза
+ *                          в секунду, а лучше реже, т.к. при слишком частом 
+ *                          опросе микросхема датчика начинает вносить искажения
+ *                          в температуру за счет собственного разогрева; 
+ *                          считанные данные помещаются в поле temp;
+ *
+ *        int16_t getTemp() - получение ранее считанной из дачика температуры;
+ * 
+ * @version 1.0
+ * @date 17.05.2024
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
 #pragma once
 #include <Arduino.h>
 #include <OneWire.h> // https://github.com/PaulStoffregen/OneWire
@@ -22,7 +42,7 @@
 
 OneWire sscDS18b20;
 
-class DS1820
+class clkDS1820
 {
 private:
   int16_t temp = ERROR_TEMP;
@@ -32,7 +52,7 @@ private:
   bool checkData(uint8_t *data);
 
 public:
-  DS1820();
+  clkDS1820();
 
   void init(uint8_t data_pin);
 
@@ -50,7 +70,7 @@ public:
   int16_t getTemp();
 };
 
-bool DS1820::checkData(uint8_t *data)
+bool clkDS1820::checkData(uint8_t *data)
 {
   // проверка данных на валидность - сначала по контрольной сумме;
   // в случае отсутствия датчика data[] заполняется нулями, поэтому
@@ -67,9 +87,9 @@ bool DS1820::checkData(uint8_t *data)
   return (result);
 }
 
-DS1820::DS1820(){}
+clkDS1820::clkDS1820(){}
 
-void DS1820::init(uint8_t data_pin)
+void clkDS1820::init(uint8_t data_pin)
 {
   sscDS18b20.begin(data_pin);
   sscDS18b20.reset();
@@ -86,7 +106,7 @@ void DS1820::init(uint8_t data_pin)
       // определяем тип чипа
       switch (addr[0])
       {
-      case 0x10: // Chip = DS18S20 или старый DS1820
+      case 0x10: // Chip = DS18S20 или старый clkDS1820
         type_c = 0;
         break;
       case 0x28: // Chip = DS18B20
@@ -104,7 +124,7 @@ void DS1820::init(uint8_t data_pin)
   }
 }
 
-void DS1820::readData()
+void clkDS1820::readData()
 {
   if (type_c < 2)
   {
@@ -126,7 +146,7 @@ void DS1820::readData()
     {
       int16_t raw = (data[1] << 8) | data[0]; // считываем два байта температуры
       if (!type_c)
-      // для датчиков DS1820 и DS18s20
+      // для датчиков clkDS1820 и DS18s20
       {
         raw = raw << 3; // разрешение по умолчанию 9 бит
         if (data[7] == 0x10)
@@ -163,8 +183,8 @@ void DS1820::readData()
   }
 }
 
-int16_t DS1820::getTemp() { return (temp); }
+int16_t clkDS1820::getTemp() { return (temp); }
 
 // ===================================================
 
-DS1820 sscTempSensor;
+clkDS1820 sscTempSensor;

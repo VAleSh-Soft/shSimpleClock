@@ -189,6 +189,8 @@ uint16_t constexpr TIMEOUT_OF_DBLCLICK = 300;   // интервал двойно
 int8_t constexpr BTN_SET_PIN = PA3;  // пин для подключения кнопки Set
 int8_t constexpr BTN_DOWN_PIN = PA2; // пин для подключения кнопки Down
 int8_t constexpr BTN_UP_PIN = PA1;   // пин для подключения кнопки Up
+int8_t constexpr BTN_ADD1_PIN = -1; // пин для подключения первой дополнительной кнопки
+int8_t constexpr BTN_ADD2_PIN = -1; // пин для подключения второй дополнительной кнопки
 
 
 
