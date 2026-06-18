@@ -18,8 +18,8 @@
  *        сама останавливается через три минуты (180 срабатываний с интервалом
  *        в одну секунду).
  * 
- * @version 1.0
- * @date 2026-06-13
+ * @version 1.1
+ * @date 2026-06-18
  * 
  * @copyright Copyright (c) 2026
  * 
@@ -40,10 +40,10 @@ void addedTask()
   Serial.print(++seconds_count);
   Serial.println(" seconds have passed");
 
-  // через три минуты задача останавливается
+  // через три минуты (180 срабатываний) задача останавливается
   if (seconds_count >= 180)
   {
-    simple_clock.stopAdditionalTask(new_task);
+    simple_clock.stopTask(new_task);
     Serial.println("Task stopped");
   }
   

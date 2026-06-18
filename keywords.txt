@@ -95,10 +95,11 @@ setSecondColumnState	 KEYWORD2
 getSecondColumnState	 KEYWORD2
 setAdditionalTaskCount	 KEYWORD2
 addAdditionalTask	 KEYWORD2
-startAdditionalTask	 KEYWORD2
-stopAdditionalTask	 KEYWORD2
-getAdditionalTaskState	 KEYWORD2
-setAdditionalTaskInterval	 KEYWORD2
+startTask	 KEYWORD2
+stopTask	 KEYWORD2
+getTaskState	 KEYWORD2
+setTaskInterval	 KEYWORD2
+exesTask	 KEYWORD2
 
 #######################################
 # Constants (LITERAL1)

@@ -32,7 +32,7 @@ class clkTaskManager
 private:
   uint8_t task_count = 0;
   uint8_t add_task_count = 0;
-  clkTask *taskList = NULL;
+  clkTask *taskList = nullptr;
 
   bool isValidHandle(clkHandle _handle);
 
@@ -78,6 +78,8 @@ public:
 
   void setTaskInterval(clkHandle _handle, unsigned long _interval, bool _restart = true);
 
+  void taskExes(clkHandle _handle, bool _restart = true);
+
   void setAddTaskCount(uint8_t _add_count);
 };
 
@@ -95,7 +97,7 @@ void clkTaskManager::init(uint8_t _taskCount)
 {
   task_count = ((_taskCount) ? _taskCount : 1) + add_task_count;
   taskList = (clkTask *)calloc(task_count, sizeof(clkTask));
-  if (taskList == NULL)
+  if (taskList == nullptr)
   {
     task_count = 0;
   }
@@ -106,7 +108,7 @@ void clkTaskManager::tick()
   for (uint8_t i = 0; i < task_count; i++)
   {
     unsigned long now = millis();
-    if (taskList[i].status && taskList[i].callback != NULL)
+    if (taskList[i].status && taskList[i].callback != nullptr)
     {
       if (now - taskList[i].timer >= taskList[i].interval)
       {
@@ -121,7 +123,7 @@ clkHandle clkTaskManager::addTask(unsigned long _interval, clkTaskManagerCallbac
 {
   for (uint8_t i = 0; i < task_count; i++)
   {
-    if (taskList[i].callback == NULL)
+    if (!taskList[i].callback)
     {
       taskList[i].status = isActive;
       taskList[i].interval = _interval;
@@ -135,7 +137,7 @@ clkHandle clkTaskManager::addTask(unsigned long _interval, clkTaskManagerCallbac
 
 void clkTaskManager::startTask(clkHandle _handle)
 {
-  if (isValidHandle(_handle) && taskList[_handle].callback != NULL)
+  if (isValidHandle(_handle) && taskList[_handle].callback != nullptr)
   {
     taskList[_handle].status = true;
     taskList[_handle].timer = millis();
@@ -152,9 +154,9 @@ void clkTaskManager::stopTask(clkHandle _handle)
 
 bool clkTaskManager::getTaskState(clkHandle _handle)
 {
-  if (isValidHandle(_handle) && (taskList != NULL))
+  if (isValidHandle(_handle) && (taskList != nullptr))
   {
-    return (taskList[_handle].status && taskList[_handle].callback != NULL);
+    return (taskList[_handle].status && taskList[_handle].callback != nullptr);
   }
 
   return (false);
@@ -165,10 +167,26 @@ void clkTaskManager::setTaskInterval(clkHandle _handle, unsigned long _interval,
   if (isValidHandle(_handle))
   {
     taskList[_handle].interval = _interval;
-    if (_restart && (taskList[_handle].callback != NULL))
+    if (_restart && (taskList[_handle].callback != nullptr))
     {
       taskList[_handle].status = true;
       taskList[_handle].timer = millis();
+    }
+  }
+}
+
+void clkTaskManager::taskExes(clkHandle _handle, bool _restart)
+{
+  if (isValidHandle(_handle))
+  {
+    if (taskList[_handle].callback != nullptr)
+    {
+      if (_restart)
+      {
+        taskList[_handle].status = true;
+        taskList[_handle].timer = millis();
+      }
+      taskList[_handle].callback();
     }
   }
 }
