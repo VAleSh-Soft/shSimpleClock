@@ -87,7 +87,7 @@ public:
 
 bool clkTaskManager::isValidHandle(clkHandle _handle)
 {
-  return (_handle > CLK_INVALID_HANDLE && _handle < task_count);
+  return (_handle > CLK_INVALID_HANDLE && _handle < (task_count + add_task_count));
 }
 // ---- clkTaskManager public -------------------
 
@@ -95,17 +95,18 @@ clkTaskManager::clkTaskManager() {}
 
 void clkTaskManager::init(uint8_t _taskCount)
 {
-  task_count = ((_taskCount) ? _taskCount : 1) + add_task_count;
-  taskList = (clkTask *)calloc(task_count, sizeof(clkTask));
+  task_count = (_taskCount) ? _taskCount : 1;
+  taskList = (clkTask *)calloc((task_count + add_task_count), sizeof(clkTask));
   if (taskList == nullptr)
   {
     task_count = 0;
+    add_task_count = 0;
   }
 }
 
 void clkTaskManager::tick()
 {
-  for (uint8_t i = 0; i < task_count; i++)
+  for (uint8_t i = 0; i < (task_count + add_task_count); i++)
   {
     unsigned long now = millis();
     if (taskList[i].status && taskList[i].callback != nullptr)
@@ -121,7 +122,7 @@ void clkTaskManager::tick()
 
 clkHandle clkTaskManager::addTask(unsigned long _interval, clkTaskManagerCallback _callback, bool isActive)
 {
-  for (uint8_t i = 0; i < task_count; i++)
+  for (uint8_t i = 0; i < (task_count + add_task_count); i++)
   {
     if (!taskList[i].callback)
     {
