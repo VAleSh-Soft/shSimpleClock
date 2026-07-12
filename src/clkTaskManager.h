@@ -25,6 +25,8 @@ struct clkTask // структура, описывающая задачу
   unsigned long timer;             // таймер задачи
   unsigned long interval;          // интервал срабатывания задачи
   clkTaskManagerCallback callback; // функция, вызываемая при срабатывании таймера задачи
+
+  clkTask() : status(false), timer(0ul), interval(0ul), callback(nullptr) {}
 };
 
 class clkTaskManager
@@ -96,7 +98,8 @@ clkTaskManager::clkTaskManager() {}
 void clkTaskManager::init(uint8_t _taskCount)
 {
   task_count = (_taskCount) ? _taskCount : 1;
-  taskList = (clkTask *)calloc((task_count + add_task_count), sizeof(clkTask));
+  // taskList = (clkTask *)calloc((task_count + add_task_count), sizeof(clkTask));
+  taskList = new clkTask[task_count + add_task_count];
   if (taskList == nullptr)
   {
     task_count = 0;
