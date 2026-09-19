@@ -107,31 +107,31 @@ enum clkDataType : uint8_t
 {
   NO_TAG
 #if defined(USE_TICKER_FOR_DATA)
-  ,
+      ,
   SET_TICKER_TAG
 #endif
 #if defined(USE_ALARM)
-  ,
+      ,
   SET_ALARM_TAG
 #endif
 #if __USE_AUTO_SHOW_DATA__
-  ,
+      ,
   SET_AUTO_SHOW_PERIOD_TAG
 #endif
 #if __USE_SET_BRIGHTNESS_MODE__
-  ,
+      ,
   SET_BRIGHTNESS_TAG
 #endif
 #if __USE_LIGHT_SENSOR__
-  ,
+      ,
   SET_LIGHT_THRESHOLD_TAG
 #endif
 #if defined(WS2812_MATRIX_DISPLAY)
-  ,
+      ,
   SET_COLOR_OF_NUMBER_TAG
 #endif
 #if defined(SHOW_SECOND_COLUMN)
-  ,
+      ,
   SET_SECOND_COLUMN_TAG
 #endif
 };
@@ -142,61 +142,61 @@ enum clkDisplayMode : uint8_t
   DISPLAY_MODE_SET_HOUR,  // режим настройки часов
   DISPLAY_MODE_SET_MINUTE // режим настройки минут
 #if defined(USE_CALENDAR)
-  ,
+      ,
   DISPLAY_MODE_SET_DAY,   // режим настройки дня месяца
   DISPLAY_MODE_SET_MONTH, // режим настройки месяца
   DISPLAY_MODE_SET_YEAR   // режим настройки года
 #endif
 #if defined(USE_ALARM)
-  ,
+      ,
   DISPLAY_MODE_ALARM_ON_OFF,    // режим настройки будильника - вкл/выкл
   DISPLAY_MODE_SET_ALARM_HOUR,  // режим настройки будильника - часы
   DISPLAY_MODE_SET_ALARM_MINUTE // режим настройки будильника - минуты
 #endif
 #if __USE_TEMP_DATA__
-  ,
+      ,
   DISPLAY_MODE_SHOW_TEMP // режим вывода температуры
 #endif
 #if __USE_AUTO_SHOW_DATA__
-  ,
+      ,
   DISPLAY_AUTO_SHOW_DATA // автовывод даты и/или температуры в конце каждой минуты
 #endif
 #if defined(USE_CALENDAR)
-  ,
+      ,
   DISPLAY_MODE_SHOW_DATE,          // вывод полной даты
   DISPLAY_MODE_SHOW_DOW,           // режим вывода дня недели
   DISPLAY_MODE_SHOW_DAY_AND_MONTH, // режим вывода числа и месяца
   DISPLAY_MODE_SHOW_YEAR           // режим вывода года
 #endif
 #if __USE_LIGHT_SENSOR__
-  ,
+      ,
   DISPLAY_MODE_SET_LIGHT_THRESHOLD // режим настройки порога переключения яркости
 #endif
 #if __USE_SET_BRIGHTNESS_MODE__
 #if __USE_LIGHT_SENSOR__
-  ,
+      ,
   DISPLAY_MODE_SET_BRIGHTNESS_MIN // режим настройки минимального уровня яркости экрана
 #endif
-  ,
+      ,
   DISPLAY_MODE_SET_BRIGHTNESS_MAX // режим настройки максимального уровня яркости экрана
 #endif
 #if defined(USE_TICKER_FOR_DATA)
-  ,
+      ,
   DISPLAY_MODE_SET_TICKER_ON_OFF // режим включения/выключения анимации
 #endif
 #if __USE_AUTO_SHOW_DATA__
-  ,
+      ,
   DISPLAY_MODE_SET_AUTO_SHOW_PERIOD // режим настройки периода автовывода даты и/или температуры
 #endif
 #if defined(WS2812_MATRIX_DISPLAY)
-  ,
+      ,
   DISPLAY_MODE_SET_COLOR_OF_NUMBER // режим настройки цвета символов для адресных светодиодов
 #endif
 #if defined(SHOW_SECOND_COLUMN)
-  ,
+      ,
   DISPLAY_MODE_SET_SECOND_COLUMN_ON_OFF // режим включения/выключения отображения секундного столбика
 #endif
-  ,
+      ,
   DISPLAY_MODE_CUSTOM_1,
   DISPLAY_MODE_CUSTOM_2,
   DISPLAY_MODE_CUSTOM_3,
@@ -533,8 +533,8 @@ public:
    * @param _timeout_of_dblclick интервал двойного клика, мс
    */
   void setAddButtonTimeoutSet(clkButtonType _btn,
-                              uint8_t _timeout_of_debounce,
-                              uint8_t _timeout_of_dblclick = TIMEOUT_OF_DBLCLICK);
+                              uint16_t _timeout_of_debounce,
+                              uint16_t _timeout_of_dblclick = TIMEOUT_OF_DBLCLICK);
 
   /**
    * @brief настройка параметров удержания кнопки нажатой; действительно только для дополнительных кнопок
@@ -546,8 +546,8 @@ public:
    */
   void setAddButtonLongClickSet(clkButtonType _btn,
                                 bool _serial_on,
-                                uint8_t _timeout_of_longclick = TIMEOUT_OF_LONGCLICK,
-                                uint8_t _interval_of_serial = INTERVAL_OF_SERIAL);
+                                uint16_t _timeout_of_longclick = TIMEOUT_OF_LONGCLICK,
+                                uint16_t _interval_of_serial = INTERVAL_OF_SERIAL);
 #endif
 
 #if defined(MAX72XX_MATRIX_DISPLAY)
@@ -826,15 +826,7 @@ public:
 
 #endif
 
-  /**
-   * @brief увеличение списка задач для добавления дополнительных
-   *        пользовательских задач
-   *
-   * @param _add_task количество пользовательских задач, которые будут
-   *                  добавлены в список
-   */
-  void setAdditionalTaskCount(uint8_t _add_task);
-
+#if ADDITIONAL_TASKS_COUNT > 0
   /**
    * @brief добавление пользовательской задачи в список диспетчера задач
    *
@@ -891,6 +883,7 @@ public:
    * @param _restart если true (по умолчанию), то задача начнет выполняться (или будет перезапущена, если уже была активна) с этого момента;
    */
   void exesTask(clkHandle _handle, bool _restart = true);
+#endif
 };
 
 // ---- shSimpleClock private -------------------
@@ -1044,13 +1037,16 @@ void shSimpleClock::display_init()
 
 void shSimpleClock::task_list_init()
 {
-  clkTasks.init();
+  clkTasks.init(clkTasks.getTaskCount());
+#if ADDITIONAL_TASKS_COUNT > 0
+  clkAddTasks.init(ADDITIONAL_TASKS_COUNT);
+#endif
 
-  clkTasks.rtc_guard = clkTasks.addTask(50ul, sscRtcNow);
-  clkTasks.blink_timer = clkTasks.addTask(50ul, sscBlink);
   clkTasks.return_to_default_mode = clkTasks.addTask(AUTO_EXIT_TIMEOUT * 1000ul,
                                                      sscReturnToDefMode,
                                                      false);
+  clkTasks.rtc_guard = clkTasks.addTask(50ul, sscRtcNow);
+  clkTasks.blink_timer = clkTasks.addTask(50ul, sscBlink);
   clkTasks.set_time_mode = clkTasks.addTask(50ul, sscShowTimeSetting, false);
 #if __USE_TEMP_DATA__ && defined(USE_DS18B20)
   clkTasks.ds18b20_guard = clkTasks.addTask(3000ul, sscCheckDS18b20);
@@ -1139,7 +1135,10 @@ void shSimpleClock::tick()
     last_tick = millis();
     sscCheckButton();
     clkTasks.tick();
-    sscSetDisplayMode();
+#if ADDITIONAL_TASKS_COUNT > 0
+    clkAddTasks.tick();
+#endif
+sscSetDisplayMode();
   }
 }
 
@@ -1221,8 +1220,8 @@ void shSimpleClock::setAddButtonInputType(clkButtonType _btn, uint8_t _btn_input
 }
 
 void shSimpleClock::setAddButtonTimeoutSet(clkButtonType _btn,
-                                           uint8_t _timeout_of_debounce,
-                                           uint8_t _timeout_of_dblclick)
+                                           uint16_t _timeout_of_debounce,
+                                           uint16_t _timeout_of_dblclick)
 {
   if (_btn == CLK_BTN_ADD1 || _btn == CLK_BTN_ADD2)
   {
@@ -1232,8 +1231,8 @@ void shSimpleClock::setAddButtonTimeoutSet(clkButtonType _btn,
 
 void shSimpleClock::setAddButtonLongClickSet(clkButtonType _btn,
                                              bool _serial_on,
-                                             uint8_t _timeout_of_longclick,
-                                             uint8_t _interval_of_serial)
+                                             uint16_t _timeout_of_longclick,
+                                             uint16_t _interval_of_serial)
 {
   if (_btn == CLK_BTN_ADD1 || _btn == CLK_BTN_ADD2)
   {
@@ -1440,44 +1439,41 @@ bool shSimpleClock::getSecondColumnState()
 
 #endif
 
-void shSimpleClock::setAdditionalTaskCount(uint8_t _add_task)
-{
-  clkTasks.setAddTaskCount(_add_task);
-}
-
+#if ADDITIONAL_TASKS_COUNT > 0
 clkHandle shSimpleClock::addAdditionalTask(unsigned long _interval,
                                            clkTaskManagerCallback _callback,
                                            bool isActive)
 {
-  return clkTasks.addTask(_interval, _callback, isActive);
+  return clkAddTasks.addTask(_interval, _callback, isActive);
 }
 
 void shSimpleClock::startTask(clkHandle _handle)
 {
-  clkTasks.startTask(_handle);
+  clkAddTasks.startTask(_handle);
 }
 
 void shSimpleClock::stopTask(clkHandle _handle)
 {
-  clkTasks.stopTask(_handle);
+  clkAddTasks.stopTask(_handle);
 }
 
 bool shSimpleClock::getTaskState(clkHandle _handle)
 {
-  return clkTasks.getTaskState(_handle);
+  return clkAddTasks.getTaskState(_handle);
 }
 
 void shSimpleClock::setTaskInterval(clkHandle _handle,
                                     unsigned long _interval,
                                     bool _restart)
 {
-  clkTasks.setTaskInterval(_handle, _interval, _restart);
+  clkAddTasks.setTaskInterval(_handle, _interval, _restart);
 }
 
 void shSimpleClock::exesTask(clkHandle _handle, bool _restart)
 {
-  clkTasks.taskExes(_handle, _restart);
+  clkAddTasks.taskExes(_handle, _restart);
 }
+#endif
 
 // ==== end shSimpleClock ============================
 

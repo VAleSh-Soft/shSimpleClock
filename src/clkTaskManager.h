@@ -37,7 +37,6 @@ class clkTaskManager
 {
 private:
   uint8_t task_count = 0;     // количество штатных задач
-  uint8_t add_task_count = 0; // количество пользовательских задач
   clkTask *taskList = nullptr;
 
   bool isValidHandle(clkHandle _handle);
@@ -74,7 +73,7 @@ public:
   clkTaskManager(const clkTaskManager &_other) = delete;
   clkTaskManager &operator=(const clkTaskManager &_other) = delete;
 
-  void init();
+  void init(uint8_t _count);
 
   void tick();
 
@@ -90,7 +89,7 @@ public:
 
   void taskExes(clkHandle _handle, bool _restart = true);
 
-  void setAddTaskCount(uint8_t _add_count);
+  uint8_t getTaskCount();
 };
 
 // ---- clkTaskManager private ------------------
@@ -99,14 +98,13 @@ bool clkTaskManager::isValidHandle(clkHandle _handle)
 {
   return (taskList != nullptr &&
           _handle > CLK_INVALID_HANDLE &&
-          _handle <= CLK_MAX_TASK_COUNT &&
-          _handle < (task_count + add_task_count));
+          _handle < task_count);
 }
 // ---- clkTaskManager public -------------------
 
 clkTaskManager::clkTaskManager() {}
 
-void clkTaskManager::init()
+void clkTaskManager::init(uint8_t _count)
 {
   if (taskList != nullptr) // защита от утечки при повторном вызове init()
   {
@@ -114,37 +112,19 @@ void clkTaskManager::init()
     taskList = nullptr;
   }
 
-  task_count = 5; // базовое количество задач
-#if defined(USE_ALARM)
-  task_count += 2;
-#endif
-#if __USE_AUTO_SHOW_DATA__
-  task_count++;
-#endif
-#if __USE_TEMP_DATA__ && defined(USE_DS18B20)
-  task_count++;
-#endif
-#if __USE_LIGHT_SENSOR__
-  task_count++;
-#endif
-#if __USE_OTHER_SETTING__
-  task_count++;
-#endif
-#if defined(USE_TICKER_FOR_DATA)
-  task_count++;
-#endif
+  task_count = (_count) ? _count : 1;
 
   // общее число слотов не должно выходить за диапазон clkHandle (int8_t)
-  if (add_task_count + task_count > CLK_MAX_TASK_COUNT)
+  if (task_count > CLK_MAX_TASK_COUNT)
   {
-    add_task_count = CLK_MAX_TASK_COUNT - task_count;
+    task_count = CLK_MAX_TASK_COUNT;
   }
-  taskList = new (std::nothrow) clkTask[task_count + add_task_count];
+  // taskList = (clkTask *)calloc((task_count), sizeof(clkTask));
+  taskList = new (std::nothrow) clkTask[task_count];
 
   if (taskList == nullptr)
   {
     task_count = 0;
-    add_task_count = 0;
   }
 }
 
@@ -152,7 +132,7 @@ void clkTaskManager::tick()
 {
   if (taskList != nullptr)
   {
-    for (uint8_t i = 0; i < (task_count + add_task_count); i++)
+    for (uint8_t i = 0; i < (task_count); i++)
     {
       if (taskList[i].status && taskList[i].callback != nullptr)
       {
@@ -180,7 +160,7 @@ clkHandle clkTaskManager::addTask(unsigned long _interval, clkTaskManagerCallbac
 {
   if (taskList != nullptr && _callback != nullptr)
   {
-    for (uint8_t i = 0; i < (task_count + add_task_count); i++)
+    for (uint8_t i = 0; i < (task_count); i++)
     {
       if (!taskList[i].callback)
       {
@@ -251,11 +231,35 @@ void clkTaskManager::taskExes(clkHandle _handle, bool _restart)
   }
 }
 
-void clkTaskManager::setAddTaskCount(uint8_t _add_count)
+uint8_t clkTaskManager::getTaskCount()
 {
-  add_task_count = (_add_count > CLK_MAX_TASK_COUNT) ? CLK_MAX_TASK_COUNT : _add_count;
+  uint8_t _task_count = 5; // базовое количество задач
+#if defined(USE_ALARM)
+  _task_count += 2;
+#endif
+#if __USE_AUTO_SHOW_DATA__
+  _task_count++;
+#endif
+#if __USE_TEMP_DATA__ && defined(USE_DS18B20)
+  _task_count++;
+#endif
+#if __USE_LIGHT_SENSOR__
+  _task_count++;
+#endif
+#if __USE_OTHER_SETTING__
+  _task_count++;
+#endif
+#if defined(USE_TICKER_FOR_DATA)
+  _task_count++;
+#endif
+
+  return (_task_count);
 }
 
 // ==== end clkTaskManager ===========================
 
 clkTaskManager clkTasks;
+
+#if ADDITIONAL_TASKS_COUNT > 0
+clkTaskManager clkAddTasks;
+#endif

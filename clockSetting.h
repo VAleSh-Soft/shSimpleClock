@@ -272,6 +272,8 @@ uint8_t constexpr BIT_DEPTH = 10; // разрядность АЦП исполь�
 
 #endif
 
+#define ADDITIONAL_TASKS_COUNT 0 // количество дополнительных (пользовательских) задач
+
 // ==== настройки EEPROM =============================
 
 #if defined(SHOW_SECOND_COLUMN)
