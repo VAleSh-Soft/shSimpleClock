@@ -1044,26 +1044,7 @@ void shSimpleClock::display_init()
 
 void shSimpleClock::task_list_init()
 {
-  uint8_t task_count = 5; // базовое количество задач
-#if defined(USE_ALARM)
-  task_count += 2;
-#endif
-#if __USE_AUTO_SHOW_DATA__
-  task_count++;
-#endif
-#if __USE_TEMP_DATA__ && defined(USE_DS18B20)
-  task_count++;
-#endif
-#if __USE_LIGHT_SENSOR__
-  task_count++;
-#endif
-#if __USE_OTHER_SETTING__
-  task_count++;
-#endif
-#if defined(USE_TICKER_FOR_DATA)
-  task_count++;
-#endif
-  clkTasks.init(task_count);
+  clkTasks.init();
 
   clkTasks.rtc_guard = clkTasks.addTask(50ul, sscRtcNow);
   clkTasks.blink_timer = clkTasks.addTask(50ul, sscBlink);

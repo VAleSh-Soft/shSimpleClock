@@ -13,10 +13,14 @@
  */
 #pragma once
 
+#include <new> // для new (std::nothrow)
+
 // ==== clkTaskManager ===============================
 
-typedef void (*clkTaskManagerCallback)(void); // тип - указатель для Callback-функции
-typedef int8_t clkHandle;                     // тип - идентификатор задачи
+typedef void (*clkTaskManagerCallback)(void);  // тип - указатель для Callback-функции
+typedef int8_t clkHandle;                      // тип - идентификатор задачи
+static const uint8_t CLK_MAX_TASK_COUNT = 127; // clkHandle - знаковый int8_t, поэтому индексы выше 127
+                                               // неработоспособны (см. isValidHandle)
 static const clkHandle CLK_INVALID_HANDLE = -1;
 
 struct clkTask // структура, описывающая задачу
@@ -32,8 +36,8 @@ struct clkTask // структура, описывающая задачу
 class clkTaskManager
 {
 private:
-  uint8_t task_count = 0;
-  uint8_t add_task_count = 0;
+  uint8_t task_count = 0;     // количество штатных задач
+  uint8_t add_task_count = 0; // количество пользовательских задач
   clkTask *taskList = nullptr;
 
   bool isValidHandle(clkHandle _handle);
@@ -66,7 +70,11 @@ public:
 
   clkTaskManager();
 
-  void init(uint8_t _taskCount);
+  // объект владеет динамическим массивом задач - копирование запрещено
+  clkTaskManager(const clkTaskManager &_other) = delete;
+  clkTaskManager &operator=(const clkTaskManager &_other) = delete;
+
+  void init();
 
   void tick();
 
@@ -89,17 +97,50 @@ public:
 
 bool clkTaskManager::isValidHandle(clkHandle _handle)
 {
-  return (_handle > CLK_INVALID_HANDLE && _handle < (task_count + add_task_count));
+  return (taskList != nullptr &&
+          _handle > CLK_INVALID_HANDLE &&
+          _handle <= CLK_MAX_TASK_COUNT &&
+          _handle < (task_count + add_task_count));
 }
 // ---- clkTaskManager public -------------------
 
 clkTaskManager::clkTaskManager() {}
 
-void clkTaskManager::init(uint8_t _taskCount)
+void clkTaskManager::init()
 {
-  task_count = (_taskCount) ? _taskCount : 1;
-  // taskList = (clkTask *)calloc((task_count + add_task_count), sizeof(clkTask));
-  taskList = new clkTask[task_count + add_task_count];
+  if (taskList != nullptr) // защита от утечки при повторном вызове init()
+  {
+    delete[] taskList;
+    taskList = nullptr;
+  }
+
+  task_count = 5; // базовое количество задач
+#if defined(USE_ALARM)
+  task_count += 2;
+#endif
+#if __USE_AUTO_SHOW_DATA__
+  task_count++;
+#endif
+#if __USE_TEMP_DATA__ && defined(USE_DS18B20)
+  task_count++;
+#endif
+#if __USE_LIGHT_SENSOR__
+  task_count++;
+#endif
+#if __USE_OTHER_SETTING__
+  task_count++;
+#endif
+#if defined(USE_TICKER_FOR_DATA)
+  task_count++;
+#endif
+
+  // общее число слотов не должно выходить за диапазон clkHandle (int8_t)
+  if (add_task_count + task_count > CLK_MAX_TASK_COUNT)
+  {
+    add_task_count = CLK_MAX_TASK_COUNT - task_count;
+  }
+  taskList = new (std::nothrow) clkTask[task_count + add_task_count];
+
   if (taskList == nullptr)
   {
     task_count = 0;
@@ -109,14 +150,27 @@ void clkTaskManager::init(uint8_t _taskCount)
 
 void clkTaskManager::tick()
 {
-  for (uint8_t i = 0; i < (task_count + add_task_count); i++)
+  if (taskList != nullptr)
   {
-    if (taskList[i].status && taskList[i].callback != nullptr)
+    for (uint8_t i = 0; i < (task_count + add_task_count); i++)
     {
-      if (millis() - taskList[i].timer >= taskList[i].interval)
+      if (taskList[i].status && taskList[i].callback != nullptr)
       {
-        taskList[i].timer += taskList[i].interval;
-        taskList[i].callback();
+        unsigned long elapsed = millis() - taskList[i].timer;
+        if (elapsed >= taskList[i].interval)
+        {
+          if (elapsed - taskList[i].interval >= taskList[i].interval)
+          {
+            // после длительного простоя (блокировки loop() и т.п.) не устраиваем
+            // серию "догоняющих" вызовов - синхронизируем таймер с текущим временем
+            taskList[i].timer = millis();
+          }
+          else
+          {
+            taskList[i].timer += taskList[i].interval;
+          }
+          taskList[i].callback();
+        }
       }
     }
   }
@@ -124,15 +178,18 @@ void clkTaskManager::tick()
 
 clkHandle clkTaskManager::addTask(unsigned long _interval, clkTaskManagerCallback _callback, bool isActive)
 {
-  for (uint8_t i = 0; i < (task_count + add_task_count); i++)
+  if (taskList != nullptr && _callback != nullptr)
   {
-    if (!taskList[i].callback)
+    for (uint8_t i = 0; i < (task_count + add_task_count); i++)
     {
-      taskList[i].status = isActive;
-      taskList[i].interval = _interval;
-      taskList[i].callback = _callback;
-      taskList[i].timer = millis();
-      return (i);
+      if (!taskList[i].callback)
+      {
+        taskList[i].status = isActive;
+        taskList[i].interval = _interval;
+        taskList[i].callback = _callback;
+        taskList[i].timer = millis();
+        return (i);
+      }
     }
   }
   return (CLK_INVALID_HANDLE);
@@ -157,7 +214,7 @@ void clkTaskManager::stopTask(clkHandle _handle)
 
 bool clkTaskManager::getTaskState(clkHandle _handle)
 {
-  if (isValidHandle(_handle) && (taskList != nullptr))
+  if (isValidHandle(_handle))
   {
     return (taskList[_handle].status && taskList[_handle].callback != nullptr);
   }
@@ -196,7 +253,7 @@ void clkTaskManager::taskExes(clkHandle _handle, bool _restart)
 
 void clkTaskManager::setAddTaskCount(uint8_t _add_count)
 {
-  add_task_count = _add_count;
+  add_task_count = (_add_count > CLK_MAX_TASK_COUNT) ? CLK_MAX_TASK_COUNT : _add_count;
 }
 
 // ==== end clkTaskManager ===========================
