@@ -31,8 +31,8 @@
 #if defined(TM1637_DISPLAY)
 
 // ---- пины для подключения индикатора ----
-int8_t constexpr DISPLAY_CLK_PIN = 32; // пин для подключения экрана - CLK
-int8_t constexpr DISPLAY_DAT_PIN = 33; // пин для подключения экрана - DAT
+#define DISPLAY_CLK_PIN 32 // пин для подключения экрана - CLK
+#define DISPLAY_DAT_PIN 33 // пин для подключения экрана - DAT
 
 
 // ---- LCD_I2C ----------------------------
@@ -64,9 +64,9 @@ constexpr uint8_t OFFSET_FOR_FIRST_CHAR = 0;
 #elif defined(MAX72XX_7SEGMENT_DISPLAY) || defined(MAX72XX_MATRIX_DISPLAY)
 
 // ---- пины для подключения драйвера ------
-int8_t constexpr DISPLAY_CLK_PIN = 18; // пин для подключения экрана - CLK
-int8_t constexpr DISPLAY_DIN_PIN = 23; // пин для подключения экрана - DAT
-int8_t constexpr DISPLAY_CS_PIN = 4;  // пин для подключения экрана - CS
+#define DISPLAY_CLK_PIN 18 // пин для подключения экрана - CLK
+#define DISPLAY_DIN_PIN 23 // пин для подключения экрана - DAT
+#define DISPLAY_CS_PIN 4   // пин для подключения экрана - CS
 
 
 // ---- матрица из адресных светодиодов ----
@@ -120,8 +120,8 @@ uint32_t constexpr POWER_SUPPLY_VOLTAGE = 5;
 uint32_t constexpr POWER_SUPPLY_CURRENT = 2000;
 
 // ---- пины для подключения матрицы -------
-int8_t constexpr DISPLAY_DIN_PIN = 4; // пин для подключения экрана - DIN
-int8_t constexpr DISPLAY_CLK_PIN = -1; // пин для подключения экрана - CLK (для четырехпроводных схем)
+#define DISPLAY_DIN_PIN 4 // пин для подключения экрана - DIN
+#define DISPLAY_CLK_PIN -1 // пин для подключения экрана - CLK (для четырехпроводных схем)
 
 #endif
 
@@ -185,12 +185,11 @@ uint16_t constexpr TIMEOUT_OF_DBLCLICK = 300;   // интервал двойно
  * если кнопка не будет использоваться, нужно указать -1;
  * в этом случае ее объект не будет создаваться в памяти;
 */
-int8_t constexpr BTN_SET_PIN = 25;  // пин для подключения кнопки Set
-int8_t constexpr BTN_DOWN_PIN = 26; // пин для подключения кнопки Down
-int8_t constexpr BTN_UP_PIN = 27;   // пин для подключения кнопки Up
-int8_t constexpr BTN_ADD1_PIN = -1; // пин для подключения первой дополнительной кнопки
-int8_t constexpr BTN_ADD2_PIN = -1; // пин для подключения второй дополнительной кнопки
-
+#define BTN_SET_PIN 25  // пин для подключения кнопки Set
+#define BTN_DOWN_PIN 26 // пин для подключения кнопки Down
+#define BTN_UP_PIN 27   // пин для подключения кнопки Up
+#define BTN_ADD1_PIN -1 // пин для подключения первой дополнительной кнопки
+#define BTN_ADD2_PIN -1 // пин для подключения второй дополнительной кнопки
 
 
 // ==== дополнительные опции ========================
@@ -218,7 +217,7 @@ uint8_t constexpr ALARM_REPETITION_COUNT = 3;
 // #define USE_ONECLICK_TO_SET_ALARM // использовать одиночный клик кнопкой Set для входа в настройки будильника, иначе вход по двойному клику
 
 // ---- будильник - пин светодиода ---------
-int8_t constexpr ALARM_LED_PIN = 14; // пин для подключения светодиода - индикатора будильника
+#define ALARM_LED_PIN 14 // пин для подключения светодиода - индикатора будильника
 
 #endif
 
@@ -234,7 +233,7 @@ int8_t constexpr ALARM_LED_PIN = 14; // пин для подключения с�
 #if defined(USE_ALARM) || defined(USE_BUZZER_FOR_BUTTON)
 
 // ==== пищалка ======================================
-int8_t constexpr BUZZER_PIN = 16;    // пин для подключения пищалки
+#define BUZZER_PIN 16    // пин для подключения пищалки
 
 #endif
 
@@ -249,7 +248,7 @@ int8_t constexpr BUZZER_PIN = 16;    // пин для подключения п�
 #if defined(USE_LIGHT_SENSOR)
 
 // ---- датчик освещенности - пин ----------
-int8_t constexpr LIGHT_SENSOR_PIN = 34; 
+#define LIGHT_SENSOR_PIN 34
 
 #endif
 
@@ -267,7 +266,7 @@ int8_t constexpr LIGHT_SENSOR_PIN = 34;
 #if defined(USE_DS18B20)
 
 // ---- DS18B20 - пин ----------------------
-int8_t constexpr DS18B20_PIN = 17; 
+#define DS18B20_PIN 17
 
 #elif defined(USE_NTC)
 
@@ -277,7 +276,7 @@ uint16_t constexpr BALANCE_RESISTOR = 9850; // точное сопротивле
 uint16_t constexpr BETA_COEFFICIENT = 3950; // бета-коэффициент датчика, см. данные производителя; если данных производителя нет, коэффициент можно расчитать, исходя из бета-формулы расчета температуры, которую можно легко найти в интернете
 
 // ---- NTC термистор - пин---------------
-int8_t constexpr NTC_PIN = 35; 
+#define NTC_PIN 35
 
 #endif
 #endif
@@ -292,7 +291,7 @@ int8_t constexpr NTC_PIN = 35;
 
 #if defined(USE_LIGHT_SENSOR) || defined(USE_NTC)
 
-uint8_t constexpr BIT_DEPTH = 12; // разрядность АЦП используемого микроконтроллера; для Ардуино UNO, Nano, Pro Mini BIT_DEPTH = 10
+#define BIT_DEPTH 12 // разрядность АЦП используемого микроконтроллера; для Ардуино UNO, Nano, Pro Mini BIT_DEPTH = 10
 
 #endif
 
@@ -341,5 +340,3 @@ uint8_t constexpr BIT_DEPTH = 12; // разрядность АЦП исполь�
 #define RTC_SCL_PIN 22 // пин для подключения вывода SCL RTC модуля
 
 // ==== конец настроек часов =========================
-
-

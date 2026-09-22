@@ -1140,28 +1140,6 @@ void shSimpleClock::tick()
 #endif
 sscSetDisplayMode();
   }
-
-  static unsigned long timer = 0;
-  if (millis() - timer >= 1000ul)
-  {
-    timer  = millis();
-    Serial.print("handle: ");
-    Serial.println(clkTaskList.return_to_default_mode);    
-    Serial.print("status: ");
-    Serial.println(clkTasks.getTaskState(clkTaskList.return_to_default_mode)? "ON" : "OFF");
-
-    if (clkTasks.getTaskState(clkTaskList.return_to_default_mode))
-    {
-      Serial.print("interval:");
-      Serial.println(clkTasks.getTaskInterval(clkTaskList.return_to_default_mode));
-      Serial.print("timer:");
-      Serial.println(clkTasks.getTaskTimer(clkTaskList.return_to_default_mode));
-      Serial.print("millis():");
-      Serial.println(millis());
-    }
-    Serial.println();
-  }
-  
 }
 
 bool shSimpleClock::getBlink() { return sscBlinkFlag; }
@@ -2397,9 +2375,11 @@ void sscCheckButton()
 {
   sscCheckSetButton();
   sscCheckUpDownButton();
+#if (BTN_ADD1_PIN >= 0) || (BTN_ADD2_PIN >= 0)
   // опрос дополнительных кнопок, при их наличии
   clkButtons.getButtonState(CLK_BTN_ADD1);
   clkButtons.getButtonState(CLK_BTN_ADD2);
+#endif
 }
 
 void sscSetDisplayMode()

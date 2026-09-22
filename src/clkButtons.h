@@ -422,14 +422,20 @@ enum clkButtonType : uint8_t
   CLK_BTN_SET,
   CLK_BTN_UP,
   CLK_BTN_DOWN,
+#if (BTN_ADD1_PIN >= 0) || (BTN_ADD2_PIN >= 0)
   CLK_BTN_ADD1,
   CLK_BTN_ADD2
+#endif
 };
 
 class clkButtonGroup
 {
 private:
+#if (BTN_ADD1_PIN >= 0) || (BTN_ADD2_PIN >= 0)
   clkButton *buttons[5] = {NULL, NULL, NULL, NULL, NULL};
+#else
+  clkButton *buttons[3] = {NULL, NULL, NULL};
+#endif
 
   bool isValidButton(clkButtonType _btn);
 

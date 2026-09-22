@@ -2,6 +2,8 @@
 
 // ==== настройки часов ==============================
 
+
+
 // ==== экран часов ==================================
 
 /**
@@ -21,14 +23,17 @@
 
 #define TM1637_DISPLAY
 
+
 // ---- настройки экранов -----------------------
+
 
 // ---- TM1637 -----------------------------
 #if defined(TM1637_DISPLAY)
 
 // ---- пины для подключения индикатора ----
-int8_t constexpr DISPLAY_CLK_PIN = 11; // пин для подключения экрана - CLK
-int8_t constexpr DISPLAY_DAT_PIN = 10; // пин для подключения экрана - DAT
+#define DISPLAY_CLK_PIN 11 // пин для подключения экрана - CLK
+#define DISPLAY_DAT_PIN 10 // пин для подключения экрана - DAT
+
 
 // ---- LCD_I2C ----------------------------
 #elif defined(LCD_I2C_DISPLAY)
@@ -53,13 +58,16 @@ constexpr uint8_t OFFSET_FOR_FIRST_CHAR = 0;
 #define LCD_SDA_PIN A4 // пин для подключения вывода SDA экрана (для Atmega168/328 не менять!!!)
 #define LCD_SCL_PIN A5 // пин для подключения вывода SCL экрана (для Atmega168/328 не менять!!!)
 
+
+
 // ---- MAX72XX ----------------------------
 #elif defined(MAX72XX_7SEGMENT_DISPLAY) || defined(MAX72XX_MATRIX_DISPLAY)
 
 // ---- пины для подключения драйвера ------
-int8_t constexpr DISPLAY_CLK_PIN = 13; // пин для подключения экрана - CLK (для Atmega168/328 не менять!!!)
-int8_t constexpr DISPLAY_DIN_PIN = 11; // пин для подключения экрана - DAT (для Atmega168/328 не менять!!!)
-int8_t constexpr DISPLAY_CS_PIN = 10;  // пин для подключения экрана - CS
+#define DISPLAY_CLK_PIN 13 // пин для подключения экрана - CLK (для Atmega168/328 не менять!!!)
+#define DISPLAY_DIN_PIN 11 // пин для подключения экрана - DAT (для Atmega168/328 не менять!!!)
+#define DISPLAY_CS_PIN 10  // пин для подключения экрана - CS
+
 
 // ---- матрица из адресных светодиодов ----
 #elif defined(WS2812_MATRIX_DISPLAY)
@@ -112,10 +120,11 @@ uint32_t constexpr POWER_SUPPLY_VOLTAGE = 5;
 uint32_t constexpr POWER_SUPPLY_CURRENT = 2000;
 
 // ---- пины для подключения матрицы -------
-int8_t constexpr DISPLAY_DIN_PIN = 10; // пин для подключения экрана - DIN
-int8_t constexpr DISPLAY_CLK_PIN = -1; // пин для подключения экрана - CLK (для четырехпроводных схем)
+#define DISPLAY_DIN_PIN 10 // пин для подключения экрана - DIN
+#define DISPLAY_CLK_PIN -1 // пин для подключения экрана - CLK (для четырехпроводных схем)
 
 #endif
+
 
 // ---- опции для матричных экранов -------------
 
@@ -138,6 +147,8 @@ uint8_t constexpr TICKER_SPEED = 100; // скорость бегущей стр�
 // #define SHOW_SECOND_COLUMN // показывать на правом краю экрана световой столбик, отображающий количество текущих секунд в минуте
 
 #endif
+
+
 
 // ==== кнопки =======================================
 
@@ -174,16 +185,19 @@ uint16_t constexpr TIMEOUT_OF_DBLCLICK = 300;   // интервал двойно
  * если кнопка не будет использоваться, нужно указать -1;
  * в этом случае ее объект не будет создаваться в памяти;
  */
-int8_t constexpr BTN_SET_PIN = 4;   // пин для подключения кнопки Set
-int8_t constexpr BTN_DOWN_PIN = 6;  // пин для подключения кнопки Down
-int8_t constexpr BTN_UP_PIN = 9;    // пин для подключения кнопки Up
-int8_t constexpr BTN_ADD1_PIN = -1; // пин для подключения первой дополнительной кнопки
-int8_t constexpr BTN_ADD2_PIN = -1; // пин для подключения второй дополнительной кнопки
+#define BTN_SET_PIN 4   // пин для подключения кнопки Set
+#define BTN_DOWN_PIN 6  // пин для подключения кнопки Down
+#define BTN_UP_PIN 9    // пин для подключения кнопки Up
+#define BTN_ADD1_PIN -1 // пин для подключения первой дополнительной кнопки
+#define BTN_ADD2_PIN -1 // пин для подключения второй дополнительной кнопки
+
 
 // ==== дополнительные опции ========================
 
+
 // ---- календарь -------------------------------
 // #define USE_CALENDAR // использовать вывод даты по клику кнопкой Down
+
 
 // ---- будильник -------------------------------
 // #define USE_ALARM // использовать будильник
@@ -203,24 +217,30 @@ uint8_t constexpr ALARM_REPETITION_COUNT = 3;
 // #define USE_ONECLICK_TO_SET_ALARM // использовать одиночный клик кнопкой Set для входа в настройки будильника, иначе вход по двойному клику
 
 // ---- будильник - пин светодиода ---------
-int8_t constexpr ALARM_LED_PIN = 7; // пин для подключения светодиода - индикатора будильника
+#define ALARM_LED_PIN 7 // пин для подключения светодиода - индикатора будильника
 
 #endif
 
 // ---- режим настройки уровней яркости ---------
 // #define USE_SET_BRIGHTNESS_MODE // использовать режим настройки яркости экрана
 
+
 // ---- вывод температуры ------------------
 // #define USE_TEMP_DATA // использовать вывод на экран температуры по клику кнопкой Up
+
+
 
 #if defined(USE_ALARM) || defined(USE_BUZZER_FOR_BUTTON)
 
 // ==== пищалка ======================================
-int8_t constexpr BUZZER_PIN = 5; // пин для подключения пищалки
+#define BUZZER_PIN 5 // пин для подключения пищалки
 
 #endif
 
+
+
 // ==== датчики ======================================
+
 
 // ---- датчик освещенности ---------------------
 // #define USE_LIGHT_SENSOR // использовать датчик освещенности на аналоговом входе для регулировки яркости экрана
@@ -228,7 +248,7 @@ int8_t constexpr BUZZER_PIN = 5; // пин для подключения пищ�
 #if defined(USE_LIGHT_SENSOR)
 
 // ---- датчик освещенности - пин ----------
-int8_t constexpr LIGHT_SENSOR_PIN = A3;
+#define LIGHT_SENSOR_PIN A3
 
 #endif
 
@@ -242,10 +262,11 @@ int8_t constexpr LIGHT_SENSOR_PIN = A3;
 // ---- NTC термистор ----------------------
 // #define USE_NTC     // использовать для вывода температуры NTC термистор
 
+
 #if defined(USE_DS18B20)
 
 // ---- DS18B20 - пин ----------------------
-int8_t constexpr DS18B20_PIN = 8;
+#define DS18B20_PIN 8
 
 #elif defined(USE_NTC)
 
@@ -255,10 +276,12 @@ uint16_t constexpr BALANCE_RESISTOR = 9850; // точное сопротивле
 uint16_t constexpr BETA_COEFFICIENT = 3950; // бета-коэффициент датчика, см. данные производителя; если данных производителя нет, коэффициент можно расчитать, исходя из бета-формулы расчета температуры, которую можно легко найти в интернете
 
 // ---- NTC термистор - пин---------------
-int8_t constexpr NTC_PIN = A0;
+#define NTC_PIN A0
 
 #endif
 #endif
+
+
 
 // ==== прочие настройки =============================
 
@@ -273,6 +296,7 @@ uint8_t constexpr BIT_DEPTH = 10; // разрядность АЦП исполь�
 #endif
 
 #define ADDITIONAL_TASKS_COUNT 0 // количество дополнительных (пользовательских) задач
+
 
 // ==== настройки EEPROM =============================
 
@@ -297,6 +321,8 @@ uint8_t constexpr BIT_DEPTH = 10; // разрядность АЦП исполь�
 #define COLOR_OF_NUMBER_VALUE_EEPROM_INDEX 103     // индекс ячейки в EEPROM для сохранения цвета цифр для экранов на адресных светодиодах (uint8_t x 4)
 #define COLOR_OF_BACKGROUND_VALUE_EEPROM_INDEX 107 // индекс ячейки в EEPROM для сохранения цвета фона для экранов на адресных светодиодах (uint8_t x 4)
 #endif
+
+
 
 // ==== модуль RTC ===================================
 /*
