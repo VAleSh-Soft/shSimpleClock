@@ -499,10 +499,10 @@ void clkButtonGroup::init()
   buttons[2] = new clkButton(BTN_DOWN_PIN, true);
 #endif
 #if (BTN_ADD1_PIN >= 0)
-  buttons[3] = new clkButton(BTN_ADD1_PIN, true);
+  buttons[3] = new clkButton(BTN_ADD1_PIN);
 #endif
 #if (BTN_ADD2_PIN >= 0)
-  buttons[4] = new clkButton(BTN_ADD2_PIN, true);
+  buttons[4] = new clkButton(BTN_ADD2_PIN);
 #endif
 }
 
