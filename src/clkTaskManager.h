@@ -5,15 +5,13 @@
  * @brief диспетчер задач;
  *        полная версия здесь - https://github.com/VAleSh-Soft/shTaskManager
  *
- * @version 1.6
- * @date 17.05.2026
+ * @version 1.7
+ * @date 22.09.2026
  *
  * @copyright Copyright (c) 2024
  *
  */
 #pragma once
-
-#include <new> // для new (std::nothrow)
 
 // ==== clkTaskManager ===============================
 
@@ -36,9 +34,6 @@ struct clkTask // структура, описывающая задачу
 class sscTaskList
 {
 public:
-  // все хендлы инициализируются CLK_INVALID_HANDLE: до task_list_init() любой из них
-  // невалиден; без этого значения по умолчанию (0) несуществующая задача молча
-  // алиасила бы слот 0, и операции над ней попадали бы в чужую задачу
   clkHandle rtc_guard = CLK_INVALID_HANDLE;              // опрос микросхемы RTC по таймеру, чтобы не дергать ее откуда попало
   clkHandle blink_timer = CLK_INVALID_HANDLE;            // блинк
   clkHandle return_to_default_mode = CLK_INVALID_HANDLE; // таймер автовозврата в режим показа времени из любого режима настройки
@@ -131,13 +126,13 @@ void clkTaskManager::init(uint8_t _count)
 
   task_count = (_count) ? _count : 1;
 
-  // общее число слотов не должно выходить за диапазон clkHandle (int8_t)
+  // общее число задач не должно выходить за диапазон clkHandle (int8_t)
   if (task_count > CLK_MAX_TASK_COUNT)
   {
     task_count = CLK_MAX_TASK_COUNT;
   }
-  // task_list = (clkTask *)calloc((task_count), sizeof(clkTask));
-  task_list = new (std::nothrow) clkTask[task_count];
+
+  task_list = (clkTask *)calloc((task_count), sizeof(clkTask));
 
   if (task_list == nullptr)
   {
