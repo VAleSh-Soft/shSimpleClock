@@ -67,7 +67,7 @@ enum clkButtonFlag : uint8_t
 class clkButton
 {
 private:
-  uint8_t _PIN = NO_PIN;                              // пин, на который посажена кнопка
+  uint8_t _pin = NO_PIN;                              // пин, на который посажена кнопка
   uint16_t _debounce_timeout = TIMEOUT_OF_DEBOUNCE;   // интервал подавления дребезга контактов, мс
   uint16_t _longclick_timeout = TIMEOUT_OF_LONGCLICK; // интервал удержания кнопки нажатой, мс
   uint16_t _dblclck_timeout = TIMEOUT_OF_DBLCLICK;    // интервал двойного клика, мс
@@ -161,7 +161,7 @@ void clkButton::setFlag(uint8_t _bit, bool x)
 
 bool clkButton::getContactsState()
 {
-  bool val = digitalRead(_PIN);
+  bool val = digitalRead(_pin);
   if (getFlag(INPUTTYPE_BIT) == PULL_UP)
   {
     val = !val;
@@ -233,7 +233,7 @@ void clkButton::setAdditionalOptions()
 
 clkButton::clkButton(uint8_t pin, bool serial_mode)
 {
-  _PIN = pin;
+  _pin = pin;
   setFlag(INPUTTYPE_BIT, BTN_INPUT_TYPE);
   setButtonInputType(BTN_INPUT_TYPE);
   setButtonType(BTN_TYPE);
@@ -250,7 +250,7 @@ void clkButton::setButtonType(uint8_t btn_type)
 
 void clkButton::setButtonInputType(uint8_t btn_type)
 {
-  (btn_type == PULL_UP) ? pinMode(_PIN, INPUT_PULLUP) : pinMode(_PIN, INPUT);
+  (btn_type == PULL_UP) ? pinMode(_pin, INPUT_PULLUP) : pinMode(_pin, INPUT);
 }
 
 #if (BTN_ADD1_PIN >= 0) || (BTN_ADD2_PIN >= 0)
