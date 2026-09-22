@@ -207,9 +207,9 @@ void clkButton::setAdditionalOptions()
   case BTN_DBLCLICK:
   case BTN_LONGCLICK:
     // в любом режиме, кроме стандартного, каждый клик любой кнопки перезапускает таймер автовыхода в стандартный режим
-    if (clkTasks.getTaskState(clkTasks.return_to_default_mode))
+    if (clkTasks.getTaskState(clkTaskList.return_to_default_mode))
     {
-      clkTasks.startTask(clkTasks.return_to_default_mode);
+      clkTasks.startTask(clkTaskList.return_to_default_mode);
     }
 #if defined(USE_BUZZER_FOR_BUTTON) && BUZZER_PIN >= 0
     if (_btn_state != BTN_LONGCLICK)

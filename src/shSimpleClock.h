@@ -1042,33 +1042,33 @@ void shSimpleClock::task_list_init()
   clkAddTasks.init(ADDITIONAL_TASKS_COUNT);
 #endif
 
-  clkTasks.return_to_default_mode = clkTasks.addTask(AUTO_EXIT_TIMEOUT * 1000ul,
+  clkTaskList.return_to_default_mode = clkTasks.addTask(AUTO_EXIT_TIMEOUT * 1000ul,
                                                      sscReturnToDefMode,
                                                      false);
-  clkTasks.rtc_guard = clkTasks.addTask(50ul, sscRtcNow);
-  clkTasks.blink_timer = clkTasks.addTask(50ul, sscBlink);
-  clkTasks.set_time_mode = clkTasks.addTask(50ul, sscShowTimeSetting, false);
+  clkTaskList.rtc_guard = clkTasks.addTask(50ul, sscRtcNow);
+  clkTaskList.blink_timer = clkTasks.addTask(50ul, sscBlink);
+  clkTaskList.set_time_mode = clkTasks.addTask(50ul, sscShowTimeSetting, false);
 #if __USE_TEMP_DATA__ && defined(USE_DS18B20)
-  clkTasks.ds18b20_guard = clkTasks.addTask(3000ul, sscCheckDS18b20);
+  clkTaskList.ds18b20_guard = clkTasks.addTask(3000ul, sscCheckDS18b20);
 #endif
 #if __USE_AUTO_SHOW_DATA__
-  clkTasks.auto_show_mode = clkTasks.addTask(100ul, sscAutoShowData, false);
+  clkTaskList.auto_show_mode = clkTasks.addTask(100ul, sscAutoShowData, false);
 #endif
 #if defined(USE_ALARM)
-  clkTasks.alarm_guard = clkTasks.addTask(200ul, sscCheckAlarm);
-  clkTasks.alarm_buzzer = clkTasks.addTask(50ul, sscRunAlarmBuzzer, false);
+  clkTaskList.alarm_guard = clkTasks.addTask(200ul, sscCheckAlarm);
+  clkTaskList.alarm_buzzer = clkTasks.addTask(50ul, sscRunAlarmBuzzer, false);
 #endif
-  clkTasks.display_guard = clkTasks.addTask(50ul, sscShowDisplay);
+  clkTaskList.display_guard = clkTasks.addTask(50ul, sscShowDisplay);
 #if __USE_LIGHT_SENSOR__
-  clkTasks.light_sensor_guard = clkTasks.addTask(100ul, sscSetBrightness);
+  clkTaskList.light_sensor_guard = clkTasks.addTask(100ul, sscSetBrightness);
 #elif !defined(LCD_I2C_DISPLAY)
   clkDisplay.setBrightness(read_eeprom_8(MAX_BRIGHTNESS_VALUE_EEPROM_INDEX));
 #endif
 #if __USE_OTHER_SETTING__
-  clkTasks.other_setting_mode = clkTasks.addTask(50ul, sscShowOtherSetting, false);
+  clkTaskList.other_setting_mode = clkTasks.addTask(50ul, sscShowOtherSetting, false);
 #endif
 #if defined(USE_TICKER_FOR_DATA)
-  clkTasks.ticker = clkTasks.addTask(1000ul / TICKER_SPEED, sscRunTicker, false);
+  clkTaskList.ticker = clkTasks.addTask(1000ul / TICKER_SPEED, sscRunTicker, false);
 #endif
 }
 
@@ -1140,6 +1140,28 @@ void shSimpleClock::tick()
 #endif
 sscSetDisplayMode();
   }
+
+  static unsigned long timer = 0;
+  if (millis() - timer >= 1000ul)
+  {
+    timer  = millis();
+    Serial.print("handle: ");
+    Serial.println(clkTaskList.return_to_default_mode);    
+    Serial.print("status: ");
+    Serial.println(clkTasks.getTaskState(clkTaskList.return_to_default_mode)? "ON" : "OFF");
+
+    if (clkTasks.getTaskState(clkTaskList.return_to_default_mode))
+    {
+      Serial.print("interval:");
+      Serial.println(clkTasks.getTaskInterval(clkTaskList.return_to_default_mode));
+      Serial.print("timer:");
+      Serial.println(clkTasks.getTaskTimer(clkTaskList.return_to_default_mode));
+      Serial.print("millis():");
+      Serial.println(millis());
+    }
+    Serial.println();
+  }
+  
 }
 
 bool shSimpleClock::getBlink() { return sscBlinkFlag; }
@@ -1485,7 +1507,7 @@ void sscRtcNow()
   {
 #if defined(USE_TICKER_FOR_DATA)
     // если работает бегущая строка, ничего не делать
-    if (clkTasks.getTaskState(clkTasks.ticker))
+    if (clkTasks.getTaskState(clkTaskList.ticker))
     {
       return;
     }
@@ -1598,7 +1620,7 @@ void sscReturnToDefMode()
 #endif
 #if __USE_AUTO_SHOW_DATA__
   case DISPLAY_AUTO_SHOW_DATA:
-    clkTasks.stopTask(clkTasks.auto_show_mode);
+    clkTasks.stopTask(clkTaskList.auto_show_mode);
 #endif
     ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
     break;
@@ -1612,7 +1634,7 @@ void sscReturnToDefMode()
     sscAssembleString(DISPLAY_MODE_SHOW_TIME);
   }
 #endif
-  clkTasks.stopTask(clkTasks.return_to_default_mode);
+  clkTasks.stopTask(clkTaskList.return_to_default_mode);
 }
 
 void sscShowTimeData(int8_t hour, int8_t minute)
@@ -1735,15 +1757,15 @@ void sscClearButtonFlag()
 void sscStopSetting(clkHandle task)
 {
   clkTasks.stopTask(task);
-  clkTasks.stopTask(clkTasks.return_to_default_mode);
+  clkTasks.stopTask(clkTaskList.return_to_default_mode);
   sscClearButtonFlag();
 }
 
 // ==== sscShowTimeSetting ===========================
 void _startTimeSettingMode(uint8_t &curHour, uint8_t &curMinute)
 {
-  clkTasks.startTask(clkTasks.set_time_mode);
-  clkTasks.startTask(clkTasks.return_to_default_mode);
+  clkTasks.startTask(clkTaskList.set_time_mode);
+  clkTasks.startTask(clkTaskList.return_to_default_mode);
   sscClearButtonFlag();
   switch (ssc_display_mode)
   {
@@ -1874,13 +1896,13 @@ void _checkBtnSetForTmSet(uint8_t &curHour,
       case DISPLAY_MODE_SET_ALARM_HOUR:
 #endif
         ssc_display_mode = clkDisplayMode(uint8_t(ssc_display_mode + 1));
-        sscStopSetting(clkTasks.set_time_mode);
+        sscStopSetting(clkTaskList.set_time_mode);
         break;
 #if defined(USE_ALARM)
       case DISPLAY_MODE_ALARM_ON_OFF:
         ssc_display_mode = (curHour) ? DISPLAY_MODE_SET_ALARM_HOUR
                                      : DISPLAY_MODE_SHOW_TIME;
-        sscStopSetting(clkTasks.set_time_mode);
+        sscStopSetting(clkTaskList.set_time_mode);
         break;
 #endif
 #if defined(USE_TICKER_FOR_DATA)
@@ -1892,7 +1914,7 @@ void _checkBtnSetForTmSet(uint8_t &curHour,
 #else
         ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
 #endif
-        sscStopSetting(clkTasks.set_time_mode);
+        sscStopSetting(clkTaskList.set_time_mode);
         break;
 #endif
 #if defined(SHOW_SECOND_COLUMN) || __USE_AUTO_SHOW_DATA__
@@ -1903,19 +1925,19 @@ void _checkBtnSetForTmSet(uint8_t &curHour,
       case DISPLAY_MODE_SET_SECOND_COLUMN_ON_OFF:
 #endif
         ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
-        sscStopSetting(clkTasks.set_time_mode);
+        sscStopSetting(clkTaskList.set_time_mode);
         break;
 #endif
       default:
         ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
-        sscStopSetting(clkTasks.set_time_mode);
+        sscStopSetting(clkTaskList.set_time_mode);
         break;
       }
     }
     else
     {
       ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
-      sscStopSetting(clkTasks.set_time_mode);
+      sscStopSetting(clkTaskList.set_time_mode);
     }
   }
 }
@@ -1990,7 +2012,7 @@ void _setDisplayForTmSet(uint8_t &curHour, uint8_t &curMinute)
     }
 #endif
   }
-  else if (clkTasks.getTaskState(clkTasks.set_time_mode))
+  else if (clkTasks.getTaskState(clkTaskList.set_time_mode))
   {
 #if __USE_ON_OFF_DATA__
     bool _blink = !sscBlinkFlag &&
@@ -2034,7 +2056,7 @@ void sscShowTimeSetting()
   static uint8_t curHour = 0;
   static uint8_t curMinute = 0;
 
-  if (!clkTasks.getTaskState(clkTasks.set_time_mode))
+  if (!clkTasks.getTaskState(clkTaskList.set_time_mode))
   {
     _startTimeSettingMode(curHour, curMinute);
     time_checked = false;
@@ -2046,7 +2068,7 @@ void sscShowTimeSetting()
 
 #if defined(USE_TICKER_FOR_DATA)
   // подождать, пока отработает бегущая строка
-  if (clkTasks.getTaskState(clkTasks.ticker))
+  if (clkTasks.getTaskState(clkTaskList.ticker))
   {
     return;
   }
@@ -2091,7 +2113,7 @@ void sscShowDisplay()
 {
 #if defined(USE_TICKER_FOR_DATA)
   // обновление экрана делать только если в данный момент не работает бегущая строка, она сама обновляет экран, когда ей это нужно
-  if (!clkTasks.getTaskState(clkTasks.ticker))
+  if (!clkTasks.getTaskState(clkTaskList.ticker))
 #endif
     clkDisplay.show();
 }
@@ -2176,7 +2198,7 @@ void sscCheckSetButton()
 #if defined(USE_CALENDAR)
     case DISPLAY_MODE_SHOW_DATE:
 #if __USE_AUTO_SHOW_DATA__
-      clkTasks.stopTask(clkTasks.auto_show_mode);
+      clkTasks.stopTask(clkTaskList.auto_show_mode);
 #endif
       ssc_display_mode = DISPLAY_MODE_SET_DAY;
       break;
@@ -2402,7 +2424,7 @@ void sscSetDisplayMode()
 #if defined(SHOW_SECOND_COLUMN)
   case DISPLAY_MODE_SET_SECOND_COLUMN_ON_OFF:
 #endif
-    if (!clkTasks.getTaskState(clkTasks.set_time_mode))
+    if (!clkTasks.getTaskState(clkTaskList.set_time_mode))
     {
       sscShowTimeSetting();
     }
@@ -2415,7 +2437,7 @@ void sscSetDisplayMode()
 #if __USE_TEMP_DATA__
   case DISPLAY_MODE_SHOW_TEMP:
 #endif
-    if (!clkTasks.getTaskState(clkTasks.auto_show_mode))
+    if (!clkTasks.getTaskState(clkTaskList.auto_show_mode))
     {
       sscAutoShowData();
     }
@@ -2437,7 +2459,7 @@ void sscSetDisplayMode()
 #if defined(WS2812_MATRIX_DISPLAY)
   case DISPLAY_MODE_SET_COLOR_OF_NUMBER:
 #endif
-    if (!clkTasks.getTaskState(clkTasks.other_setting_mode))
+    if (!clkTasks.getTaskState(clkTaskList.other_setting_mode))
     {
       sscShowOtherSetting();
     }
@@ -2453,7 +2475,7 @@ void sscCheckAlarm()
 {
   clkAlarm.tick(clkClock.getCurTime());
   if (clkAlarm.getAlarmState() == ALARM_YES &&
-      !clkTasks.getTaskState(clkTasks.alarm_buzzer))
+      !clkTasks.getTaskState(clkTaskList.alarm_buzzer))
   {
     sscRunAlarmBuzzer();
 #if defined USE_CLOCK_EVENT
@@ -2473,23 +2495,23 @@ void sscRunAlarmBuzzer()
       {2000, 0, 2000, 0, 2000, 0, 2000, 0},
       {70, 70, 70, 70, 70, 70, 70, 510}};
 
-  if (!clkTasks.getTaskState(clkTasks.alarm_buzzer))
+  if (!clkTasks.getTaskState(clkTaskList.alarm_buzzer))
   {
-    clkTasks.startTask(clkTasks.alarm_buzzer);
+    clkTasks.startTask(clkTaskList.alarm_buzzer);
     n = 0;
     k = 0;
     m = 0;
   }
   else if (clkAlarm.getAlarmState() == ALARM_ON)
   { // остановка пищалки, если будильник отключен
-    clkTasks.stopTask(clkTasks.alarm_buzzer);
+    clkTasks.stopTask(clkTaskList.alarm_buzzer);
     return;
   }
 
   tone(BUZZER_PIN,
        pgm_read_dword(&pick[0][n]),
        pgm_read_dword(&pick[1][n]));
-  clkTasks.setTaskInterval(clkTasks.alarm_buzzer,
+  clkTasks.setTaskInterval(clkTaskList.alarm_buzzer,
                            pgm_read_dword(&pick[1][n]), true);
   if (++n >= 8)
   {
@@ -2499,13 +2521,13 @@ void sscRunAlarmBuzzer()
       k = 0;
       if (++m >= ALARM_REPETITION_COUNT)
       { // отключение пищалки после заданного количества срабатываний
-        clkTasks.stopTask(clkTasks.alarm_buzzer);
-        clkTasks.setTaskInterval(clkTasks.alarm_buzzer, 50, false);
+        clkTasks.stopTask(clkTaskList.alarm_buzzer);
+        clkTasks.setTaskInterval(clkTaskList.alarm_buzzer, 50, false);
         clkAlarm.setAlarmState(ALARM_ON);
       }
       else
       {
-        clkTasks.setTaskInterval(clkTasks.alarm_buzzer,
+        clkTasks.setTaskInterval(clkTaskList.alarm_buzzer,
                                  ALARM_SNOOZE_DELAY * 1000ul,
                                  true);
       }
@@ -2520,7 +2542,7 @@ void sscRunAlarmBuzzer()
 void sscSetBrightness()
 {
 #if __USE_SET_BRIGHTNESS_MODE__
-  if (clkTasks.getTaskState(clkTasks.other_setting_mode))
+  if (clkTasks.getTaskState(clkTaskList.other_setting_mode))
   {
     if (ssc_display_mode == DISPLAY_MODE_SET_BRIGHTNESS_MAX ||
         ssc_display_mode == DISPLAY_MODE_SET_BRIGHTNESS_MIN)
@@ -2576,8 +2598,8 @@ int8_t sscGetCurTemp()
 // ==== sscShowOtherSetting =============================
 void _startOtherSettingMode(uint8_t &x)
 {
-  clkTasks.startTask(clkTasks.other_setting_mode);
-  clkTasks.startTask(clkTasks.return_to_default_mode);
+  clkTasks.startTask(clkTaskList.other_setting_mode);
+  clkTasks.startTask(clkTaskList.return_to_default_mode);
   sscClearButtonFlag();
   switch (ssc_display_mode)
   {
@@ -2628,7 +2650,7 @@ void _checkBtnSetForOthSet(uint8_t &x)
     case DISPLAY_MODE_SET_LIGHT_THRESHOLD:
       write_eeprom_8(LIGHT_THRESHOLD_EEPROM_INDEX, x);
       ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
-      sscStopSetting(clkTasks.other_setting_mode);
+      sscStopSetting(clkTaskList.other_setting_mode);
       break;
 #endif
 #if __USE_SET_BRIGHTNESS_MODE__
@@ -2644,7 +2666,7 @@ void _checkBtnSetForOthSet(uint8_t &x)
       {
         ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
       }
-      sscStopSetting(clkTasks.other_setting_mode);
+      sscStopSetting(clkTaskList.other_setting_mode);
       break;
 #if __USE_LIGHT_SENSOR__
     case DISPLAY_MODE_SET_BRIGHTNESS_MIN:
@@ -2657,7 +2679,7 @@ void _checkBtnSetForOthSet(uint8_t &x)
       {
         ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
       }
-      sscStopSetting(clkTasks.other_setting_mode);
+      sscStopSetting(clkTaskList.other_setting_mode);
       break;
 #endif
 #endif
@@ -2680,7 +2702,7 @@ void _checkBtnSetForOthSet(uint8_t &x)
       {
         ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
       }
-      sscStopSetting(clkTasks.other_setting_mode);
+      sscStopSetting(clkTaskList.other_setting_mode);
       break;
 #endif
 #if defined(WS2812_MATRIX_DISPLAY)
@@ -2698,7 +2720,7 @@ void _checkBtnSetForOthSet(uint8_t &x)
       {
         ssc_display_mode = DISPLAY_MODE_SHOW_TIME;
       }
-      sscStopSetting(clkTasks.other_setting_mode);
+      sscStopSetting(clkTaskList.other_setting_mode);
       break;
 #endif
     default:
@@ -2821,7 +2843,7 @@ void sscShowOtherSetting()
   static uint8_t x = 0;
 
   // ==== инициализация диалога настроек =============
-  if (!clkTasks.getTaskState(clkTasks.other_setting_mode))
+  if (!clkTasks.getTaskState(clkTaskList.other_setting_mode))
   {
     _startOtherSettingMode(x);
 #if __USE_7SEMENT_DISPLAY__
@@ -2832,7 +2854,7 @@ void sscShowOtherSetting()
 
 #if defined(USE_TICKER_FOR_DATA)
   // подождать, пока отработает бегущая строка
-  if (clkTasks.getTaskState(clkTasks.ticker))
+  if (clkTasks.getTaskState(clkTaskList.ticker))
   {
     return;
   }
@@ -2886,7 +2908,7 @@ void _startAutoShowMode(uint8_t &n, uint8_t &n_max)
   default:
     break;
   }
-  clkTasks.startTask(clkTasks.auto_show_mode);
+  clkTasks.startTask(clkTaskList.auto_show_mode);
 }
 
 #if __USE_MATRIX_DISPLAY__
@@ -3005,13 +3027,13 @@ void sscAutoShowData()
   static uint8_t n_max = 0;
   static unsigned long timer = 0;
 
-  if (!clkTasks.getTaskState(clkTasks.auto_show_mode))
+  if (!clkTasks.getTaskState(clkTaskList.auto_show_mode))
   {
     _startAutoShowMode(n, n_max);
   }
 
 #if defined(USE_TICKER_FOR_DATA)
-  if (clkTasks.getTaskState(clkTasks.ticker))
+  if (clkTasks.getTaskState(clkTaskList.ticker))
   {
     timer = millis();
     return;
@@ -3433,9 +3455,9 @@ void sscRunTicker()
 {
   static uint8_t n = 0;
 
-  if (!clkTasks.getTaskState(clkTasks.ticker))
+  if (!clkTasks.getTaskState(clkTaskList.ticker))
   {
-    clkTasks.startTask(clkTasks.ticker);
+    clkTasks.startTask(clkTaskList.ticker);
     n = 0;
   }
 
@@ -3447,7 +3469,7 @@ void sscRunTicker()
 
   if (n++ >= sData.getDataLenght() - 32)
   {
-    clkTasks.stopTask(clkTasks.ticker);
+    clkTasks.stopTask(clkTaskList.ticker);
     sData.stringFree();
   }
 }
