@@ -13,7 +13,7 @@
  *                                времени срабатывания будильника.
  *
  * @version 1.1
- * @date 25.05.2026
+ * @date 23.09.2026
  *
  * @copyright Copyright (c) 2026
  *
@@ -34,7 +34,7 @@ void clk_btn_add1()
     Serial.print("Alarm is "); 
     Serial.println(simple_clock.getOnOffAlarm() ? "ON" : "OFF");
     break;
-  // двойной клик - вход в режим настройки времени срабатывания будильника
+  // удержание кнопки нажатой - вход в режим настройки времени срабатывания будильника
   case BTN_LONGCLICK:
     if (simple_clock.getDisplayMode() == DISPLAY_MODE_SHOW_TIME)
     {
