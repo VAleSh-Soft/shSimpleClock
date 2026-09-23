@@ -97,6 +97,7 @@ addAdditionalTask	 KEYWORD2
 startTask	 KEYWORD2
 stopTask	 KEYWORD2
 getTaskState	 KEYWORD2
+setTaskState	 KEYWORD2
 setTaskInterval	 KEYWORD2
 exesTask	 KEYWORD2
 

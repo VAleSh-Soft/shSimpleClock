@@ -865,6 +865,14 @@ public:
    */
   bool getTaskState(clkHandle _handle);
 
+    /**
+   * @brief Установка статуса задачи;
+   *
+   * @param _handle идентификатор задачи;
+   * @param _state новый статус задачи;
+   */
+  void setTaskState(clkHandle _handle, bool _state);
+
   /**
    * @brief установка нового интервала срабатывания задачи;
    *
@@ -1460,6 +1468,11 @@ void shSimpleClock::stopTask(clkHandle _handle)
 bool shSimpleClock::getTaskState(clkHandle _handle)
 {
   return clkAddTasks.getTaskState(_handle);
+}
+
+void shSimpleClock::setTaskState(clkHandle _handle, bool _state)
+{
+  (_state) ? startTask(_handle) : stopTask(_handle);
 }
 
 void shSimpleClock::setTaskInterval(clkHandle _handle,
