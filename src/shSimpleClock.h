@@ -96,7 +96,7 @@
 #else
 #include <avr/pgmspace.h>
 #endif
-#include "_eeprom.h"
+#include "clkEeprom.h"
 #include "clkSimpleRTC.h"
 #include "clkTaskManager.h"
 #include "clkButtons.h"
@@ -1333,7 +1333,7 @@ void shSimpleClock::setAlarmEvent(clkEventCallback _callback, bool _active)
 
 void shSimpleClock::setAlarmEventState(bool _state) { sscAlarmEvent.setState(_state); }
 
-bool shSimpleClock::getAlarmEventState() { sscAlarmEvent.getState(); }
+bool shSimpleClock::getAlarmEventState() { return sscAlarmEvent.getState(); }
 #endif
 
 uint16_t shSimpleClock::getAlarmPoint() { return (clkAlarm.getAlarmPoint()); }

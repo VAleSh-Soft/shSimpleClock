@@ -2,25 +2,16 @@
  * @file clkAlarmClass.h
  * @author Vladimir Shatalov (valesh-soft@yandex.ru)
  * @brief Класс, реализующий будильник
- * @version 1.5
- * @date 01.05.2024
+ * @version 1.6
+ * @date 26.09.2026
  *
- * @copyright Copyright (c) 2024
+ * @copyright Copyright (c) 2026
  *
  */
 #pragma once
 #include <Arduino.h>
 #include "clkSimpleRTC.h"
-#include "_eeprom.h"
-
-#define MAX_DATA 1439 // максимальное количество минут для установки будильника (23 ч, 59 мин)
-
-/*
- * смещение от стартового индекса в EEPROM для хранения настроек
- * общий размер настроек - 3 байта
- */
-uint8_t constexpr ALARM_STATE = 0; // состояние будильника, включен/нет, uint8_t
-uint8_t constexpr ALARM_POINT = 1; // точка срабатывания будильника в минутах от полуночи, uint16_t
+#include "clkEeprom.h"
 
 // ==== clkAlarmClass ================================
 
@@ -36,6 +27,10 @@ class clkAlarmClass
 private:
   uint16_t eeprom_index;
   clkAlarmState state;
+  // смещение от стартового индекса в EEPROM для хранения настроек
+  uint8_t const ALARM_STATE = 0;  // состояние будильника, включен/нет, uint8_t
+  uint8_t const ALARM_POINT = 1;  // точка срабатывания будильника в минутах от полуночи, uint16_t
+  uint16_t const MAX_DATA = 1439; // максимальное количество минут для установки будильника (23 ч, 59 мин)
 
 #if ALARM_LED_PIN >= 0
   uint8_t led_pin;
@@ -48,7 +43,7 @@ public:
 
   /**
    * @brief инициализация будильника
-   * 
+   *
    */
   void init();
 

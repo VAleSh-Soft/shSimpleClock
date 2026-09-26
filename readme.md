@@ -60,7 +60,7 @@ void loop()
 
 ### История версий
 
-Версия 1.9 - 23.09.2026
+Версия 1.9 - 26.09.2026
  + добавлена поддержка двух дополнительных кнопок; обработка их событий лежит на пользователе ([см. здесь](docs/buttons.md));
  + добавлен пример работы с дополнительной кнопкой ([additional_button.ino](examples/other_examples/additional_button/additional_button.ino));
  + добавлены методы для настройки параметров дополнительных кнопок ([см. здесь](docs/buttons.md#дополнительные-кнопки---настройка-параметров-отличных-от-настроек-основных-кнопок));
@@ -164,12 +164,14 @@ void loop()
 или <br>
 **FastLED.h** - https://github.com/FastLED/FastLED<br>
 или <br>
-**LiquidCrystal_PCF8574.h** - // https://github.com/mathertel/LiquidCrystal_PCF8574<br>
+**LiquidCrystal_PCF8574.h** - https://github.com/mathertel/LiquidCrystal_PCF8574<br>
 
 для работы с датчиком **DS18b20** используется библиотека<br>
 **OneWire.h** - https://github.com/PaulStoffregen/OneWire<br>
 или <br>
 **OneWireNg.h** - https://github.com/pstolarz/OneWireNg, если используется **RP2040**
+
+Библиотеки **TM1637Display**, **FastLED**, **LiquidCrystal_PCF8574**, **OneWire** и **OneWireNg** указаны в поле `depends` файла **library.properties**, поэтому **Arduino IDE 2.x** установит их автоматически вместе с **shSimpleClock**. В **Arduino IDE 1.x** автоустановка не работает - нужную библиотеку нужно поставить вручную по ссылкам выше. Библиотека **shMAX72xxMini** в Менеджер библиотек не опубликована, её всегда устанавливайте вручную.
 
 ### Аддоны, используемые для работы с другими платами
 
@@ -200,7 +202,7 @@ void loop()
 - https://github.com/stm32duino/BoardManagerFiles/raw/main/package_stmicroelectronics_index.json
 
 так и аддон **Arduino_STM32 by Roger Clark**, ссылка на **github.com**:
-- https://github.com/rogerclarkmelbourne/Arduino_STM3
+- https://github.com/rogerclarkmelbourne/Arduino_STM32
 
 Инструкция по установке:
 - https://github.com/rogerclarkmelbourne/Arduino_STM32/wiki/Installation
