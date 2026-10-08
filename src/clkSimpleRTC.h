@@ -32,7 +32,7 @@ public:
   clkDateTime(uint32_t t = 0);
 
   clkDateTime(uint16_t year, uint8_t month, uint8_t day,
-             uint8_t hour = 0, uint8_t min = 0, uint8_t sec = 0);
+              uint8_t hour = 0, uint8_t min = 0, uint8_t sec = 0);
 
   clkDateTime(const clkDateTime &copy);
 
@@ -120,7 +120,7 @@ clkDateTime::clkDateTime(uint32_t t)
 }
 
 clkDateTime::clkDateTime(uint16_t year, uint8_t month, uint8_t day,
-                       uint8_t hour, uint8_t min, uint8_t sec)
+                         uint8_t hour, uint8_t min, uint8_t sec)
 {
   yOff = year % 100;
   m = (month <= 12 && month > 0) ? month : 1;
@@ -131,7 +131,7 @@ clkDateTime::clkDateTime(uint16_t year, uint8_t month, uint8_t day,
 }
 
 clkDateTime::clkDateTime(const clkDateTime &copy) : yOff(copy.yOff), m(copy.m), d(copy.d),
-                                                 hh(copy.hh), mm(copy.mm), ss(copy.ss) {}
+                                                    hh(copy.hh), mm(copy.mm), ss(copy.ss) {}
 
 uint16_t clkDateTime::year() const { return yOff; }
 uint8_t clkDateTime::month() const { return m; }
@@ -231,7 +231,9 @@ public:
 
 #if defined(RTC_DS3231)
   /**
-   * @brief возвращает температуру внутреннего датчика DS3231; работает только с DS3231
+   * @brief возвращает температуру внутреннего датчика DS3231; работает только 
+   *        с DS3231; температура выводится без дробной части и округляется в 
+   *        большую сторону по модулю
    *
    * @return int16_t
    */
@@ -332,20 +334,20 @@ void clkSimpleRTC::now()
 
 #if defined(RTC_DS3231)
     cur_time.copyDateTime(clkDateTime(bcdToDec(b6), bcdToDec(b5 & 0x7F),
-                                     bcdToDec(b4), bcdToDec(b2),
-                                     bcdToDec(b1), bcdToDec(b0 & 0x7F)));
+                                      bcdToDec(b4), bcdToDec(b2),
+                                      bcdToDec(b1), bcdToDec(b0 & 0x7F)));
 #elif defined(RTC_DS1307)
     cur_time.copyDateTime(clkDateTime(bcdToDec(b6), bcdToDec(b5),
-                                     bcdToDec(b4), bcdToDec(b2),
-                                     bcdToDec(b1), bcdToDec(b0 & 0x7F)));
+                                      bcdToDec(b4), bcdToDec(b2),
+                                      bcdToDec(b1), bcdToDec(b0 & 0x7F)));
 #elif defined(RTC_PCF8563)
     cur_time.copyDateTime(clkDateTime(bcdToDec(b6), bcdToDec(b5 & 0x1F),
-                                     bcdToDec(b3 & 0x3f), bcdToDec(b2 & 0x3f),
-                                     bcdToDec(b1 & 0x7f), bcdToDec(b0 & 0x7F)));
+                                      bcdToDec(b3 & 0x3f), bcdToDec(b2 & 0x3f),
+                                      bcdToDec(b1 & 0x7f), bcdToDec(b0 & 0x7F)));
 #elif defined(RTC_PCF8523)
     cur_time.copyDateTime(clkDateTime(bcdToDec(b6), bcdToDec(b5),
-                                     bcdToDec(b3), bcdToDec(b2),
-                                     bcdToDec(b1), bcdToDec(b0 & 0x7F)));
+                                      bcdToDec(b3), bcdToDec(b2),
+                                      bcdToDec(b1), bcdToDec(b0 & 0x7F)));
 #else
     cur_time.copyDateTime(clkDateTime(0, 1, 1, 0, 0, 0));
 #endif
@@ -444,12 +446,17 @@ int16_t clkSimpleRTC::getTemperature()
   int16_t temp3231 = -127;
 
   if (isClockPresent())
-  { // временные регистры (11h-12h) обновляются автоматически каждые 64 секунды.
-    tMSB = read_register(0x11);
-    tLSB = read_register(0x12);
+  {                             // температурные регистры (11h-12h) обновляются автоматически каждые 64 секунды.
+    tMSB = read_register(0x11); // целая часть температуры
+    tLSB = read_register(0x12); // дробная часть температуры (два старших байта) с шагом 0.25 градуса
 
-    uint16_t x = ((((short)tMSB << 8) | (short)tLSB) >> 6);
-    temp3231 = (x % 4 > 2) ? x / 4 + 1 : x / 4;
+    temp3231 = (int)tMSB;
+    // если дробная часть больше либо равна 0.5 (10000000 или 11000000)
+    if (tLSB >> 7)
+    {
+      // делаем округление в большую сторону
+      (temp3231 > 0) ? temp3231++ : temp3231--;
+    }
   }
 
   return (temp3231);
